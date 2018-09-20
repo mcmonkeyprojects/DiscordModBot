@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>DiscordWarningBot</RootNamespace>
+    <AssemblyName>DiscordWarningBot</AssemblyName>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <LangVersion>Latest</LangVersion>
+    <Product>DiscordWarningBot</Product>
+    <PackageId>DiscordWarningBot</PackageId>
+    <Copyright>Copyright (C) mcmonkey4eva 2018</Copyright>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="NuGet.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="**\*.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Discord.Net" Version="2.0.0-beta" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-beta" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="FreneticUtilities\*.*" />
+    <Compile Remove="FreneticUtilities\**\*.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="FreneticUtilities\FreneticUtilities\FreneticUtilities.csproj" />
+  </ItemGroup>
+</Project>
