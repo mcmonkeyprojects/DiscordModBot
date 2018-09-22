@@ -108,21 +108,21 @@ namespace WarningBot
         /// Simple output string for general public commands.
         /// </summary>
         public static string CmdsHelp = 
-                "`help`, `hello`, " // TODO: listwarnings (can view own warnings, helpers can view anyone's warnings)
+                "`help` shows help output, `hello` shows a source code link, " // TODO: listwarnings (can view own warnings, helpers can view anyone's warnings)
                 + "...";
 
         /// <summary>
         /// Simple output string for helper commands.
         /// </summary>
         public static string CmdsHelperHelp =
-                "`warn`, "
+                "`warn` issues a warning to a user, "
                 + "...";
 
         /// <summary>
         /// Simple output string for admin commands.
         /// </summary>
         public static string CmdsAdminHelp =
-                "`restart`, "
+                "`restart` restarts the bot, "
                 + "...";
 
         /// <summary>
@@ -147,8 +147,7 @@ namespace WarningBot
         /// </summary>
         void CMD_Hello(string[] cmds, SocketMessage message)
         {
-            // TODO: Add link
-            message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Hi! I'm a bot! Find my source code at (TODO: ADD LINK)").Wait();
+            message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Hi! I'm a bot! Find my source code at https://github.com/mcmonkeyprojects/DiscordWarningBot").Wait();
         }
 
         /// <summary>
@@ -180,23 +179,23 @@ namespace WarningBot
                 message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Warnings must only `@` mention this bot and the user to be warned.").Wait();
                 return;
             }
-            SocketUser suFound = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
-            if (suFound == null)
+            SocketUser userToWarn = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
+            if (userToWarn == null)
             {
                 message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user mention not valid?").Wait();
                 return;
             }
             if (cmds.Length == 0 || !LevelsTypable.TryGetValue(cmds[0].ToLowerInvariant(), out WarningLevel level))
             {
-                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Unknown level. Valid levels: `minor`, `normal`, `serious`, `instant_mute`.").Wait();
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Unknown level. Valid levels: `minor`, `normal`, `serious`, or `instant_mute`.").Wait();
                 return;
             }
-            Warning warning = new Warning() { GivenTo = suFound.Id, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
+            Warning warning = new Warning() { GivenTo = userToWarn.Id, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
             warning.Reason = string.Join(" ", cmds.Skip(1));
-            Discord.Rest.RestUserMessage sentMessage = message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Warning from <@" + message.Author.Id + "> to <@" + suFound.Id + "> recorded.").Result;
+            Discord.Rest.RestUserMessage sentMessage = message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Warning from <@" + message.Author.Id + "> to <@" + userToWarn.Id + "> recorded.").Result;
             warning.Link = LinkToMessage(sentMessage);
-            Warn(suFound.Id, warning);
-            PossibleMute(suFound as SocketGuildUser, message.Channel, level);
+            Warn(userToWarn.Id, warning);
+            PossibleMute(userToWarn as SocketGuildUser, message.Channel, level);
         }
 
         /// <summary>
@@ -304,7 +303,7 @@ namespace WarningBot
                 message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Nope! That's not valid for my current configuration!").Wait();
             }
             message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Yes, boss. Restarting now...").Wait();
-            Process.Start("sh", "./start.sh " + message.Channel.Id);
+            Process.Start("bash", "./start.sh " + message.Channel.Id);
             Task.Factory.StartNew(() =>
             {
                 Console.WriteLine("Shutdown start...");
