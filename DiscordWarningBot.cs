@@ -48,7 +48,7 @@ namespace WarningBot
         /// <summary>
         /// Bot token, read from config data.
         /// </summary>
-        public static readonly string TOKEN = File.ReadAllText(TOKEN_FILE);
+        public static readonly string TOKEN = File.ReadAllText(TOKEN_FILE).Replace('\n', ' ').Replace('\r', ' ').Replace('\t', ' ').Replace(" ", "");
 
         /// <summary>
         /// The configuration file section.
@@ -519,7 +519,13 @@ namespace WarningBot
             Console.WriteLine("Loading Discord...");
             DiscordSocketConfig config = new DiscordSocketConfig();
             config.MessageCacheSize = 256;
+            //config.LogLevel = LogSeverity.Debug;
             Client = new DiscordSocketClient(config);
+            /*Client.Log += (m) =>
+            {
+                Console.WriteLine(m.Severity + ": " + m.Source + ": " + m.Exception + ": "  + m.Message);
+                return Task.CompletedTask;
+            };*/
             Client.Ready += () =>
             {
                 if (BotMonitor.ShouldStopAllLogic())
