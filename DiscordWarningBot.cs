@@ -199,6 +199,55 @@ namespace WarningBot
         }
 
         /// <summary>
+        /// User command to list user warnings.
+        /// </summary>
+        void CMD_ListWarnings(string[] cmds, SocketMessage message)
+        {
+            SocketUser userToList = message.Author;
+            if (IsHelper(message.Author as SocketGuildUser) && message.MentionedUsers.Count() > 1)
+            {
+                if (message.MentionedUsers.Count() != 2)
+                {
+                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Warnings must only `@` mention this bot and the user to be warned.").Wait();
+                    return;
+                }
+                userToList = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
+                if (userToList == null)
+                {
+                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user mention not valid?").Wait();
+                    return;
+                }
+            }
+            WarnableUser user = GetWarnableUser(userToList.Id);
+            StringBuilder warnStringOutput = new StringBuilder();
+            DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+            int id = 0;
+            foreach (Warning warned in user.GetWarnings().OrderByDescending(w => (int)w.Level).Take(6))
+            {
+                if (id == 5)
+                {
+                    warnStringOutput.Append("... And more warnings (not able to list all).");
+                    break;
+                }
+                id++;
+                SocketUser giver = Client.GetUser(warned.GivenBy);
+                string giverLabel = (giver == null) ? ("DiscordID:" + warned.GivenBy) : (giver.Username + "#" + giver.Discriminator);
+                string reason = (warned.Reason.Length > 250) ? (warned.Reason.Substring(0, 250) + "(... trimmed ...)") : warned.Reason;
+                reason = reason.Replace('\\', '/').Replace('`', '\'');
+                warnStringOutput.Append("... " + warned.Level + " warning given at " + StringConversionHelper.DateTimeToString(warned.TimeGiven, false)
+                    + " by " + giverLabel + " with reason: `" + reason + "` ... for detail see: " + warned.Link + "\n");
+            }
+            if (warnStringOutput.Length == 0)
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "User " + userToList.Username + "#" + userToList.Discriminator + " does not have any warnings logged.").Wait();
+            }
+            else
+            {
+                message.Channel.SendMessageAsync(SUCCESS_PREFIX + "User " + userToList.Username + "#" + userToList.Discriminator + " has the following warnings logged:\n" + warnStringOutput).Wait();
+            }
+        }
+
+        /// <summary>
         /// Generates a link to a Discord message.
         /// </summary>
         public string LinkToMessage(Discord.Rest.RestMessage message)
@@ -208,6 +257,12 @@ namespace WarningBot
 
         /// <summary>
         /// Calculates whether a user needs to be muted following a new warning, and applies the mute if needed.
+        /// Logic:
+        /// Any warning within the past 30 days counts towards the total, where more recent is more significant.
+        /// INSTANT_MUTE => When given, muted instantly. For later calculations, same as SERIOUS.
+        /// SERIOUS => 0-7 days = 2 points, 7-14 days = 1.5 points, 14-30 days = 1 point.
+        /// NORMAL => 0-7 days = 1.5 points, 7-14 days = 1 point, 14-30 days = 0.75 points.
+        /// 4 points or more = muted.
         /// </summary>
         void PossibleMute(SocketGuildUser user, ISocketMessageChannel channel, WarningLevel newLevel)
         {
@@ -218,7 +273,49 @@ namespace WarningBot
             bool needsMute = newLevel == WarningLevel.INSTANT_MUTE;
             if (newLevel == WarningLevel.NORMAL || newLevel == WarningLevel.SERIOUS)
             {
-                // TODO: Choose if warning is needed
+                double warningNeed = 0.0;
+                foreach (Warning oldWarn in GetWarnableUser(user.Id).GetWarnings())
+                {
+                    TimeSpan relative = DateTimeOffset.UtcNow.Subtract(oldWarn.TimeGiven);
+                    if (relative.TotalDays > 30)
+                    {
+                        break;
+                    }
+                    if (oldWarn.Level == WarningLevel.NORMAL)
+                    {
+                        if (relative.TotalDays <= 7)
+                        {
+                            warningNeed += 1.5;
+                        }
+                        else if (relative.TotalDays <= 14)
+                        {
+                            warningNeed += 1.0;
+                        }
+                        else
+                        {
+                            warningNeed += 0.75;
+                        }
+                    }
+                    else if (oldWarn.Level == WarningLevel.SERIOUS || oldWarn.Level == WarningLevel.INSTANT_MUTE)
+                    {
+                        if (relative.TotalDays <= 7)
+                        {
+                            warningNeed += 2.0;
+                        }
+                        else if (relative.TotalDays <= 14)
+                        {
+                            warningNeed += 1.5;
+                        }
+                        else
+                        {
+                            warningNeed += 1;
+                        }
+                    }
+                }
+                if (warningNeed >= 4.0)
+                {
+                    needsMute = true;
+                }
             }
             if (needsMute)
             {
@@ -355,10 +452,18 @@ namespace WarningBot
             UserCommands["github"] = CMD_Hello;
             UserCommands["git"] = CMD_Hello;
             UserCommands["hub"] = CMD_Hello;
+            // Helper and User
+            UserCommands["list"] = CMD_ListWarnings;
+            UserCommands["listwarn"] = CMD_ListWarnings;
+            UserCommands["listwarns"] = CMD_ListWarnings;
+            UserCommands["listwarning"] = CMD_ListWarnings;
+            UserCommands["listwarnings"] = CMD_ListWarnings;
+            UserCommands["warnlist"] = CMD_ListWarnings;
+            UserCommands["warninglist"] = CMD_ListWarnings;
+            UserCommands["warningslist"] = CMD_ListWarnings;
             // Helper
             UserCommands["warn"] = CMD_Warn;
             UserCommands["warning"] = CMD_Warn;
-            // TODO: List Warnings command
             // Admin
             UserCommands["restart"] = CMD_Restart;
         }

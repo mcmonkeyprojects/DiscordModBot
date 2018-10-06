@@ -18,7 +18,7 @@ namespace WarningBot
     /// <summary>
     /// Possibly warning levels (how serious a warning is).
     /// </summary>
-    public enum WarningLevel
+    public enum WarningLevel : int
     {
         /// <summary>
         /// Automatically given warning.

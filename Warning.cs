@@ -58,7 +58,7 @@ namespace WarningBot
             Warning warn = new Warning();
             warn.GivenTo = userId;
             warn.TimeGiven = StringConversionHelper.StringToDateTime(section.GetString("time_given", "MISSING")).Value;
-            warn.GivenTo = section.GetUlong("given_by").Value;
+            warn.GivenBy = section.GetUlong("given_by").Value;
             warn.Reason = section.GetString("reason", "MISSING");
             warn.Level = EnumHelper<WarningLevel>.ParseIgnoreCase(section.GetString("level", "MISSING"));
             warn.Link = section.GetString("link");
