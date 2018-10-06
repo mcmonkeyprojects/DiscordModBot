@@ -24,6 +24,12 @@ I made this largely for usage on servers I control and may not have documented e
     - That warning is recorded permanently, including metadata about it (timestamp, helper giving it, etc).
     - Depending on severity that warning can cause the bot to mute a user (if `InstantMute` is used, or if multiple `Normal` or `Serious` warnings were issued within a few days long period).
 
+## Tips
+
+- Create a mute role that has `Send Messages` and `Add Reactions` both disabled in all relevant text channels, and possibly `Speak` disabled in voice channels.
+- Give the mute role a clear name (like `Muted`) and a different-than-normal color (probably a darker one) to clearly indicate the user is muted.
+- You may want to add a text channel for handling issues. Make this channel only visible to muted users and moderators (and not visible to general users), and allow muted users to post in it. That way they can plead their case, request explanation of the mute, or whatever else as relevant - separated from the public channels that they've been muted in. Depending on preference, you may want to block `View Message History` permission from muted users in this channel (so they can't look at past issues) or just clear out the channel occasionally.
+
 ## Setup
 
 The `start.sh` file is used by the `restart` command and should be maintained as correct to the environment to launch a new bot program instance... points of note:
@@ -33,7 +39,8 @@ The `start.sh` file is used by the `restart` command and should be maintained as
 
 To configure the bot:
 - Create directory `config` within this bot's directory.
-- Within the `config` directory, create file `token.txt` containing only the Discord bot token (see Discord documentation for information on creating a bot user) without newlines or anything else.
+- Within the `config` directory, create file `token.txt` containing only the Discord bot token without newlines or anything else.
+    - To create a bot token, refer to official Discord documentation. Alternately, you can follow the bot-user-creation parts of https://discord.foxbot.me/docs/guides/getting_started/intro.html (ignore the coding parts, just follow the first bits about creating a bot user on the Discord application system, and getting the token).
 - Within the `config` directory, create file `config.fds` (a FreneticDataSyntax file) with the following options (See also the full file text sample below):
     - `helper_role_name` set to the name of the role for helpers (who can issue warnings).
     - `mute_role_name` set to the name of the role for muted users (given automatically by the bot).

@@ -108,14 +108,14 @@ namespace WarningBot
         /// Simple output string for general public commands.
         /// </summary>
         public static string CmdsHelp = 
-                "`help` shows help output, `hello` shows a source code link, " // TODO: listwarnings (can view own warnings, helpers can view anyone's warnings)
+                "`help` shows help output, `hello` shows a source code link, `listwarnings` views your own warnings (if any), "
                 + "...";
 
         /// <summary>
         /// Simple output string for helper commands.
         /// </summary>
         public static string CmdsHelperHelp =
-                "`warn` issues a warning to a user, "
+                "`warn` issues a warning to a user - in format `warn @User [level] [reason...]`, `listwarnings` lists warnings for any user - in format `listwarnings @User`, "
                 + "...";
 
         /// <summary>

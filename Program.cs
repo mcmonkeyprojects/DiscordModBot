@@ -42,7 +42,7 @@ namespace WarningBot
                     CurrentBot.Shutdown();
                     Environment.Exit(0);
                 }
-                // Could have more commands and/or a more advanced console command handler hhere.
+                // Could have more commands and/or a more advanced console command handler here.
             }
         }
 

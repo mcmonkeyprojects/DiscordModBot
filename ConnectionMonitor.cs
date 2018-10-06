@@ -85,6 +85,7 @@ namespace WarningBot
                 DiscordBot.Client.StopAsync().Wait();
             });
             Program.CurrentBot = new DiscordWarningBot();
+            Program.LaunchBotThread(new String[0]);
         }
 
         /// <summary>
