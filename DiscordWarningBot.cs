@@ -115,7 +115,9 @@ namespace WarningBot
         /// Simple output string for helper commands.
         /// </summary>
         public static string CmdsHelperHelp =
-                "`warn` issues a warning to a user - in format `warn @User [level] [reason...]`, `listwarnings` lists warnings for any user - in format `listwarnings @User`, "
+                "`warn` issues a warning to a user - in format `warn @User [level] [reason...]`, "
+                + "`listwarnings` lists warnings for any user - in format `listwarnings @User`, "
+                + "`unmute` removes the Muted role from a user - in format `unmute @User`, "
                 + "...";
 
         /// <summary>
@@ -163,6 +165,38 @@ namespace WarningBot
             { "instant", WarningLevel.INSTANT_MUTE },
             { "mute", WarningLevel.INSTANT_MUTE }
         };
+
+        /// <summary>
+        /// User command to remove a user's muted status.
+        /// </summary>
+        void CMD_Unmute(string[] cmds, SocketMessage message)
+        {
+            if (!IsHelper(message.Author as SocketGuildUser))
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You're not allowed to do that.").Wait();
+                return;
+            }
+            if (message.MentionedUsers.Count() != 2)
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Warnings must only `@` mention this bot and the user to be warned.").Wait();
+                return;
+            }
+            SocketUser userToUnmute = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
+            if (userToUnmute == null)
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user mention not valid?").Wait();
+                return;
+            }
+            SocketGuildUser guildUserToUnmute = userToUnmute as SocketGuildUser;
+            IRole role = guildUserToUnmute.Roles.FirstOrDefault((r) => r.Name.ToLowerInvariant() == MuteRoleName);
+            if (role == null)
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "User " + guildUserToUnmute.Username + "#" + guildUserToUnmute.Discriminator + " is not muted.").Wait();
+                return;
+            }
+            guildUserToUnmute.RemoveRoleAsync(role).Wait();
+            message.Channel.SendMessageAsync(SUCCESS_PREFIX + "<@" + message.Author.Id + "> has unmuted <@" + userToUnmute.Id + ">.").Wait();
+        }
 
         /// <summary>
         /// User command to give a warning to a user.
@@ -464,6 +498,7 @@ namespace WarningBot
             // Helper
             UserCommands["warn"] = CMD_Warn;
             UserCommands["warning"] = CMD_Warn;
+            UserCommands["unmute"] = CMD_Unmute;
             // Admin
             UserCommands["restart"] = CMD_Restart;
         }
