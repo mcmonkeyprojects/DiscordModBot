@@ -305,6 +305,8 @@ namespace WarningBot
                 return;
             }
             bool needsMute = newLevel == WarningLevel.INSTANT_MUTE;
+            int normalWarns = 0;
+            int seriousWarns = 0;
             if (newLevel == WarningLevel.NORMAL || newLevel == WarningLevel.SERIOUS)
             {
                 double warningNeed = 0.0;
@@ -317,6 +319,7 @@ namespace WarningBot
                     }
                     if (oldWarn.Level == WarningLevel.NORMAL)
                     {
+                        normalWarns++;
                         if (relative.TotalDays <= 7)
                         {
                             warningNeed += 1.5;
@@ -332,6 +335,7 @@ namespace WarningBot
                     }
                     else if (oldWarn.Level == WarningLevel.SERIOUS || oldWarn.Level == WarningLevel.INSTANT_MUTE)
                     {
+                        seriousWarns++;
                         if (relative.TotalDays <= 7)
                         {
                             warningNeed += 2.0;
@@ -361,8 +365,11 @@ namespace WarningBot
                 }
                 user.AddRoleAsync(role).Wait();
                 channel.SendMessageAsync(SUCCESS_PREFIX + "User <@" + user.Id + "> has been muted automatically by the warning system."
+                    + (newLevel == WarningLevel.INSTANT_MUTE ? " This mute was applied by moderator request (INSTANT_MUTE)." :
+                    " This mute was applied automatically due to have multiple warnings in a short period of time. User has " + normalWarns + " NORMAL and " + seriousWarns + " SERIOUS warnings within the past 30 days.")
                     + " You may not speak except in the incident handling channel."
-                    + " This mute lasts until an administrator removes it, which may in some cases take a while. " + AttentionNotice).Wait();
+                    + " This mute lasts until an administrator removes it, which may in some cases take a while. " + AttentionNotice
+                    + "\nAny user may review warnings against them at any time by typing `@WarningBot listwarnings`.").Wait();
             }
         }
 
