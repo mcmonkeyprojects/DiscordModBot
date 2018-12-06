@@ -115,7 +115,7 @@ namespace WarningBot
                 WarningFileSection.Set("seen_names." + escapedName + ".first_seen_time", StringConversionHelper.DateTimeToString(DateTimeOffset.Now, false));
             }
             Save();
-            return true;
+            return lastName != null;
         }
 
         /// <summary>
