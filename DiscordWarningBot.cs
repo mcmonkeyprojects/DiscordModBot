@@ -711,12 +711,12 @@ namespace WarningBot
                 {
                     if (IsValidAsciiName(username))
                     {
-                        user.ModifyAsync(u => u.Nickname = null);
+                        user.ModifyAsync(u => u.Nickname = "").Wait();
                         channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII nickname for <@" + user.Id + "> removed. Please only use a readable+typable US-English ASCII nickname.");
                     }
                     else
                     {
-                        user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username));
+                        user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username)).Wait();
                         channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII nickname for <@" + user.Id + "> change to a placeholder. Please change to a readable+typable US-English ASCII nickname or username.");
                     }
                 }
@@ -725,7 +725,7 @@ namespace WarningBot
             {
                 if (!IsValidAsciiName(username))
                 {
-                    user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username));
+                    user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username)).Wait();
                     channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII username for <@" + user.Id + "> has been overriden with a placeholder nickname. Please change to a readable+typable US-English ASCII nickname or username.");
                 }
             }
