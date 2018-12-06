@@ -783,50 +783,57 @@ namespace WarningBot
             };
             Client.MessageReceived += (message) =>
             {
-                if (BotMonitor.ShouldStopAllLogic())
+                try
                 {
-                    return Task.CompletedTask;
-                }
-                if (message.Author.Id == Client.CurrentUser.Id)
-                {
-                    return Task.CompletedTask;
-                }
-                BotMonitor.LoopsSilent = 0;
-                if (message.Author.IsBot || message.Author.IsWebhook)
-                {
-                    return Task.CompletedTask;
-                }
-                if (message.Channel.Name.StartsWith("@") || !(message.Channel is SocketGuildChannel sgc))
-                {
-                    Console.WriteLine("Refused message from (" + message.Author.Username + "): (Invalid Channel: " + message.Channel.Name + "): " + message.Content);
-                    return Task.CompletedTask;
-                }
-                Console.WriteLine("Parsing message from (" + message.Author.Username + "), in channel: " + message.Channel.Name + ": " + message.Content);
-                // TODO: helper ping on first post (never posted on the discord guild prior to 10 minutes ago,
-                // -> never posted in any other channel, pings a helper/dev/bot,
-                // -> and nobody else has posted in that channel since their first post) reaction,
-                // -> and if not in a help lobby redirect to help lobby (in same response)
-                string authorName = Username(message.Author);
-                if (GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, message.Author.Id).SeenUsername(authorName, out string oldName))
-                {
-                    message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Notice: User <@" + message.Author.Id + "> changed their base username from `" + oldName + "` to `" + authorName + "`.");
-                }
-                // TODO: Spam detection
-                AsciiNameRuleCheck(message.Channel, message.Author as SocketGuildUser);
-                if (message.MentionedUsers.Any((su) => su.Id == Client.CurrentUser.Id))
-                {
-                    try
+                    if (BotMonitor.ShouldStopAllLogic())
                     {
-                        Respond(message);
+                        return Task.CompletedTask;
                     }
-                    catch (Exception ex)
+                    if (message.Author.Id == Client.CurrentUser.Id)
                     {
-                        if (ex is ThreadAbortException)
+                        return Task.CompletedTask;
+                    }
+                    BotMonitor.LoopsSilent = 0;
+                    if (message.Author.IsBot || message.Author.IsWebhook)
+                    {
+                        return Task.CompletedTask;
+                    }
+                    if (message.Channel.Name.StartsWith("@") || !(message.Channel is SocketGuildChannel sgc))
+                    {
+                        Console.WriteLine("Refused message from (" + message.Author.Username + "): (Invalid Channel: " + message.Channel.Name + "): " + message.Content);
+                        return Task.CompletedTask;
+                    }
+                    Console.WriteLine("Parsing message from (" + message.Author.Username + "), in channel: " + message.Channel.Name + ": " + message.Content);
+                    // TODO: helper ping on first post (never posted on the discord guild prior to 10 minutes ago,
+                    // -> never posted in any other channel, pings a helper/dev/bot,
+                    // -> and nobody else has posted in that channel since their first post) reaction,
+                    // -> and if not in a help lobby redirect to help lobby (in same response)
+                    string authorName = Username(message.Author);
+                    if (GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, message.Author.Id).SeenUsername(authorName, out string oldName))
+                    {
+                        message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Notice: User <@" + message.Author.Id + "> changed their base username from `" + oldName + "` to `" + authorName + "`.");
+                    }
+                    // TODO: Spam detection
+                    AsciiNameRuleCheck(message.Channel, message.Author as SocketGuildUser);
+                    if (message.MentionedUsers.Any((su) => su.Id == Client.CurrentUser.Id))
+                    {
+                        try
                         {
-                            throw;
+                            Respond(message);
                         }
-                        Console.WriteLine("Error handling command: " + ex.ToString());
+                        catch (Exception ex)
+                        {
+                            if (ex is ThreadAbortException)
+                            {
+                                throw;
+                            }
+                            Console.WriteLine("Error handling command: " + ex.ToString());
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error while processing a message: " + ex);
                 }
                 return Task.CompletedTask;
             };
