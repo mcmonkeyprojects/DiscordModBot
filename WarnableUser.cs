@@ -44,7 +44,7 @@ namespace WarningBot
             }
             foreach (string key in names_section.GetRootKeys())
             {
-                yield return new KeyValuePair<string, DateTimeOffset>(FDSUtility.UnEscapeKey(key), StringConversionHelper.StringToDateTime(names_section.GetString(key)).Value);
+                yield return new KeyValuePair<string, DateTimeOffset>(FDSUtility.UnEscapeKey(key), StringConversionHelper.StringToDateTime(names_section.GetString(key + ".first_seen_time")).Value);
             }
         }
 
