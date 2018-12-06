@@ -290,12 +290,15 @@ namespace WarningBot
         void CMD_ListNames(string[] cmds, SocketMessage message)
         {
             SocketUser userToList = message.Author;
-            if (message.MentionedUsers.Count() != 2)
+            if (message.MentionedUsers.Count() > 1)
             {
-                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You must only `@` mention this bot and the user to check names for.").Wait();
-                return;
+                if (message.MentionedUsers.Count() != 2)
+                {
+                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You must only `@` mention this bot and the user to check names for.").Wait();
+                    return;
+                }
+                userToList = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
             }
-            userToList = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
             if (userToList == null)
             {
                 message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user mention not valid?").Wait();

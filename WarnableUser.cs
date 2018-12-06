@@ -38,6 +38,10 @@ namespace WarningBot
         public IEnumerable<KeyValuePair<string, DateTimeOffset>> OldNames()
         {
             FDSSection names_section = WarningFileSection.GetSection("seen_names");
+            if (names_section == null)
+            {
+                yield break;
+            }
             foreach (string key in names_section.GetRootKeys())
             {
                 yield return new KeyValuePair<string, DateTimeOffset>(FDSUtility.UnEscapeKey(key), StringConversionHelper.StringToDateTime(names_section.GetString(key)).Value);
