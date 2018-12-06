@@ -108,7 +108,9 @@ namespace WarningBot
         /// Simple output string for general public commands.
         /// </summary>
         public static string CmdsHelp = 
-                "`help` shows help output, `hello` shows a source code link, `listwarnings` views your own warnings (if any), "
+                "`help` shows help output, `hello` shows a source code link, "
+                + "`listwarnings` views your own warnings (if any), "
+                + "`listnames` views known past names of a user - in format `listnames @User`, "
                 + "...";
 
         /// <summary>
@@ -125,6 +127,7 @@ namespace WarningBot
         /// </summary>
         public static string CmdsAdminHelp =
                 "`restart` restarts the bot, "
+                + "`testname` shows a test name, "
                 + "...";
 
         /// <summary>
@@ -228,7 +231,7 @@ namespace WarningBot
             warning.Reason = string.Join(" ", cmds.Skip(1));
             Discord.Rest.RestUserMessage sentMessage = message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Warning from <@" + message.Author.Id + "> to <@" + userToWarn.Id + "> recorded.").Result;
             warning.Link = LinkToMessage(sentMessage);
-            Warn(userToWarn.Id, warning);
+            Warn((message.Channel as SocketGuildChannel).Guild.Id, userToWarn.Id, warning);
             PossibleMute(userToWarn as SocketGuildUser, message.Channel, level);
         }
 
@@ -242,7 +245,7 @@ namespace WarningBot
             {
                 if (message.MentionedUsers.Count() != 2)
                 {
-                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Warnings must only `@` mention this bot and the user to be warned.").Wait();
+                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You must only `@` mention this bot and the user to check warnings for.").Wait();
                     return;
                 }
                 userToList = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
@@ -252,7 +255,7 @@ namespace WarningBot
                     return;
                 }
             }
-            WarnableUser user = GetWarnableUser(userToList.Id);
+            WarnableUser user = GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userToList.Id);
             StringBuilder warnStringOutput = new StringBuilder();
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
             int id = 0;
@@ -278,6 +281,61 @@ namespace WarningBot
             else
             {
                 message.Channel.SendMessageAsync(SUCCESS_PREFIX + "User " + userToList.Username + "#" + userToList.Discriminator + " has the following warnings logged:\n" + warnStringOutput).Wait();
+            }
+        }
+
+        /// <summary>
+        /// User command to list user old names.
+        /// </summary>
+        void CMD_ListNames(string[] cmds, SocketMessage message)
+        {
+            SocketUser userToList = message.Author;
+            if (message.MentionedUsers.Count() != 2)
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You must only `@` mention this bot and the user to check names for.").Wait();
+                return;
+            }
+            userToList = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
+            if (userToList == null)
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user mention not valid?").Wait();
+                return;
+            }
+            WarnableUser user = GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userToList.Id);
+            List<StringBuilder> builders = new List<StringBuilder>();
+            StringBuilder nameStringOutput = new StringBuilder();
+            DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+            IEnumerable<KeyValuePair<string, DateTimeOffset>> oldNames = user.OldNames();
+            foreach (KeyValuePair<string, DateTimeOffset> old_name in user.OldNames().OrderBy((n) => n.Value.ToUnixTimeSeconds()))
+            {
+                if (nameStringOutput.Length > 1500)
+                {
+                    builders.Add(nameStringOutput);
+                    nameStringOutput = new StringBuilder();
+                }
+                nameStringOutput.Append("`" + old_name.Key + "` (first seen: " + StringConversionHelper.DateTimeToString(old_name.Value, false) + ") ... ");
+            }
+            builders.Add(nameStringOutput);
+            if (nameStringOutput.Length == 0)
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "User " + userToList.Username + "#" + userToList.Discriminator + " does not have any known names (never spoken here).").Wait();
+            }
+            else
+            {
+                message.Channel.SendMessageAsync(SUCCESS_PREFIX + "User " + userToList.Username + "#" + userToList.Discriminator + " has the following known usernames:\n" + builders[0]).Wait();
+                for (int i = 1; i < builders.Count; i++)
+                {
+                    if (i == 2 && builders.Count > 4)
+                    {
+                        message.Channel.SendMessageAsync("...(Skipped " + (builders.Count - 3) + " paragraphs of names)...").Wait();
+                        continue;
+                    }
+                    if (i > 2 && i + 1 < builders.Count)
+                    {
+                        continue;
+                    }
+                    message.Channel.SendMessageAsync("...Continued: " + builders[0]).Wait();
+                }
             }
         }
 
@@ -310,7 +368,7 @@ namespace WarningBot
             if (newLevel == WarningLevel.NORMAL || newLevel == WarningLevel.SERIOUS)
             {
                 double warningNeed = 0.0;
-                foreach (Warning oldWarn in GetWarnableUser(user.Id).GetWarnings())
+                foreach (Warning oldWarn in GetWarnableUser((channel as SocketGuildChannel).Guild.Id, user.Id).GetWarnings())
                 {
                     TimeSpan relative = DateTimeOffset.UtcNow.Subtract(oldWarn.TimeGiven);
                     if (relative.TotalDays > 30)
@@ -386,21 +444,21 @@ namespace WarningBot
         /// <summary>
         /// Warns a user (by Discord ID and pre-completed warning object).
         /// </summary>
-        public void Warn(ulong id, Warning warn)
+        public void Warn(ulong serverId, ulong id, Warning warn)
         {
             lock (WarnLock)
             {
-                GetWarnableUser(id).AddWarning(warn);
+                GetWarnableUser(serverId, id).AddWarning(warn);
             }
         }
 
         /// <summary>
         /// Gets the <see cref="WarnableUser"/> object for a Discord user (by Discord ID).
         /// </summary>
-        public WarnableUser GetWarnableUser(ulong id)
+        public WarnableUser GetWarnableUser(ulong serverId, ulong id)
         {
-            string fname = "./warnings/" + id + ".fds";
-            return new WarnableUser() { UserID = id, WarningFileSection = File.Exists(fname) ? FDSUtility.ReadFile(fname) : new FDSSection() };
+            string fname = "./warnings/" + serverId + "/" + id + ".fds";
+            return new WarnableUser() { UserID = id, ServerID = serverId, WarningFileSection = File.Exists(fname) ? FDSUtility.ReadFile(fname) : new FDSSection() };
         }
 
         /// <summary>
@@ -424,6 +482,20 @@ namespace WarningBot
             return user.Roles.Any((role) => role.Name.ToLowerInvariant() == "botcommander");
         }
 
+        /// <summary>
+        /// Outputs an ASCII name rule test name.
+        /// </summary>
+        void CMD_TestName(string[] cmds, SocketMessage message)
+        {
+            if (!IsBotCommander(message.Author as SocketGuildUser))
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Nope! That's not for you!").Wait();
+                return;
+            }
+            string name = GenerateAsciiName(string.Join(" ", cmds));
+            message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Test of ASCII-Name-Rule name generator: " + name);
+        }
+        
         /// <summary>
         /// Bot restart user command.
         /// </summary>
@@ -477,7 +549,7 @@ namespace WarningBot
         /// </summary>
         void DefaultCommands()
         {
-            // Various
+            // User
             UserCommands["help"] = CMD_Help;
             UserCommands["halp"] = CMD_Help;
             UserCommands["helps"] = CMD_Help;
@@ -493,6 +565,11 @@ namespace WarningBot
             UserCommands["github"] = CMD_Hello;
             UserCommands["git"] = CMD_Hello;
             UserCommands["hub"] = CMD_Hello;
+            UserCommands["names"] = CMD_ListNames;
+            UserCommands["listnames"] = CMD_ListNames;
+            UserCommands["listname"] = CMD_ListNames;
+            UserCommands["namelist"] = CMD_ListNames;
+            UserCommands["nameslist"] = CMD_ListNames;
             // Helper and User
             UserCommands["list"] = CMD_ListWarnings;
             UserCommands["listwarn"] = CMD_ListWarnings;
@@ -508,6 +585,7 @@ namespace WarningBot
             UserCommands["unmute"] = CMD_Unmute;
             // Admin
             UserCommands["restart"] = CMD_Restart;
+            UserCommands["testname"] = CMD_TestName;
         }
 
         /// <summary>
@@ -539,6 +617,116 @@ namespace WarningBot
         /// Monitor object to help restart the bot as needed.
         /// </summary>
         public ConnectionMonitor BotMonitor;
+
+        /// <summary>
+        /// Gets the full proper username for a user.
+        /// </summary>
+        public string Username(IUser user)
+        {
+            return user.Username.Replace('\\', '/').Replace("\r", "\\r").Replace("\n", "\\n").Replace('`', '\'') + "#" + user.Discriminator;
+        }
+
+        public static readonly string[] ASCII_NAME_PART1 = new string[] { "HEY", "hey", "YO", "yo", "YOU", "you", "EY", "ey", "" };
+        public static readonly string[] ASCII_NAME_PART2 = new string[] { "PLEASE", "please", "PLIS", "plis", "PLZ", "plz", "" };
+        public static readonly string[] ASCII_NAME_PART3 = new string[] { "USE", "use", "useA", "USEa", "TAKE", "take", "TAKEa", "takeA", "" };
+        public static readonly string[] ASCII_NAME_PART4 = new string[] { "ASCII", "ascii", "ENGLISH", "english", "us-en", "US-EN", "TYPABLE", "typable", "" };
+        public static readonly string[] ASCII_NAME_PART5 = new string[] { "NAME", "name", "USERNAME", "username", "NICKNAME", "nickname", "NICK", "nick", "" };
+
+        public Random random = new Random();
+
+        public string GenerateAsciiName(string currentName)
+        {
+            StringBuilder preLetters = new StringBuilder();
+            for (int i = 0; i < currentName.Length; i++)
+            {
+                if (IsAsciiSymbol(currentName[i]))
+                {
+                    preLetters.Append(currentName[i]);
+                }
+            }
+            string result = "a-zNameRule" + preLetters
+                + ASCII_NAME_PART1[random.Next(ASCII_NAME_PART1.Length)]
+                + ASCII_NAME_PART2[random.Next(ASCII_NAME_PART2.Length)]
+                + ASCII_NAME_PART3[random.Next(ASCII_NAME_PART3.Length)]
+                + ASCII_NAME_PART4[random.Next(ASCII_NAME_PART4.Length)]
+                + ASCII_NAME_PART5[random.Next(ASCII_NAME_PART5.Length)]
+                + random.Next(1000, 9999);
+            if (result.Length > 30)
+            {
+                result = result.Substring(0, 30);
+            }
+            return result;
+        }
+
+        public const int MIN_ASCII_LETTERS_ROW = 4;
+
+        public bool IsAsciiSymbol(char c)
+        {
+            return (c >= 'a' && c <= 'z')
+                || (c >= 'A' && c <= 'Z')
+                || (c >= '0' && c <= '9');
+        }
+
+        public bool IsValidAsciiName(string name)
+        {
+            if (name.Length < 3)
+            {
+                return false;
+            }
+            if (name.Length == 3)
+            {
+                return IsAsciiSymbol(name[0]) && IsAsciiSymbol(name[1]) && IsAsciiSymbol(name[2]);
+            }
+            for (int i = 0; i < name.Length; i++)
+            {
+                if (IsAsciiSymbol(name[i]))
+                {
+                    int x;
+                    for (x = i; x < name.Length; x++)
+                    {
+                        if (!IsAsciiSymbol(name[x]))
+                        {
+                            break;
+                        }
+                    }
+                    if (x - i >= MIN_ASCII_LETTERS_ROW)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public void AsciiNameRuleCheck(ISocketMessageChannel channel, SocketGuildUser user)
+        {
+            string nick = user.Nickname;
+            string username = user.Username;
+            if (nick != null)
+            {
+                if (!IsValidAsciiName(nick))
+                {
+                    if (IsValidAsciiName(username))
+                    {
+                        user.ModifyAsync(u => u.Nickname = null);
+                        channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII nickname for <@" + user.Id + "> removed. Please only use a readable+typable US-English ASCII nickname.");
+                    }
+                    else
+                    {
+                        user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username));
+                        channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII nickname for <@" + user.Id + "> change to a placeholder. Please change to a readable+typable US-English ASCII nickname or username.");
+                    }
+                }
+            }
+            else
+            {
+                if (!IsValidAsciiName(username))
+                {
+                    user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username));
+                    channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII username for <@" + user.Id + "> has been overriden with a placeholder nickname. Please change to a readable+typable US-English ASCII nickname or username.");
+                }
+            }
+        }
 
         /// <summary>
         /// Initializes the bot object, connects, and runs the active loop.
@@ -610,10 +798,19 @@ namespace WarningBot
                     Console.WriteLine("Refused message from (" + message.Author.Username + "): (Invalid Channel: " + message.Channel.Name + "): " + message.Content);
                     return Task.CompletedTask;
                 }
-                bool mentionedMe = message.MentionedUsers.Any((su) => su.Id == Client.CurrentUser.Id);
                 Console.WriteLine("Parsing message from (" + message.Author.Username + "), in channel: " + message.Channel.Name + ": " + message.Content);
+                // TODO: helper ping on first post (never posted on the discord guild prior to 10 minutes ago,
+                // -> never posted in any other channel, pings a helper/dev/bot,
+                // -> and nobody else has posted in that channel since their first post) reaction,
+                // -> and if not in a help lobby redirect to help lobby (in same response)
+                string authorName = Username(message.Author);
+                if (GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, message.Author.Id).SeenUsername(authorName, out string oldName))
+                {
+                    message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Notice: User <@" + message.Author.Id + "> changed their base username from `" + oldName + "` to `" + authorName + "`.");
+                }
                 // TODO: Spam detection
-                if (mentionedMe)
+                AsciiNameRuleCheck(message.Channel, message.Author as SocketGuildUser);
+                if (message.MentionedUsers.Any((su) => su.Id == Client.CurrentUser.Id))
                 {
                     try
                     {

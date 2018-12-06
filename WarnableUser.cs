@@ -31,6 +31,20 @@ namespace WarningBot
         public ulong UserID;
 
         /// <summary>
+        /// ID of the relevant Discord guild/server.
+        /// </summary>
+        public ulong ServerID;
+
+        public IEnumerable<KeyValuePair<string, DateTimeOffset>> OldNames()
+        {
+            FDSSection names_section = WarningFileSection.GetSection("seen_names");
+            foreach (string key in names_section.GetRootKeys())
+            {
+                yield return new KeyValuePair<string, DateTimeOffset>(FDSUtility.UnEscapeKey(key), StringConversionHelper.StringToDateTime(names_section.GetString(key)).Value);
+            }
+        }
+
+        /// <summary>
         /// Gets all warnings for this user, starting at most recent and going back in time.
         /// </summary>
         public IEnumerable<Warning> GetWarnings()
@@ -64,12 +78,73 @@ namespace WarningBot
         }
 
         /// <summary>
+        /// Gets or sets the last known username for this user.
+        /// Setting does not save.
+        /// </summary>
+        public string LastKnownUsername
+        {
+            get
+            {
+                return WarningFileSection.GetString("last_known_username");
+            }
+            set
+            {
+                WarningFileSection.Set("last_known_username", value);
+            }
+        }
+
+        /// <summary>
+        /// Marks a username seen for the user. If the username has changed, returns the previous username.
+        /// Returns whether the username is new (if 'true', the name is new and is in the out variable - if 'false', the name is old OR the this is the first known name for the user).
+        /// </summary>
+        public bool SeenUsername(string name, out string lastName)
+        {
+            lastName = LastKnownUsername;
+            if (lastName == name)
+            {
+                return false;
+            }
+            LastKnownUsername = name;
+            string escapedName = FDSUtility.EscapeKey(name);
+            if (!WarningFileSection.HasKey("seen_names." + escapedName + ".first_seen_time"))
+            {
+                WarningFileSection.Set("seen_names." + escapedName + ".first_seen_time", StringConversionHelper.DateTimeToString(DateTimeOffset.Now, false));
+            }
+            Save();
+            return true;
+        }
+
+        /// <summary>
+        /// Adds a comment to a base key if needed and able.
+        /// </summary>
+        public void AddCommentIfNeeded(string key, string comment)
+        {
+            FDSData data = WarningFileSection.GetData(key);
+            if (data != null && data.PrecedingComments.Count == 0)
+            {
+                data.AddComment(comment);
+            }
+        }
+
+        /// <summary>
+        /// Adds (if needed) default comments for each base level key.
+        /// </summary>
+        public void DefaultComments()
+        {
+            AddCommentIfNeeded("current_id", "Current warning ID number. Equal to the number of warnings currently listed.");
+            AddCommentIfNeeded("warnings", "All warnings listed for this user.");
+            AddCommentIfNeeded("last_known_username", "Last username seen attached to this user.");
+            AddCommentIfNeeded("seen_names", "All names seen from this user.");
+        }
+
+        /// <summary>
         /// Save the warning file.
         /// </summary>
         public void Save()
         {
             Directory.CreateDirectory("./warnings/");
-            FDSUtility.SaveToFile(WarningFileSection, "./warnings/" + UserID + ".fds");
+            Directory.CreateDirectory("./warnings/" + ServerID + "/");
+            FDSUtility.SaveToFile(WarningFileSection, "./warnings/" + ServerID + "/" + UserID + ".fds");
         }
     }
 }

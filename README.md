@@ -33,10 +33,10 @@ I made this largely for usage on servers I control and may not have documented e
 ## Setup
 
 Gathering the files note:
-- In addition to a `git clone` of this repository, you need to clone the sub-repository, using a command like `git submodule update --init --recursive`.
+- In addition to a `git clone` of this repository, you need to clone the sub-repository, using a command like `git submodule update --init --recursive` (the `start.sh` script will do this for you by default).
 
 The `start.sh` file is used by the `restart` command and should be maintained as correct to the environment to launch a new bot program instance... points of note:
-- It starts with a `git pull` command to self-update. If this is not wanted, remove it. Be careful what repository this will pull from (a fork you own vs. the original repository vs. some other one...)
+- It starts with a `git pull` command and then a `git submodule update...` command to self-update. If this is not wanted, remove it. Be careful what repository this will pull from (a fork you own vs. the original repository vs. some other one...)
 - It uses a `screen` command to launch the bot quietly into a background screen. The `screen` program must be installed for that to work. Alternately, replace it with some other equivalent background terminal program.
 - The restart command will run this script equivalently to the following terminal command: `bash ./start.sh 12345` where `12345` is the ID number for the channel that issued a restart command.
 
