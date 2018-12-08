@@ -17,7 +17,7 @@ I made this largely for usage on servers I control and may not have documented e
         - `Normal`: Standard warning. Counted towards automatic muting.
         - `Serious`: More significant than normal warning. Counted extra towardsd automatic muting.
         - `InstantMute`: Extremely significant warning. Induces an immediate automatic muting.
-    - To list the warnings of another user, a helper can type: `@Bot listwaarnings @User` where `@Bot` is a mention of this bot, and `@User` is the user to list the warnings for.
+    - To list the warnings of another user, a helper can type: `@Bot listwarnings @User` where `@Bot` is a mention of this bot, and `@User` is the user to list the warnings for.
 - At any time, a user with the `botcommander` role (create a role with this exact name if needed) can issue a `restart` command to restart the bot.
 - At any time, a user may use the commands `help` or `hello` for general information, or `listwarnings` to see their own active warnings.
 - When a user receives a warning:
@@ -48,12 +48,14 @@ To configure the bot:
     - `helper_role_name` set to the name of the role for helpers (who can issue warnings).
     - `mute_role_name` set to the name of the role for muted users (given automatically by the bot).
     - `attention_notice` set to text to append to a mute notice. You can use Discord internal format codes, including `<@12345>` where `12345` is a user's ID to create a Discord `@` mention (helpful to auto-mention an admin).
+    - `incidents_channel` set to a channel ID for where to post about a muting incident. Can be set to a list, and the first ID that's valid for any given guild will be used (useful for a bot operating across multiple Guilds).
 
 `config.fds` sample text content (the mention code is my own user ID, `mcmonkey#6666`):
 ```
 helper_role_name: helper
 attention_notice: (Attn: <@105458332365504512>)
 mute_role_name: muted
+incidents_channel: 493100185665142795
 ```
 
 To start the bot up:

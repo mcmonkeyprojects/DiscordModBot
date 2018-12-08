@@ -431,6 +431,15 @@ namespace WarningBot
                     + " You may not speak except in the incident handling channel."
                     + " This mute lasts until an administrator removes it, which may in some cases take a while. " + AttentionNotice
                     + "\nAny user may review warnings against them at any time by typing `@WarningBot listwarnings`.").Wait();
+                foreach (ulong id in IncidentChannel)
+                {
+                    SocketGuildChannel incidentChan = user.Guild.GetChannel(id);
+                    if (incidentChan != null && incidentChan is ISocketMessageChannel incidentChanText)
+                    {
+                        incidentChanText.SendMessageAsync(SUCCESS_PREFIX + "<@" + user.Id + ">, you have been automatically muted by the system due to warnings received. You may discuss the situation in this channel only, until a moderator unmutes you.").Wait();
+                        break;
+                    }
+                }
             }
         }
 
@@ -602,6 +611,11 @@ namespace WarningBot
         public string MuteRoleName;
 
         /// <summary>
+        /// The ID of the incident notice channel.
+        /// </summary>
+        public List<ulong> IncidentChannel;
+
+        /// <summary>
         /// Shuts the bot down entirely.
         /// </summary>
         public void Shutdown()
@@ -748,6 +762,7 @@ namespace WarningBot
                 HelperRoleName = ConfigFile.GetString("helper_role_name").ToLowerInvariant();
                 MuteRoleName = ConfigFile.GetString("mute_role_name").ToLowerInvariant();
                 AttentionNotice = ConfigFile.GetString("attention_notice");
+                IncidentChannel = ConfigFile.GetDataList("incidents_channel").Select(d => ObjectConversionHelper.StringToULong(d.Internal).Value).ToList();
             }
             Console.WriteLine("Loading Discord...");
             DiscordSocketConfig config = new DiscordSocketConfig();
