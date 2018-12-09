@@ -24,6 +24,20 @@ I made this largely for usage on servers I control and may not have documented e
     - That warning is recorded permanently, including metadata about it (timestamp, helper giving it, etc).
     - Depending on severity that warning can cause the bot to mute a user (if `InstantMute` is used, or if multiple `Normal` or `Serious` warnings were issued within a few days long period).
 
+# Additional Functionality
+
+- By default, WarningBot will have some additional functionalities enabled and running out-of-the-box, including:
+    - US-English ASCII name rule. The bot will enforce that users must have their visible name (nickname if present, otherwise username) be valid readable US-English ASCII.
+        - That means, characters A-Z upper/lower and 0-9.
+        - This is checked as having at least 4 such characters in a row (or a name of 3 characters exclusively having this. 2/1 character names are not allowed).
+        - If a user does not have a valid name, the bot will automatically alter their nickname.
+            - Removes then nickname if the nickname is invalid but username is fine.
+            - Otherwises, adds a generated nickname containing a randomly altered sentence telling the user to fix their name (and also alerts them in the text channel).
+        - The reasoning for this is to discourage names that a normal English speaker on an English keyboard will be neither able to read nor write, and enforces as a bare minimum 4 symbols as that should suffice to be able to type an `@` followed by the letters and select the user from the mentionable users list (note that this is the bare minimum, not the ideal).
+    - Username change tracking. If a user changes their base username (not nickname), the bot will post a message notifying of this, as well as track all known usernames and when they were first seen.
+        - The notice is posted when and where a user sends a message. If a user changes their base username but never says anything again, the bot won't even mention it.
+        - The reasoning for this is that it may be hard to keep track of users if they choose to do something like changing their base username and avatar simultaneously (it may look as though they're a whole new user).
+
 ## Tips
 
 - Create a mute role that has `Send Messages` and `Add Reactions` both disabled in all relevant text channels, and possibly `Speak` disabled in voice channels.
