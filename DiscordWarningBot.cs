@@ -640,7 +640,7 @@ namespace WarningBot
         /// </summary>
         public string Username(IUser user)
         {
-            return user.Username.Replace('\\', '/').Replace("\r", "\\r").Replace("\n", "\\n").Replace('`', '\'') + "#" + user.Discriminator;
+            return user.Username.Replace('\\', '/').Replace("\r", "/r").Replace("\n", "/n").Replace('`', '\'') + "#" + user.Discriminator;
         }
 
         public static readonly string[] ASCII_NAME_PART1 = new string[] { "HEY", "hey", "YO", "yo", "YOU", "you", "EY", "ey", "" };
@@ -796,6 +796,35 @@ namespace WarningBot
                 BotMonitor.ConnectedOnce = true;
                 return Task.CompletedTask;
             };
+            Client.UserJoined += (user) =>
+            {
+                if (BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (user.Id == Client.CurrentUser.Id)
+                {
+                    return Task.CompletedTask;
+                }
+                WarnableUser warnable = GetWarnableUser(user.Guild.Id, user.Id);
+                if (!warnable.GetWarnings().Any())
+                {
+                    Console.WriteLine("Pay no mind to user-join: " + user.Id + " to " + user.Guild.Id + "(" + user.Guild.Name + ")");
+                    return Task.CompletedTask;
+                }
+                IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
+                foreach (ulong chan in IncidentChannel)
+                {
+                    IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
+                    if (possibles.Any())
+                    {
+                        possibles.First().SendMessageAsync("User <@" + user.Id + "> (`" + Username(user) + "`) just joined, and has prior warnings. Use the `listwarnings` command to see details." + "").Wait();
+                        return Task.CompletedTask;
+                    }
+                }
+                Console.WriteLine("Failed to warn of dangerous user-join: " + user.Id + " to " + user.Guild.Id + "(" + user.Guild.Name + ")");
+                return Task.CompletedTask;
+            };
             Client.MessageReceived += (message) =>
             {
                 try
@@ -826,7 +855,7 @@ namespace WarningBot
                     string authorName = Username(message.Author);
                     if (GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, message.Author.Id).SeenUsername(authorName, out string oldName))
                     {
-                        message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Notice: User <@" + message.Author.Id + "> changed their base username from `" + oldName + "` to `" + authorName + "`.");
+                        message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Notice: User <@" + message.Author.Id + "> changed their base username from `" + oldName + "` to `" + authorName + "`.").Wait();
                     }
                     // TODO: Spam detection
                     AsciiNameRuleCheck(message.Channel, message.Author as SocketGuildUser);
