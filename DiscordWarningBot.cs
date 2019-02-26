@@ -117,7 +117,7 @@ namespace WarningBot
         /// Simple output string for helper commands.
         /// </summary>
         public static string CmdsHelperHelp =
-                "`warn` issues a warning to a user - in format `warn @User [level] [reason...]`, "
+                "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed, "
                 + "`listwarnings` lists warnings for any user - in format `listwarnings @User`, "
                 + "`unmute` removes the Muted role from a user - in format `unmute @User`, "
                 + "...";
@@ -163,6 +163,7 @@ namespace WarningBot
             { "minor", WarningLevel.MINOR },
             { "normal", WarningLevel.NORMAL },
             { "serious", WarningLevel.SERIOUS },
+            { "major", WarningLevel.SERIOUS },
             { "instant_mute", WarningLevel.INSTANT_MUTE },
             { "instantmute", WarningLevel.INSTANT_MUTE },
             { "instant", WarningLevel.INSTANT_MUTE },
@@ -209,6 +210,11 @@ namespace WarningBot
             if (!IsHelper(message.Author as SocketGuildUser))
             {
                 message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You're not allowed to do that.").Wait();
+                return;
+            }
+            if (message.MentionedUsers.Count() < 2)
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Usage: warn [user] [level] - Valid levels: `minor`, `normal`, `serious`, or `instant_mute`").Wait();
                 return;
             }
             if (message.MentionedUsers.Count() != 2)
