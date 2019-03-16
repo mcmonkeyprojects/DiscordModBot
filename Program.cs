@@ -62,6 +62,17 @@ namespace WarningBot
         public static void BotThread(Object obj)
         {
             CurrentBot.InitAndRun(obj as string[]);
+            try
+            {
+                CurrentBot.InitAndRun(obj as string[]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Discord crash: " + ex.ToString());
+                Thread.Sleep(10 * 1000);
+                Thread.CurrentThread.Name = "discordbotthread_dead" + new Random().Next(5000);
+                LaunchBotThread(new string[0]);
+            }
         }
     }
 }
