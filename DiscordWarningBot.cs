@@ -212,7 +212,7 @@ namespace WarningBot
                 message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You're not allowed to do that.").Wait();
                 return;
             }
-            if (message.MentionedUsers.Count() < 2)
+            if (message.MentionedUsers.Count() < 2 && cmds.Length < 2)
             {
                 message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Usage: warn [user] [level] - Valid levels: `minor`, `normal`, `serious`, or `instant_mute`").Wait();
                 return;
@@ -220,7 +220,7 @@ namespace WarningBot
             ulong userToWarnID;
             SocketUser userToWarn;
             int cmdPos = 0;
-            if (message.MentionedUsers.Count == 1)
+            if (message.MentionedUsers.Count == 1 && cmds.Length > 0)
             {
                 userToWarn = null;
                 if (!ulong.TryParse(cmds[0], out userToWarnID))
@@ -268,13 +268,8 @@ namespace WarningBot
         {
             SocketUser userToList = message.Author;
             ulong userToListID = userToList.Id;
-            if (IsHelper(message.Author as SocketGuildUser) && message.MentionedUsers.Count() > 1)
+            if (IsHelper(message.Author as SocketGuildUser))
             {
-                if (message.MentionedUsers.Count() != 2)
-                {
-                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You must only `@` mention this bot and the user to check warnings for.").Wait();
-                    return;
-                }
                 if (message.MentionedUsers.Count == 1 && cmds.Length > 0)
                 {
                     userToList = null;
@@ -293,6 +288,11 @@ namespace WarningBot
                         return;
                     }
                     userToListID = userToList.Id;
+                }
+                else if (message.MentionedUsers.Count > 2)
+                {
+                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You must only `@` mention this bot and the user to check warnings for.").Wait();
+                    return;
                 }
             }
             WarnableUser user = GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userToListID);
@@ -331,32 +331,29 @@ namespace WarningBot
         {
             SocketUser userToList = message.Author;
             ulong userToListID = userToList.Id;
-            if (message.MentionedUsers.Count() > 1)
+            if (message.MentionedUsers.Count == 1 && cmds.Length > 0)
             {
-                if (message.MentionedUsers.Count() != 2)
+                userToList = null;
+                if (!ulong.TryParse(cmds[0], out userToListID))
                 {
-                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You must only `@` mention this bot and the user to check names for.").Wait();
+                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user ID not valid?").Wait();
                     return;
                 }
-                if (message.MentionedUsers.Count == 1 && cmds.Length > 0)
+            }
+            else if (message.MentionedUsers.Count == 2)
+            {
+                userToList = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
+                if (userToList == null)
                 {
-                    userToList = null;
-                    if (!ulong.TryParse(cmds[0], out userToListID))
-                    {
-                        message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user ID not valid?").Wait();
-                        return;
-                    }
+                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user mention not valid?").Wait();
+                    return;
                 }
-                else if (message.MentionedUsers.Count == 2)
-                {
-                    userToList = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
-                    if (userToList == null)
-                    {
-                        message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user mention not valid?").Wait();
-                        return;
-                    }
-                    userToListID = userToList.Id;
-                }
+                userToListID = userToList.Id;
+            }
+            else if (message.MentionedUsers.Count > 2)
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You must only `@` mention this bot and the user to check names for.").Wait();
+                return;
             }
             WarnableUser user = GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userToListID);
             List<StringBuilder> builders = new List<StringBuilder>();
