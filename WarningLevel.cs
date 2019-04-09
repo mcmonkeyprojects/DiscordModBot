@@ -12,6 +12,7 @@ using Discord.WebSocket;
 using System.Diagnostics;
 using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticDataSyntax;
+using FreneticUtilities.FreneticToolkit;
 
 namespace WarningBot
 {

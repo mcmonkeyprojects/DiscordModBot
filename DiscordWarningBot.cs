@@ -11,6 +11,7 @@ using Discord;
 using Discord.WebSocket;
 using System.Diagnostics;
 using FreneticUtilities.FreneticExtensions;
+using FreneticUtilities.FreneticToolkit;
 using FreneticUtilities.FreneticDataSyntax;
 
 namespace WarningBot
@@ -813,7 +814,7 @@ namespace WarningBot
                 HelperRoleName = ConfigFile.GetString("helper_role_name").ToLowerInvariant();
                 MuteRoleName = ConfigFile.GetString("mute_role_name").ToLowerInvariant();
                 AttentionNotice = ConfigFile.GetString("attention_notice");
-                IncidentChannel = ConfigFile.GetDataList("incidents_channel").Select(d => ObjectConversionHelper.StringToULong(d.Internal).Value).ToList();
+                IncidentChannel = ConfigFile.GetDataList("incidents_channel").Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value).ToList();
             }
             Console.WriteLine("Loading Discord...");
             DiscordSocketConfig config = new DiscordSocketConfig();
