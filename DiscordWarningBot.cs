@@ -121,6 +121,7 @@ namespace WarningBot
                 "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed, "
                 + "`listwarnings` lists warnings for any user - in format `listwarnings @User`, "
                 + "`unmute` removes the Muted role from a user - in format `unmute @User`, "
+                + "`sweep` sweeps current usernames on the Discord and applies corrections as needed, "
                 + "...";
 
         /// <summary>
@@ -170,6 +171,27 @@ namespace WarningBot
             { "instant", WarningLevel.INSTANT_MUTE },
             { "mute", WarningLevel.INSTANT_MUTE }
         };
+
+        /// <summary>
+        /// User command to sweep through all current names.
+        /// </summary>
+        void CMD_Sweep(string[] cmds, SocketMessage message)
+        {
+            if (!IsHelper(message.Author as SocketGuildUser))
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You're not allowed to do that.").Wait();
+                return;
+            }
+            SocketGuildChannel channel = message.Channel as SocketGuildChannel;
+            channel.Guild.DownloadUsersAsync();
+            foreach (SocketGuildUser user in channel.Guild.Users)
+            {
+                if (AsciiNameRuleCheck(message.Channel, user))
+                {
+                    Thread.Sleep(400);
+                }
+            }
+        }
 
         /// <summary>
         /// User command to remove a user's muted status.
@@ -643,6 +665,7 @@ namespace WarningBot
             UserCommands["warnlist"] = CMD_ListWarnings;
             UserCommands["warninglist"] = CMD_ListWarnings;
             UserCommands["warningslist"] = CMD_ListWarnings;
+            UserCommands["sweep"] = CMD_Sweep;
             // Helper
             UserCommands["warn"] = CMD_Warn;
             UserCommands["warning"] = CMD_Warn;
@@ -729,11 +752,24 @@ namespace WarningBot
 
         public const int MIN_ASCII_LETTERS_ROW = 3;
 
+        public const string ANTI_LIST_TOP_SYMBOL = "·";
+
         public bool IsAsciiSymbol(char c)
         {
             return (c >= 'a' && c <= 'z')
                 || (c >= 'A' && c <= 'Z')
                 || (c >= '0' && c <= '9');
+        }
+
+        public bool IsValidFirstChar(string name)
+        {
+            if (name.StartsWith(ANTI_LIST_TOP_SYMBOL))
+            {
+                return true;
+            }
+            char c = name[0];
+            return (c >= 'a' && c <= 'z')
+                || (c >= 'A' && c <= 'Z');
         }
 
         public bool IsValidAsciiName(string name)
@@ -767,7 +803,7 @@ namespace WarningBot
             return false;
         }
 
-        public void AsciiNameRuleCheck(ISocketMessageChannel channel, SocketGuildUser user)
+        public bool AsciiNameRuleCheck(ISocketMessageChannel channel, SocketGuildUser user)
         {
             string nick = user.Nickname;
             string username = user.Username;
@@ -778,13 +814,26 @@ namespace WarningBot
                     if (IsValidAsciiName(username))
                     {
                         user.ModifyAsync(u => u.Nickname = "").Wait();
-                        channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII nickname for <@" + user.Id + "> removed. Please only use a readable+typable US-English ASCII nickname.");
+                        channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII nickname for <@" + user.Id + "> removed. Please only use a readable+typable US-English ASCII nickname.").Wait();
+                        return true;
                     }
                     else
                     {
                         user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username)).Wait();
-                        channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII nickname for <@" + user.Id + "> change to a placeholder. Please change to a readable+typable US-English ASCII nickname or username.");
+                        channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII nickname for <@" + user.Id + "> change to a placeholder. Please change to a readable+typable US-English ASCII nickname or username.").Wait();
+                        return true;
                     }
+                }
+                else if (!IsValidFirstChar(nick))
+                {
+                    if (nick.Length > 30)
+                    {
+                        nick = nick.Substring(0, 30);
+                    }
+                    user.ModifyAsync(u => u.Nickname = ANTI_LIST_TOP_SYMBOL + nick).Wait();
+                    channel.SendMessageAsync(SUCCESS_PREFIX + "Name patch: <@" + user.Id + "> had a nickname that started with a symbol or number..." 
+                        + "applied a special first symbol in place. Please start your name with a letter from A to Z. (This is to prevent users from artificially appearing at the top of the userlist).").Wait();
+                        return true;
                 }
             }
             else
@@ -792,9 +841,22 @@ namespace WarningBot
                 if (!IsValidAsciiName(username))
                 {
                     user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username)).Wait();
-                    channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII username for <@" + user.Id + "> has been overriden with a placeholder nickname. Please change to a readable+typable US-English ASCII nickname or username.");
+                    channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII username for <@" + user.Id + "> has been overriden with a placeholder nickname. Please change to a readable+typable US-English ASCII nickname or username.").Wait();
+                        return true;
+                }
+                else if (!IsValidFirstChar(username))
+                {
+                    if (username.Length > 30)
+                    {
+                        username = username.Substring(0, 30);
+                    }
+                    user.ModifyAsync(u => u.Nickname = ANTI_LIST_TOP_SYMBOL + username).Wait();
+                    channel.SendMessageAsync(SUCCESS_PREFIX + "Name patch: <@" + user.Id + "> had a nickname that started with a symbol or number..." 
+                        + "applied a special first symbol in place. Please start your name with a letter from A to Z. (This is to prevent users from artificially appearing at the top of the userlist).").Wait();
+                        return true;
                 }
             }
+            return false;
         }
 
         /// <summary>
