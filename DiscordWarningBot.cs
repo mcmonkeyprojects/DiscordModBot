@@ -726,7 +726,7 @@ namespace WarningBot
             return result;
         }
 
-        public const int MIN_ASCII_LETTERS_ROW = 4;
+        public const int MIN_ASCII_LETTERS_ROW = 3;
 
         public bool IsAsciiSymbol(char c)
         {
