@@ -61,7 +61,6 @@ namespace WarningBot
         /// </summary>
         public static void BotThread(Object obj)
         {
-            CurrentBot.InitAndRun(obj as string[]);
             try
             {
                 CurrentBot.InitAndRun(obj as string[]);
