@@ -736,7 +736,7 @@ namespace WarningBot
                     preLetters.Append(currentName[i]);
                 }
             }
-            string result = "a-zNameRule" + preLetters
+            string result = "NameRule" + preLetters
                 + ASCII_NAME_PART1[random.Next(ASCII_NAME_PART1.Length)]
                 + ASCII_NAME_PART2[random.Next(ASCII_NAME_PART2.Length)]
                 + ASCII_NAME_PART3[random.Next(ASCII_NAME_PART3.Length)]
