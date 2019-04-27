@@ -52,7 +52,7 @@ namespace WarningBot
         public static void LaunchBotThread(string[] args)
         {
             Thread thr = new Thread(new ParameterizedThreadStart(BotThread));
-            thr.Name = "discordwarningbot";
+            thr.Name = "discordwarningbot" + new Random().Next(5000);
             thr.Start(args);
         }
 
