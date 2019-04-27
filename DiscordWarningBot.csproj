@@ -8,14 +8,8 @@
     <LangVersion>Latest</LangVersion>
     <Product>DiscordWarningBot</Product>
     <PackageId>DiscordWarningBot</PackageId>
-    <Copyright>Copyright (C) mcmonkey4eva 2018</Copyright>
+    <Copyright>Copyright (C) mcmonkey4eva 2018-2019</Copyright>
   </PropertyGroup>
-  <ItemGroup>
-    <None Include="NuGet.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="**\*.resx" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.0.1" />
     <PackageReference Include="Discord.Net.WebSocket" Version="2.0.1" />
