@@ -763,6 +763,10 @@ namespace WarningBot
 
         public bool IsValidFirstChar(string name)
         {
+            if (!EnforceNameStartRule)
+            {
+                return true;
+            }
             if (name.StartsWith(ANTI_LIST_TOP_SYMBOL))
             {
                 return true;
@@ -774,6 +778,10 @@ namespace WarningBot
 
         public bool IsValidAsciiName(string name)
         {
+            if (!EnforceAsciiNameRule)
+            {
+                return true;
+            }
             if (name.Length < 3)
             {
                 return false;
@@ -859,6 +867,10 @@ namespace WarningBot
             return false;
         }
 
+        public bool EnforceAsciiNameRule = true;
+
+        public bool EnforceNameStartRule = false;
+
         /// <summary>
         /// Initializes the bot object, connects, and runs the active loop.
         /// </summary>
@@ -877,6 +889,8 @@ namespace WarningBot
                 MuteRoleName = ConfigFile.GetString("mute_role_name").ToLowerInvariant();
                 AttentionNotice = ConfigFile.GetString("attention_notice");
                 IncidentChannel = ConfigFile.GetDataList("incidents_channel").Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value).ToList();
+                EnforceAsciiNameRule = ConfigFile.GetBool("enforce_ascii_name_rule", EnforceAsciiNameRule).Value;
+                EnforceNameStartRule = ConfigFile.GetBool("enforce_name_start_rule", EnforceNameStartRule).Value;
             }
             Console.WriteLine("Loading Discord...");
             DiscordSocketConfig config = new DiscordSocketConfig();
