@@ -118,7 +118,7 @@ namespace WarningBot
         /// Simple output string for helper commands.
         /// </summary>
         public static string CmdsHelperHelp =
-                "`note` leaves a note about a user e- in format `note @User [message...]`, "
+                "`note` leaves a note about a user - in format `note @User [message...]`, "
                 + "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed, "
                 + "`listnotes` lists notes and warnings for any user - in format `listnotes @User`, "
                 + "`unmute` removes the Muted role from a user - in format `unmute @User`, "
