@@ -22,6 +22,10 @@ namespace WarningBot
     public enum WarningLevel : int
     {
         /// <summary>
+        /// Not a real warning, just a note.
+        /// </summary>
+        NOTE = -1,
+        /// <summary>
         /// Automatically given warning.
         /// </summary>
         AUTO = 0,

@@ -110,7 +110,7 @@ namespace WarningBot
         /// </summary>
         public static string CmdsHelp = 
                 "`help` shows help output, `hello` shows a source code link, "
-                + "`listwarnings` views your own warnings (if any), "
+                + "`listnotes` views your own notes and warnings (if any), "
                 + "`listnames` views known past names of a user - in format `listnames @User`, "
                 + "...";
 
@@ -118,8 +118,9 @@ namespace WarningBot
         /// Simple output string for helper commands.
         /// </summary>
         public static string CmdsHelperHelp =
-                "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed, "
-                + "`listwarnings` lists warnings for any user - in format `listwarnings @User`, "
+                "`note` leaves a note about a user e- in format `note @User [message...]`, "
+                + "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed, "
+                + "`listnotes` lists notes and warnings for any user - in format `listnotes @User`, "
                 + "`unmute` removes the Muted role from a user - in format `unmute @User`, "
                 + "`sweep` sweeps current usernames on the Discord and applies corrections as needed, "
                 + "...";
@@ -162,6 +163,7 @@ namespace WarningBot
         /// </summary>
         public static Dictionary<string, WarningLevel> LevelsTypable = new Dictionary<string, WarningLevel>()
         {
+            { "note", WarningLevel.NOTE },
             { "minor", WarningLevel.MINOR },
             { "normal", WarningLevel.NORMAL },
             { "serious", WarningLevel.SERIOUS },
@@ -226,6 +228,54 @@ namespace WarningBot
         }
 
         /// <summary>
+        /// User command to add a note to a user.
+        /// </summary>
+        void CMD_Note(string[] cmds, SocketMessage message)
+        {
+            if (!IsHelper(message.Author as SocketGuildUser))
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "You're not allowed to do that.").Wait();
+                return;
+            }
+            if (message.MentionedUsers.Count() < 2 && cmds.Length < 2)
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Usage: note [user] [message]").Wait();
+                return;
+            }
+            ulong userToWarnID;
+            SocketUser userToWarn;
+            if (message.MentionedUsers.Count == 1 && cmds.Length > 0)
+            {
+                userToWarn = null;
+                if (!ulong.TryParse(cmds[0], out userToWarnID))
+                {
+                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user ID not valid?").Wait();
+                    return;
+                }
+            }
+            else if (message.MentionedUsers.Count == 2)
+            {
+                userToWarn = message.MentionedUsers.FirstOrDefault((su) => su.Id != Client.CurrentUser.Id);
+                if (userToWarn == null)
+                {
+                    message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user mention not valid?").Wait();
+                    return;
+                }
+                userToWarnID = userToWarn.Id;
+            }
+            else
+            {
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Notes must only `@` mention this bot and the user to leave a note on.").Wait();
+                return;
+            }
+            Warning warning = new Warning() { GivenTo = userToWarnID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
+            warning.Reason = string.Join(" ", cmds.Skip(1));
+            Discord.Rest.RestUserMessage sentMessage = message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Note from <@" + message.Author.Id + "> to <@" + userToWarnID + "> recorded.").Result;
+            warning.Link = LinkToMessage(sentMessage);
+            Warn((message.Channel as SocketGuildChannel).Guild.Id, userToWarnID, warning);
+        }
+
+        /// <summary>
         /// User command to give a warning to a user.
         /// </summary>
         void CMD_Warn(string[] cmds, SocketMessage message)
@@ -237,7 +287,7 @@ namespace WarningBot
             }
             if (message.MentionedUsers.Count() < 2 && cmds.Length < 2)
             {
-                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Usage: warn [user] [level] - Valid levels: `minor`, `normal`, `serious`, or `instant_mute`").Wait();
+                message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Usage: warn [user] [level] [reason] - Valid levels: `minor`, `normal`, `serious`, or `instant_mute`").Wait();
                 return;
             }
             ulong userToWarnID;
@@ -658,6 +708,8 @@ namespace WarningBot
             UserCommands["nameslist"] = CMD_ListNames;
             // Helper and User
             UserCommands["list"] = CMD_ListWarnings;
+            UserCommands["listnote"] = CMD_ListWarnings;
+            UserCommands["listnotes"] = CMD_ListWarnings;
             UserCommands["listwarn"] = CMD_ListWarnings;
             UserCommands["listwarns"] = CMD_ListWarnings;
             UserCommands["listwarning"] = CMD_ListWarnings;
@@ -665,11 +717,12 @@ namespace WarningBot
             UserCommands["warnlist"] = CMD_ListWarnings;
             UserCommands["warninglist"] = CMD_ListWarnings;
             UserCommands["warningslist"] = CMD_ListWarnings;
-            UserCommands["sweep"] = CMD_Sweep;
             // Helper
+            UserCommands["note"] = CMD_Note;
             UserCommands["warn"] = CMD_Warn;
             UserCommands["warning"] = CMD_Warn;
             UserCommands["unmute"] = CMD_Unmute;
+            UserCommands["sweep"] = CMD_Sweep;
             // Admin
             UserCommands["restart"] = CMD_Restart;
             UserCommands["testname"] = CMD_TestName;
