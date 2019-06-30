@@ -744,6 +744,11 @@ namespace WarningBot
         public List<ulong> IncidentChannel;
 
         /// <summary>
+        /// The ID of the join log message channel.
+        /// </summary>
+        public List<ulong> JoinNotifChannel;
+
+        /// <summary>
         /// Shuts the bot down entirely.
         /// </summary>
         public void Shutdown()
@@ -944,6 +949,7 @@ namespace WarningBot
                 IncidentChannel = ConfigFile.GetDataList("incidents_channel").Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value).ToList();
                 EnforceAsciiNameRule = ConfigFile.GetBool("enforce_ascii_name_rule", EnforceAsciiNameRule).Value;
                 EnforceNameStartRule = ConfigFile.GetBool("enforce_name_start_rule", EnforceNameStartRule).Value;
+                JoinNotifChannel = ConfigFile.GetDataList("join_notif_channel")?.Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value)?.ToList() ?? new List<ulong>();
             }
             Console.WriteLine("Loading Discord...");
             DiscordSocketConfig config = new DiscordSocketConfig();
@@ -988,12 +994,20 @@ namespace WarningBot
                     return Task.CompletedTask;
                 }
                 WarnableUser warnable = GetWarnableUser(user.Guild.Id, user.Id);
+                IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
+                foreach (ulong chan in JoinNotifChannel)
+                {
+                    IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
+                    if (possibles.Any())
+                    {
+                        possibles.First().SendMessageAsync("User `" + Username(user) + "` (`" + user.Id + "`) joined." + "").Wait();
+                    }
+                }
                 if (!warnable.GetWarnings().Any())
                 {
                     Console.WriteLine("Pay no mind to user-join: " + user.Id + " to " + user.Guild.Id + "(" + user.Guild.Name + ")");
                     return Task.CompletedTask;
                 }
-                IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
                 foreach (ulong chan in IncidentChannel)
                 {
                     IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
