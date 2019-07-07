@@ -217,6 +217,9 @@ namespace WarningBot
                 return;
             }
             SocketGuildUser guildUserToUnmute = userToUnmute as SocketGuildUser;
+            WarnableUser warnable = GetWarnableUser(guildUserToUnmute.Guild.Id, guildUserToUnmute.Id);
+            warnable.IsMuted = false;
+            warnable.Save();
             IRole role = guildUserToUnmute.Roles.FirstOrDefault((r) => r.Name.ToLowerInvariant() == MuteRoleName);
             if (role == null)
             {
@@ -549,6 +552,9 @@ namespace WarningBot
                     return;
                 }
                 user.AddRoleAsync(role).Wait();
+                WarnableUser warnable = GetWarnableUser(user.Guild.Id, user.Id);
+                warnable.IsMuted = true;
+                warnable.Save();
                 channel.SendMessageAsync(SUCCESS_PREFIX + "User <@" + user.Id + "> has been muted automatically by the warning system."
                     + (newLevel == WarningLevel.INSTANT_MUTE ? " This mute was applied by moderator request (INSTANT_MUTE)." :
                     " This mute was applied automatically due to have multiple warnings in a short period of time. User has " + normalWarns + " NORMAL and " + seriousWarns + " SERIOUS warnings within the past 30 days.")
@@ -1008,12 +1014,28 @@ namespace WarningBot
                     Console.WriteLine("Pay no mind to user-join: " + user.Id + " to " + user.Guild.Id + "(" + user.Guild.Name + ")");
                     return Task.CompletedTask;
                 }
+                if (warnable.IsMuted)
+                {
+                    SocketRole role = user.Guild.Roles.FirstOrDefault((r) => r.Name.ToLowerInvariant() == MuteRoleName);
+                    if (role == null)
+                    {
+                        Console.WriteLine("Cannot apply mute: no muted role found.");
+                    }
+                    else
+                    {
+                        user.AddRoleAsync(role).Wait();
+                    }
+                }
                 foreach (ulong chan in IncidentChannel)
                 {
                     IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
                     if (possibles.Any())
                     {
                         possibles.First().SendMessageAsync("User <@" + user.Id + "> (`" + Username(user) + "`) just joined, and has prior warnings. Use the `listwarnings` command to see details." + "").Wait();
+                        if (warnable.IsMuted)
+                        {
+                            possibles.First().SendMessageAsync(SUCCESS_PREFIX + "<@" + user.Id + ">, you have been automatically muted by the system due to being muted and then rejoining the Discord. You may discuss the situation in this channel only, until a moderator unmutes you.").Wait();
+                        }
                         return Task.CompletedTask;
                     }
                 }

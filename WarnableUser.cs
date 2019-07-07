@@ -50,6 +50,22 @@ namespace WarningBot
         }
 
         /// <summary>
+        /// Gets or sets the muted status for this user.
+        /// Setting does not save.
+        /// </summary>
+        public bool IsMuted
+        {
+            get
+            {
+                return WarningFileSection.GetBool("is_muted", false).Value;
+            }
+            set
+            {
+                WarningFileSection.Set("is_muted", value);
+            }
+        }
+
+        /// <summary>
         /// Gets all warnings for this user, starting at most recent and going back in time.
         /// </summary>
         public IEnumerable<Warning> GetWarnings()
@@ -140,16 +156,23 @@ namespace WarningBot
             AddCommentIfNeeded("warnings", "All warnings listed for this user.");
             AddCommentIfNeeded("last_known_username", "Last username seen attached to this user.");
             AddCommentIfNeeded("seen_names", "All names seen from this user.");
+            AddCommentIfNeeded("is_muted", "Whether this user is muted (or should be).");
         }
+
+        public static Object SaveLock = new Object();
 
         /// <summary>
         /// Save the warning file.
         /// </summary>
         public void Save()
         {
-            Directory.CreateDirectory("./warnings/");
-            Directory.CreateDirectory("./warnings/" + ServerID + "/");
-            FDSUtility.SaveToFile(WarningFileSection, "./warnings/" + ServerID + "/" + UserID + ".fds");
+            DefaultComments();
+            lock (SaveLock)
+            {
+                Directory.CreateDirectory("./warnings/");
+                Directory.CreateDirectory("./warnings/" + ServerID + "/");
+                FDSUtility.SaveToFile(WarningFileSection, "./warnings/" + ServerID + "/" + UserID + ".fds");
+            }
         }
     }
 }
