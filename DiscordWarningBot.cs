@@ -247,6 +247,7 @@ namespace WarningBot
             }
             ulong userToWarnID;
             SocketUser userToWarn;
+            IEnumerable<string> cmdsToSave = cmds;
             if (message.MentionedUsers.Count == 1 && cmds.Length > 0)
             {
                 userToWarn = null;
@@ -255,6 +256,7 @@ namespace WarningBot
                     message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user ID not valid?").Wait();
                     return;
                 }
+                cmdsToSave = cmdsToSave.Skip(1);
             }
             else if (message.MentionedUsers.Count == 2)
             {
@@ -272,7 +274,7 @@ namespace WarningBot
                 return;
             }
             Warning warning = new Warning() { GivenTo = userToWarnID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
-            warning.Reason = string.Join(" ", cmds);
+            warning.Reason = string.Join(" ", cmdsToSave);
             Discord.Rest.RestUserMessage sentMessage = message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Note from <@" + message.Author.Id + "> to <@" + userToWarnID + "> recorded.").Result;
             warning.Link = LinkToMessage(sentMessage);
             Warn((message.Channel as SocketGuildChannel).Guild.Id, userToWarnID, warning);
