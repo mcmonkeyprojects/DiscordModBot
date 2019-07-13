@@ -272,7 +272,7 @@ namespace WarningBot
                 return;
             }
             Warning warning = new Warning() { GivenTo = userToWarnID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
-            warning.Reason = string.Join(" ", cmds.Skip(1));
+            warning.Reason = string.Join(" ", cmds);
             Discord.Rest.RestUserMessage sentMessage = message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Note from <@" + message.Author.Id + "> to <@" + userToWarnID + "> recorded.").Result;
             warning.Link = LinkToMessage(sentMessage);
             Warn((message.Channel as SocketGuildChannel).Guild.Id, userToWarnID, warning);
