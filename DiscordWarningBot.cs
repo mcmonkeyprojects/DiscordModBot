@@ -389,7 +389,7 @@ namespace WarningBot
                 string giverLabel = (giver == null) ? ("DiscordID:" + warned.GivenBy) : (giver.Username + "#" + giver.Discriminator);
                 string reason = (warned.Reason.Length > 250) ? (warned.Reason.Substring(0, 250) + "(... trimmed ...)") : warned.Reason;
                 reason = reason.Replace('\\', '/').Replace('`', '\'');
-                warnStringOutput.Append("... " + warned.Level + " warning given at " + StringConversionHelper.DateTimeToString(warned.TimeGiven, false)
+                warnStringOutput.Append("... " + warned.Level + (warned.Level == WarningLevel.NOTE ? "" : " warning") + " given at " + StringConversionHelper.DateTimeToString(warned.TimeGiven, false)
                     + " by " + giverLabel + " with reason: `" + reason + "` ... for detail see: " + warned.Link + "\n");
             }
             if (warnStringOutput.Length == 0)
