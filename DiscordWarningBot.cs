@@ -848,9 +848,13 @@ namespace WarningBot
             {
                 return true;
             }
-            if (name.Length < 3)
+            if (name.Length < 2)
             {
                 return false;
+            }
+            if (name.Length == 2)
+            {
+                return IsAsciiSymbol(name[0]) && IsAsciiSymbol(name[1]);
             }
             if (name.Length == 3)
             {
