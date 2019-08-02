@@ -306,6 +306,7 @@ namespace WarningBot
                     message.Channel.SendMessageAsync(REFUSAL_PREFIX + "Something went wrong - user ID not valid?").Wait();
                     return;
                 }
+                userToWarn = (message.Channel as SocketGuildChannel).Guild.GetUser(userToWarnID);
                 cmdPos = 1;
             }
             else if (message.MentionedUsers.Count == 2)
@@ -332,10 +333,19 @@ namespace WarningBot
             warning.Reason = string.Join(" ", cmds.Skip(1));
             Discord.Rest.RestUserMessage sentMessage = message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Warning from <@" + message.Author.Id + "> to <@" + userToWarnID + "> recorded.").Result;
             warning.Link = LinkToMessage(sentMessage);
-            Warn((message.Channel as SocketGuildChannel).Guild.Id, userToWarnID, warning);
+            WarnableUser warnUser = Warn((message.Channel as SocketGuildChannel).Guild.Id, userToWarnID, warning);
             if (userToWarn != null)
             {
                 PossibleMute(userToWarn as SocketGuildUser, message.Channel, level);
+            }
+            else if (level == WarningLevel.INSTANT_MUTE)
+            {
+                lock (WarnLock)
+                {
+                    warnUser.IsMuted = true;
+                    warnUser.Save();
+                }
+                message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Mute applied for next rejoin.").Wait();
             }
         }
 
@@ -588,11 +598,13 @@ namespace WarningBot
         /// <summary>
         /// Warns a user (by Discord ID and pre-completed warning object).
         /// </summary>
-        public void Warn(ulong serverId, ulong id, Warning warn)
+        public WarnableUser Warn(ulong serverId, ulong id, Warning warn)
         {
             lock (WarnLock)
             {
-                GetWarnableUser(serverId, id).AddWarning(warn);
+                WarnableUser user = GetWarnableUser(serverId, id);
+                user.AddWarning(warn);
+                return user;
             }
         }
 
