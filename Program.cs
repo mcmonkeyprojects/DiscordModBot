@@ -13,7 +13,7 @@ using System.Diagnostics;
 using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticDataSyntax;
 
-namespace WarningBot
+namespace ModBot
 {
     /// <summary>
     /// General program entry and handler.
@@ -23,14 +23,14 @@ namespace WarningBot
         /// <summary>
         /// The current bot object (the instance will change if the bot is restarted).
         /// </summary>
-        public static DiscordWarningBot CurrentBot = null;
+        public static DiscordModBot CurrentBot = null;
 
         /// <summary>
         /// Software entry point - starts the bot.
         /// </summary>
         static void Main(string[] args)
         {
-            CurrentBot = new DiscordWarningBot();
+            CurrentBot = new DiscordModBot();
             LaunchBotThread(args);
             while (true)
             {
@@ -52,7 +52,7 @@ namespace WarningBot
         public static void LaunchBotThread(string[] args)
         {
             Thread thr = new Thread(new ParameterizedThreadStart(BotThread));
-            thr.Name = "discordwarningbot" + new Random().Next(5000);
+            thr.Name = "discordmodbot" + new Random().Next(5000);
             thr.Start(args);
         }
 

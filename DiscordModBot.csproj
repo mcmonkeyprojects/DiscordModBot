@@ -2,12 +2,12 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <RootNamespace>DiscordWarningBot</RootNamespace>
-    <AssemblyName>DiscordWarningBot</AssemblyName>
+    <RootNamespace>DiscordModBot</RootNamespace>
+    <AssemblyName>DiscordModBot</AssemblyName>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
-    <Product>DiscordWarningBot</Product>
-    <PackageId>DiscordWarningBot</PackageId>
+    <Product>DiscordModBot</Product>
+    <PackageId>DiscordModBot</PackageId>
     <Copyright>Copyright (C) mcmonkey4eva 2018-2019</Copyright>
   </PropertyGroup>
   <ItemGroup>

@@ -14,12 +14,12 @@ using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticToolkit;
 using FreneticUtilities.FreneticDataSyntax;
 
-namespace WarningBot
+namespace ModBot
 {
     /// <summary>
-    /// Discord bot for handling helper-given warnings.
+    /// Discord bot for handling helper-given warnings and other moderation tools.
     /// </summary>
-    public class DiscordWarningBot
+    public class DiscordModBot
     {
         /// <summary>
         /// Configuration folder path.
@@ -39,12 +39,12 @@ namespace WarningBot
         /// <summary>
         /// Prefix for when the bot successfully handles user input.
         /// </summary>
-        public const string SUCCESS_PREFIX = "+ WarningBot: ";
+        public const string SUCCESS_PREFIX = "+ ModBot: ";
 
         /// <summary>
         /// Prefix for when the bot refuses user input.
         /// </summary>
-        public const string REFUSAL_PREFIX = "- WarningBot: ";
+        public const string REFUSAL_PREFIX = "- ModBot: ";
 
         /// <summary>
         /// Bot token, read from config data.
@@ -155,7 +155,7 @@ namespace WarningBot
         /// </summary>
         void CMD_Hello(string[] cmds, SocketMessage message)
         {
-            message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Hi! I'm a bot! Find my source code at https://github.com/mcmonkeyprojects/DiscordWarningBot").Wait();
+            message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Hi! I'm a bot! Find my source code at https://github.com/mcmonkeyprojects/DiscordModBot").Wait();
         }
 
         /// <summary>
@@ -572,7 +572,7 @@ namespace WarningBot
                     " This mute was applied automatically due to have multiple warnings in a short period of time. User has " + normalWarns + " NORMAL and " + seriousWarns + " SERIOUS warnings within the past 30 days.")
                     + " You may not speak except in the incident handling channel."
                     + " This mute lasts until an administrator removes it, which may in some cases take a while. " + AttentionNotice
-                    + "\nAny user may review warnings against them at any time by typing `@WarningBot listwarnings`.").Wait();
+                    + "\nAny user may review warnings against them at any time by typing `@ModBot listwarnings`.").Wait();
                 foreach (ulong id in IncidentChannel)
                 {
                     SocketGuildChannel incidentChan = user.Guild.GetChannel(id);

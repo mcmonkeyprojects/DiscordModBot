@@ -13,7 +13,7 @@ using System.Diagnostics;
 using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticDataSyntax;
 
-namespace WarningBot
+namespace ModBot
 {
     /// <summary>
     /// Helper to monitor a Discord bot's connectivity.
@@ -23,12 +23,12 @@ namespace WarningBot
         /// <summary>
         /// The bot to monitor.
         /// </summary>
-        public DiscordWarningBot DiscordBot;
+        public DiscordModBot DiscordBot;
 
         /// <summary>
         /// Initializes the connection monitor. Call <see cref="StartMonitorLoop"/> to start the monitor loop.
         /// </summary>
-        public ConnectionMonitor(DiscordWarningBot bot)
+        public ConnectionMonitor(DiscordModBot bot)
         {
             DiscordBot = bot;
         }
@@ -84,7 +84,7 @@ namespace WarningBot
             {
                 DiscordBot.Client.StopAsync().Wait();
             });
-            Program.CurrentBot = new DiscordWarningBot();
+            Program.CurrentBot = new DiscordModBot();
             Program.LaunchBotThread(new String[0]);
         }
 

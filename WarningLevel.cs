@@ -14,7 +14,7 @@ using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticDataSyntax;
 using FreneticUtilities.FreneticToolkit;
 
-namespace WarningBot
+namespace ModBot
 {
     /// <summary>
     /// Possibly warning levels (how serious a warning is).

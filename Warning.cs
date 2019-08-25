@@ -14,7 +14,7 @@ using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticDataSyntax;
 using FreneticUtilities.FreneticToolkit;
 
-namespace WarningBot
+namespace ModBot
 {
     /// <summary>
     /// Represents a single warning given to a user.

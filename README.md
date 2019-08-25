@@ -1,4 +1,4 @@
-# DiscordWarningBot
+# DiscordModBot
 
 This is a C#/.NETCore based Discord bot.
 
@@ -8,7 +8,7 @@ Created by mcmonkey4eva for use on my own Discord groups, though made available 
 
 I made this largely for usage on servers I control and may not have documented everything super thoroughly or made it as customizable as possible. If you're unsure how to use it or you want better customization options, please feel free to contact me to ask - either post an issue on GitHub, or send a DM to me (`mcmonkey#6666`) on Discord (GitHub issues are preferred for project-related contact).
 
-## How It Works
+## How Warnings Work
 
 - A Discord bot user, controlled by this program, will sit idly in your Discord guild.
 - At any time, a 'helper' ranked user (a role to give to moderators, name can be changed in config) can issue a `warn` or `listwarnings` command on any other user.
@@ -26,7 +26,7 @@ I made this largely for usage on servers I control and may not have documented e
 
 # Additional Functionality
 
-- By default, WarningBot will have some additional functionalities enabled and running out-of-the-box, including:
+- By default, ModBot will have some additional functionalities enabled and running out-of-the-box, including:
     - US-English ASCII name rule. The bot will enforce that users must have their visible name (nickname if present, otherwise username) be valid readable US-English ASCII.
         - That means, characters A-Z upper/lower and 0-9.
         - This is checked as having at least 4 such characters in a row (or a name of 3 characters exclusively having this. 2/1 character names are not allowed).
@@ -82,7 +82,7 @@ To start the bot up:
 - Run `./start.sh` while in the bot's directory (You made need to run `chmod +x ./start.sh` first).
 
 To view the bot's terminal:
-- Connect to the screen - with an unaltered `start.sh` file, the way to connect to that is by running `screen -r DiscordWarningBot`.
+- Connect to the screen - with an unaltered `start.sh` file, the way to connect to that is by running `screen -r DiscordModBot`.
 
 ## Copyright/Legal Info
 
