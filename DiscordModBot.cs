@@ -1149,6 +1149,11 @@ namespace ModBot
             };
             Client.MessageUpdated += (cache, message, channel) =>
             {
+                if (cache.HasValue && cache.Value.Content == message.Content)
+                {
+                    // Its a reaction/embed load/similar, ignore it.
+                    return Task.CompletedTask;
+                }
                 LogChannelActivity(channel.Id, (embed) =>
                 {
                     embed.Title = "Message Edited";
