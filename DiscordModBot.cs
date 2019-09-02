@@ -1154,6 +1154,7 @@ namespace ModBot
                     embed.Title = "Message Edited";
                     embed.AddField("Author", $"<@{message.Author.Id}>", true);
                     embed.AddField("Channel", $"<#{channel.Id}>", true);
+                    embed.ThumbnailUrl = cache.Value.Author.GetAvatarUrl();
                     if (!cache.HasValue)
                     {
                         embed.AddField("Original Post", "(Not cached)");
@@ -1189,6 +1190,7 @@ namespace ModBot
                     else
                     {
                         embed.AddField("Author", $"<@{cache.Value.Author.Id}>", true);
+                        embed.ThumbnailUrl = cache.Value.Author.GetAvatarUrl();
                         string content = cache.Value.Content.Replace('`', '\'').Replace('\\', '/');
                         if (content.Length > 700)
                         {
