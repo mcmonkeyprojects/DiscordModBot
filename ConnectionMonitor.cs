@@ -108,8 +108,10 @@ namespace ModBot
         /// </summary>
         public void StartMonitorLoop()
         {
-            Thread thr = new Thread(new ThreadStart(LoopUntilFail));
-            thr.Name = "connectionmonitor";
+            Thread thr = new Thread(new ThreadStart(LoopUntilFail))
+            {
+                Name = "connectionmonitor"
+            };
             thr.Start();
         }
 

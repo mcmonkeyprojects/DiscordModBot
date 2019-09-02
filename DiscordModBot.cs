@@ -904,13 +904,13 @@ namespace ModBot
                     if (IsValidAsciiName(username))
                     {
                         user.ModifyAsync(u => u.Nickname = "").Wait();
-                        channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII nickname for <@" + user.Id + "> removed. Please only use a readable+typable US-English ASCII nickname.").Wait();
+                        channel.SendMessageAsync(SUCCESS_PREFIX + $"Non-ASCII nickname for <@{user.Id}> removed. Please only use a readable+typable US-English ASCII nickname.").Wait();
                         return true;
                     }
                     else
                     {
                         user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username)).Wait();
-                        channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII nickname for <@" + user.Id + "> change to a placeholder. Please change to a readable+typable US-English ASCII nickname or username.").Wait();
+                        channel.SendMessageAsync(SUCCESS_PREFIX + $"Non-ASCII nickname for <@{user.Id}> change to a placeholder. Please change to a readable+typable US-English ASCII nickname or username.").Wait();
                         return true;
                     }
                 }
@@ -921,7 +921,7 @@ namespace ModBot
                         nick = nick.Substring(0, 30);
                     }
                     user.ModifyAsync(u => u.Nickname = ANTI_LIST_TOP_SYMBOL + nick).Wait();
-                    channel.SendMessageAsync(SUCCESS_PREFIX + "Name patch: <@" + user.Id + "> had a nickname that started with a symbol or number..." 
+                    channel.SendMessageAsync(SUCCESS_PREFIX + $"Name patch: <@{user.Id}> had a nickname that started with a symbol or number..." 
                         + "applied a special first symbol in place. Please start your name with a letter from A to Z. (This is to prevent users from artificially appearing at the top of the userlist).").Wait();
                         return true;
                 }
@@ -931,7 +931,7 @@ namespace ModBot
                 if (!IsValidAsciiName(username))
                 {
                     user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username)).Wait();
-                    channel.SendMessageAsync(SUCCESS_PREFIX + "Non-ASCII username for <@" + user.Id + "> has been overriden with a placeholder nickname. Please change to a readable+typable US-English ASCII nickname or username.").Wait();
+                    channel.SendMessageAsync(SUCCESS_PREFIX + $"Non-ASCII username for <@{user.Id}> has been overriden with a placeholder nickname. Please change to a readable+typable US-English ASCII nickname or username.").Wait();
                         return true;
                 }
                 else if (!IsValidFirstChar(username))
@@ -952,6 +952,29 @@ namespace ModBot
         public bool EnforceAsciiNameRule = true;
 
         public bool EnforceNameStartRule = false;
+
+        public Dictionary<ulong, ulong> LogChannels = new Dictionary<ulong, ulong>(512);
+
+        public void LogChannelActivity(ulong channelId, Action<EmbedBuilder> message)
+        {
+            if (!LogChannels.TryGetValue(channelId, out ulong logChannel))
+            {
+                return;
+            }
+            if (!(Client.GetChannel(logChannel) is SocketTextChannel channel))
+            {
+                Console.WriteLine($"Bad channel log output ID: {logChannel}");
+                return;
+            }
+            EmbedBuilder embed = new EmbedBuilder
+            {
+                Title = "Mod Bot Log",
+                Timestamp = DateTimeOffset.Now,
+                Color = new Color(255, 128, 0)
+            };
+            message(embed);
+            channel.SendMessageAsync(embed: embed.Build()).Wait();
+        }
 
         /// <summary>
         /// Initializes the bot object, connects, and runs the active loop.
@@ -974,10 +997,17 @@ namespace ModBot
                 EnforceAsciiNameRule = ConfigFile.GetBool("enforce_ascii_name_rule", EnforceAsciiNameRule).Value;
                 EnforceNameStartRule = ConfigFile.GetBool("enforce_name_start_rule", EnforceNameStartRule).Value;
                 JoinNotifChannel = ConfigFile.GetDataList("join_notif_channel")?.Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value)?.ToList() ?? new List<ulong>();
+                FDSSection logChannelsSection = ConfigFile.GetSection("log_channels");
+                foreach (string key in logChannelsSection.GetRootKeys())
+                {
+                    LogChannels.Add(ulong.Parse(key), logChannelsSection.GetUlong(key).Value);
+                }
             }
             Console.WriteLine("Loading Discord...");
-            DiscordSocketConfig config = new DiscordSocketConfig();
-            config.MessageCacheSize = 256;
+            DiscordSocketConfig config = new DiscordSocketConfig
+            {
+                MessageCacheSize = 256
+            };
             //config.LogLevel = LogSeverity.Debug;
             Client = new DiscordSocketClient(config);
             /*Client.Log += (m) =>
@@ -1024,12 +1054,12 @@ namespace ModBot
                     IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
                     if (possibles.Any())
                     {
-                        possibles.First().SendMessageAsync("User `" + Username(user) + "` (`" + user.Id + "`) joined." + "").Wait();
+                        possibles.First().SendMessageAsync($"User `{Username(user)}` (`{user.Id}`) joined.").Wait();
                     }
                 }
                 if (!warnable.GetWarnings().Any())
                 {
-                    Console.WriteLine("Pay no mind to user-join: " + user.Id + " to " + user.Guild.Id + "(" + user.Guild.Name + ")");
+                    Console.WriteLine($"Pay no mind to user-join: {user.Id} to {user.Guild.Id} ({user.Guild.Name})");
                     return Task.CompletedTask;
                 }
                 if (warnable.IsMuted)
@@ -1049,10 +1079,11 @@ namespace ModBot
                     IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
                     if (possibles.Any())
                     {
-                        possibles.First().SendMessageAsync("User <@" + user.Id + "> (`" + Username(user) + "`) just joined, and has prior warnings. Use the `listwarnings` command to see details." + "").Wait();
+                        possibles.First().SendMessageAsync($"User <@{ user.Id}> (`{Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command to see details." + "").Wait();
                         if (warnable.IsMuted)
                         {
-                            possibles.First().SendMessageAsync(SUCCESS_PREFIX + "<@" + user.Id + ">, you have been automatically muted by the system due to being muted and then rejoining the Discord. You may discuss the situation in this channel only, until a moderator unmutes you.").Wait();
+                            possibles.First().SendMessageAsync(SUCCESS_PREFIX + $"<@{user.Id}>, you have been automatically muted by the system due to being muted and then rejoining the Discord."
+                                + "You may discuss the situation in this channel only, until a moderator unmutes you.").Wait();
                         }
                         return Task.CompletedTask;
                     }
@@ -1079,10 +1110,10 @@ namespace ModBot
                     }
                     if (message.Channel.Name.StartsWith("@") || !(message.Channel is SocketGuildChannel sgc))
                     {
-                        Console.WriteLine("Refused message from (" + message.Author.Username + "): (Invalid Channel: " + message.Channel.Name + "): " + message.Content);
+                        Console.WriteLine($"Refused message from ({message.Author.Username}): (Invalid Channel: {message.Channel.Name}): {message.Content}");
                         return Task.CompletedTask;
                     }
-                    Console.WriteLine("Parsing message from (" + message.Author.Username + "), in channel: " + message.Channel.Name + ": " + message.Content);
+                    Console.WriteLine($"Parsing message from ({message.Author.Username}), in channel: {message.Channel.Name}: {message.Content}");
                     // TODO: helper ping on first post (never posted on the discord guild prior to 10 minutes ago,
                     // -> never posted in any other channel, pings a helper/dev/bot,
                     // -> and nobody else has posted in that channel since their first post) reaction,
@@ -1090,7 +1121,7 @@ namespace ModBot
                     string authorName = Username(message.Author);
                     if (GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, message.Author.Id).SeenUsername(authorName, out string oldName))
                     {
-                        message.Channel.SendMessageAsync(SUCCESS_PREFIX + "Notice: User <@" + message.Author.Id + "> changed their base username from `" + oldName + "` to `" + authorName + "`.").Wait();
+                        message.Channel.SendMessageAsync(SUCCESS_PREFIX + $"Notice: User <@{message.Author.Id}> changed their base username from `{oldName}` to `{authorName}`.").Wait();
                     }
                     // TODO: Spam detection
                     AsciiNameRuleCheck(message.Channel, message.Author as SocketGuildUser);
@@ -1106,14 +1137,66 @@ namespace ModBot
                             {
                                 throw;
                             }
-                            Console.WriteLine("Error handling command: " + ex.ToString());
+                            Console.WriteLine($"Error handling command: {ex.ToString()}");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error while processing a message: " + ex);
+                    Console.WriteLine($"Error while processing a message: {ex}");
                 }
+                return Task.CompletedTask;
+            };
+            Client.MessageUpdated += (cache, message, channel) =>
+            {
+                LogChannelActivity(channel.Id, (embed) =>
+                {
+                    embed.Title = "Message Edited";
+                    embed.AddField("Author", $"<@{message.Author.Id}>", true);
+                    embed.AddField("Channel", $"<#{channel.Id}>", true);
+                    if (!cache.HasValue)
+                    {
+                        embed.AddField("Original Post", "(Not cached)");
+                    }
+                    else
+                    {
+                        string content = cache.Value.Content.Replace('`', '\'').Replace('\\', '/');
+                        if (content.Length > 700)
+                        {
+                            content = content.Substring(0, 650) + "...";
+                        }
+                        embed.AddField("Original Post", $"```{content}```");
+                    }
+                    string newContent = message.Content.Replace('`', '\'').Replace('\\', '/');
+                    if (newContent.Length > 1300)
+                    {
+                        newContent = newContent.Substring(0, 1250) + "...";
+                    }
+                    embed.AddField("New Post", $"```{newContent}```");
+                });
+                return Task.CompletedTask;
+            };
+            Client.MessageDeleted += (cache, channel) =>
+            {
+                LogChannelActivity(channel.Id, (embed) =>
+                {
+                    embed.Title = "Message Deleted";
+                    embed.AddField("Channel", $"<#{channel.Id}>", true);
+                    if (!cache.HasValue)
+                    {
+                        embed.AddField("Original Post", "(Not cached)");
+                    }
+                    else
+                    {
+                        embed.AddField("Author", $"<@{cache.Value.Author.Id}>", true);
+                        string content = cache.Value.Content.Replace('`', '\'').Replace('\\', '/');
+                        if (content.Length > 700)
+                        {
+                            content = content.Substring(0, 650) + "...";
+                        }
+                        embed.AddField("Original Post", $"```{content}```");
+                    }
+                });
                 return Task.CompletedTask;
             };
             Console.WriteLine("Starting monitor...");

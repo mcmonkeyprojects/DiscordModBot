@@ -51,8 +51,10 @@ namespace ModBot
         /// </summary>
         public static void LaunchBotThread(string[] args)
         {
-            Thread thr = new Thread(new ParameterizedThreadStart(BotThread));
-            thr.Name = "discordmodbot" + new Random().Next(5000);
+            Thread thr = new Thread(new ParameterizedThreadStart(BotThread))
+            {
+                Name = "discordmodbot" + new Random().Next(5000)
+            };
             thr.Start(args);
         }
 

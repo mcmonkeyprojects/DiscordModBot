@@ -66,6 +66,7 @@ To configure the bot:
     - `enforce_ascii_name_rule` set to `true` or `false` to indicate whether the typable ASCII name rule should be enforced by the bot.
     - `enforce_name_start_rule` set to `true` or `false` to indicate whether the A-Z first symbol in names rule should be enforced by the bot.
     - `join_notif_channel` set to the channel ID where user join message should be logged.
+    - `log_channels` set to a sub-mapping of channel-IDs-to-be-logged to channel-ID-to-log-into.
 
 `config.fds` sample text content (the mention code is my own user ID, `mcmonkey#6666`):
 ```
@@ -76,6 +77,8 @@ incidents_channel: 493100185665142795
 enforce_ascii_name_rule: true
 enforce_name_start_rule: false
 join_notif_channel: 358800231598653440
+log_channels:
+    358800231598653440: 618076259364110371
 ```
 
 To start the bot up:
