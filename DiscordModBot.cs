@@ -71,7 +71,7 @@ namespace ModBot
             List<string> cmds = new List<string>();
             for (int i = 0; i < messageDataSplit.Length; i++)
             {
-                if (messageDataSplit[i].Contains("<") && messageDataSplit[i].Contains(">"))
+                if (messageDataSplit[i].Contains("<@") && messageDataSplit[i].Contains(">"))
                 {
                     continue;
                 }
