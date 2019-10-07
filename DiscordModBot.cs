@@ -681,6 +681,7 @@ namespace ModBot
                 Console.WriteLine("Shutdown!");
                 Environment.Exit(0);
             });
+            BotMonitor.StopAllLogic = true;
             Client.StopAsync().Wait();
         }
         
