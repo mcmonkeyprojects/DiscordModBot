@@ -45,7 +45,9 @@ namespace ModBot
             }
             foreach (string key in names_section.GetRootKeys())
             {
-                yield return new KeyValuePair<string, DateTimeOffset>(FDSUtility.UnEscapeKey(key), StringConversionHelper.StringToDateTime(names_section.GetString(key + ".first_seen_time")).Value);
+                FDSSection nameSection = names_section.GetRootData(key).Internal as FDSSection;
+                DateTimeOffset time = StringConversionHelper.StringToDateTime(nameSection.GetString("first_seen_time")).Value;
+                yield return new KeyValuePair<string, DateTimeOffset>(FDSUtility.UnEscapeKey(key), time);
             }
         }
 
@@ -127,9 +129,17 @@ namespace ModBot
             }
             LastKnownUsername = name;
             string escapedName = FDSUtility.EscapeKey(name);
-            if (!WarningFileSection.HasKey("seen_names." + escapedName + ".first_seen_time"))
+            FDSSection names_section = WarningFileSection.GetSection("seen_names");
+            if (names_section == null)
             {
-                WarningFileSection.Set("seen_names." + escapedName + ".first_seen_time", StringConversionHelper.DateTimeToString(DateTimeOffset.Now, false));
+                names_section = new FDSSection();
+                WarningFileSection.Set("seen_names", names_section);
+            }
+            if (!names_section.HasRootKey(escapedName))
+            {
+                FDSSection nameSection = new FDSSection();
+                nameSection.SetRoot("first_seen_time", StringConversionHelper.DateTimeToString(DateTimeOffset.Now, false));
+                names_section.SetRoot(escapedName, nameSection);
             }
             Save();
             return lastName != null;
