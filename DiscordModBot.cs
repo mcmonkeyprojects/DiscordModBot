@@ -682,7 +682,7 @@ namespace ModBot
                 Environment.Exit(0);
             });
             BotMonitor.StopAllLogic = true;
-            Client.StopAsync().Wait();
+            Shutdown();
         }
         
         /// <summary>

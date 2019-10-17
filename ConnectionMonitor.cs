@@ -82,7 +82,7 @@ namespace ModBot
             }
             Task.Factory.StartNew(() =>
             {
-                DiscordBot.Client.StopAsync().Wait();
+                DiscordBot.Shutdown();
             });
             Program.CurrentBot = new DiscordModBot();
             Program.LaunchBotThread(new String[0]);
