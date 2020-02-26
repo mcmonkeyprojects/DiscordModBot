@@ -31,7 +31,6 @@ namespace DiscordModBot.CommandHandlers
                 + "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed, "
                 + "`listnotes` lists notes and warnings for any user - in format `listnotes @User`, "
                 + "`unmute` removes the Muted role from a user - in format `unmute @User`, "
-                + "`sweep` sweeps current usernames on the Discord and applies corrections as needed, "
                 + "...";
 
         /// <summary>
@@ -40,6 +39,7 @@ namespace DiscordModBot.CommandHandlers
         public static string CmdsAdminHelp =
                 "`restart` restarts the bot, "
                 + "`testname` shows a test name, "
+                + "`sweep` sweeps current usernames on the Discord and applies corrections as needed, "
                 + "...";
 
         /// <summary>
