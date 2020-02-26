@@ -161,8 +161,10 @@ namespace DiscordModBot
                     IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
                     if (possibles.Any())
                     {
+                        int nameCount = warnable.OldNames().Count();
+                        string seenNameText = nameCount < 1 ? "" : $" User has {nameCount} previously seen name(s).";
                         string createdDateText = $"{StringConversionHelper.DateTimeToString(user.CreatedAt, false)} ({user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)})";
-                        string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) joined. User account first created `{createdDateText}`.";
+                        string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) joined. User account first created `{createdDateText}`.{seenNameText}";
                         possibles.First().SendMessageAsync(embed: new EmbedBuilder().WithTitle("User Join").WithDescription(message).Build()).Wait();
                     }
                 }
