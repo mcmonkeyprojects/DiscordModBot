@@ -94,7 +94,7 @@ namespace DiscordModBot.CommandHandlers
             }
             IEnumerable<string> cmdsToSave = message.MentionedUserIds.Count == 2 ? cmds : cmds.Skip(1);
             Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
-            warning.Reason = string.Join(" ", cmdsToSave);
+            warning.Reason = string.Join(" ", cmdsToSave).Replace('\\', '/').Replace('`', '\'');
             IUserMessage sentMessage = message.Channel.SendMessageAsync($"Note from <@{message.Author.Id}> to <@{userID}> recorded.").Result;
             warning.Link = LinkToMessage(sentMessage);
             WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
@@ -125,15 +125,21 @@ namespace DiscordModBot.CommandHandlers
                 SendErrorMessageReply(message, "Invalid Input", "Unknown level. Valid levels: `minor`, `normal`, `serious`, or `instant_mute`.");
                 return;
             }
+            WarnableUser warnUser = WarningUtilities.GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userID);
+            int warningCount = warnUser.GetWarnings().Count();
+            string pastWarningsText = warningCount == 0 ? "" : $"\nUser has {warningCount} previous warnings or notes.";
             Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
-            warning.Reason = string.Join(" ", cmds.Skip(1));
-            IUserMessage sentMessage = message.Channel.SendMessageAsync($"Warning from <@{message.Author.Id}> to <@{userID}> recorded.").Result;
+            warning.Reason = string.Join(" ", cmds.Skip(1)).Replace('\\', '/').Replace('`', '\'');
+            IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warning Recorded").WithDescription($"Warning from <@{message.Author.Id}> to <@{userID}> recorded.\nReason: {warning.Reason}{pastWarningsText}").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
-            WarnableUser warnUser = WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
-            SocketGuildUser userToWarn = (message.Channel as SocketGuildChannel).GetUser(userID);
-            if (userToWarn != null)
+            lock (WarningUtilities.WarnLock)
             {
-                PossibleMute(userToWarn, message, level);
+                warnUser.AddWarning(warning);
+            }
+            SocketGuildUser socketUser = (message.Channel as SocketGuildChannel).GetUser(userID);
+            if (socketUser != null)
+            {
+                PossibleMute(socketUser, message, level);
             }
             else if (level == WarningLevel.INSTANT_MUTE)
             {
