@@ -1055,7 +1055,9 @@ namespace ModBot
                     IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
                     if (possibles.Any())
                     {
-                        possibles.First().SendMessageAsync($"User `{Username(user)}` (`{user.Id}`) joined.").Wait();
+                        string createdDateText = StringConversionHelper.DateTimeToString(user.CreatedAt, false);
+                        possibles.First().SendMessageAsync($"User <@{user.Id}> (name: `{Username(user)}`, ID: `{user.Id}`) joined. "
+                            + $"User account first created `{createdDateText}` (`{user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)}`).").Wait();
                     }
                 }
                 if (!warnable.GetWarnings().Any())
