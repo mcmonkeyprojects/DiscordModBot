@@ -47,16 +47,17 @@ namespace DiscordModBot.CommandHandlers
         /// </summary>
         public void CMD_Help(string[] cmds, IUserMessage message)
         {
-            string outputMessage = "Available Commands: " + CmdsHelp;
+            EmbedBuilder embed = new EmbedBuilder().WithTitle("Mod Bot Usage Help").WithColor(255, 128, 0);
+            embed.AddField("Available Commands", CmdsHelp);
             if (DiscordModBot.IsHelper(message.Author as SocketGuildUser))
             {
-                outputMessage += "\nAvailable helper commands: " + CmdsHelperHelp;
+                embed.AddField("Available Helper Commands", CmdsHelperHelp);
             }
             if (DiscordModBot.IsBotCommander(message.Author as SocketGuildUser))
             {
-                outputMessage += "\nAvailable admin commands: " + CmdsAdminHelp;
+                embed.AddField("Available Admin Commands", CmdsAdminHelp);
             }
-            SendGenericPositiveMessageReply(message, "Mod Bot Usage Help", outputMessage);
+            SendReply(message, embed.Build());
         }
 
         /// <summary>
@@ -88,7 +89,7 @@ namespace DiscordModBot.CommandHandlers
                     builders.Add(nameStringOutput);
                     nameStringOutput = new StringBuilder();
                 }
-                nameStringOutput.Append($"`{old_name.Key}` (first seen: {StringConversionHelper.DateTimeToString(old_name.Value, false)}) ... ");
+                nameStringOutput.Append($"`{old_name.Key}` (first seen: {StringConversionHelper.DateTimeToString(old_name.Value, false)})\n");
             }
             builders.Add(nameStringOutput);
             if (nameStringOutput.Length == 0)

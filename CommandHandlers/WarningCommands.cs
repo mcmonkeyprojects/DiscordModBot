@@ -95,7 +95,7 @@ namespace DiscordModBot.CommandHandlers
             IEnumerable<string> cmdsToSave = message.MentionedUserIds.Count == 2 ? cmds : cmds.Skip(1);
             Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
             warning.Reason = string.Join(" ", cmdsToSave).Replace('\\', '/').Replace('`', '\'');
-            IUserMessage sentMessage = message.Channel.SendMessageAsync($"Note from <@{message.Author.Id}> to <@{userID}> recorded.").Result;
+            IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Note Recorded").WithDescription($"Note from <@{message.Author.Id}> to <@{userID}> recorded.").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
             WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
         }
@@ -241,7 +241,7 @@ namespace DiscordModBot.CommandHandlers
                     SocketGuildChannel incidentChan = (user.Guild as SocketGuild).GetChannel(id);
                     if (incidentChan != null && incidentChan is ISocketMessageChannel incidentChanText)
                     {
-                        message.Channel.SendMessageAsync("<@" + user.Id + ">", embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0)
+                        incidentChanText.SendMessageAsync("<@" + user.Id + ">", embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0)
                             .WithDescription("You have been automatically muted by the system due to warnings received. You may discuss the situation in this channel only, until a moderator unmutes you.").Build());
                         break;
                     }
@@ -278,7 +278,7 @@ namespace DiscordModBot.CommandHandlers
                 string giverLabel = (giver == null) ? ("DiscordID:" + warned.GivenBy) : (giver.Username + "#" + giver.Discriminator);
                 string reason = (warned.Reason.Length > 250) ? (warned.Reason.Substring(0, 250) + "(... trimmed ...)") : warned.Reason;
                 reason = reason.Replace('\\', '/').Replace('`', '\'');
-                warnStringOutput.Append($"... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")} given at {StringConversionHelper.DateTimeToString(warned.TimeGiven, false)} by {giverLabel} with reason: `{reason}` ... for detail see: {warned.Link}\n");
+                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at `{StringConversionHelper.DateTimeToString(warned.TimeGiven, false)}` by {giverLabel} with reason: `{reason}`. [Click For Detail]({warned.Link})\n");
             }
             if (warnID == 0)
             {
