@@ -14,7 +14,7 @@ using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticDataSyntax;
 using FreneticUtilities.FreneticToolkit;
 
-namespace ModBot
+namespace DiscordModBot
 {
     /// <summary>
     /// Represents a single warning given to a user.
@@ -56,13 +56,15 @@ namespace ModBot
         /// </summary>
         public static Warning FromSection(FDSSection section, ulong userId)
         {
-            Warning warn = new Warning();
-            warn.GivenTo = userId;
-            warn.TimeGiven = StringConversionHelper.StringToDateTime(section.GetString("time_given", "MISSING")).Value;
-            warn.GivenBy = section.GetUlong("given_by").Value;
-            warn.Reason = section.GetString("reason", "MISSING");
-            warn.Level = EnumHelper<WarningLevel>.ParseIgnoreCase(section.GetString("level", "MISSING"));
-            warn.Link = section.GetString("link");
+            Warning warn = new Warning
+            {
+                GivenTo = userId,
+                TimeGiven = StringConversionHelper.StringToDateTime(section.GetString("time_given", "MISSING")).Value,
+                GivenBy = section.GetUlong("given_by").Value,
+                Reason = section.GetString("reason", "MISSING"),
+                Level = EnumHelper<WarningLevel>.ParseIgnoreCase(section.GetString("level", "MISSING")),
+                Link = section.GetString("link")
+            };
             return warn;
         }
 
