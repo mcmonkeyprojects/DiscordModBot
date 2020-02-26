@@ -91,6 +91,28 @@ namespace DiscordModBot
                 ShouldPayAttentionToMessage = (message) =>
                 {
                     return message.Channel is IGuildChannel;
+                },
+                OtherMessageHandling = (message) =>
+                {
+                    try
+                    {
+                        // TODO: helper ping on first post (never posted on the discord guild prior to 10 minutes ago,
+                        // -> never posted in any other channel, pings a helper/dev/bot,
+                        // -> and nobody else has posted in that channel since their first post) reaction,
+                        // -> and if not in a help lobby redirect to help lobby (in same response)
+                        string authorName = NameUtilities.Username(message.Author);
+                        if (WarningUtilities.GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, message.Author.Id).SeenUsername(authorName, out string oldName))
+                        {
+                            UserCommands.SendGenericPositiveMessageReply(message, "Rename Notice", $"Notice: User <@{message.Author.Id}> changed their base username from `{oldName}` to `{authorName}`.");
+                        }
+                        // TODO: Spam detection
+                        NameUtilities.AsciiNameRuleCheck(message as IUserMessage, message.Author as SocketGuildUser);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error while processing a message: {ex}");
+                    }
                 }
             });
         }
@@ -144,28 +166,6 @@ namespace DiscordModBot
         /// </summary>
         static void InitLoggers(DiscordBot bot)
         {
-            bot.ClientConfig.OtherMessageHandling += (message) =>
-            {
-                try
-                {
-                    // TODO: helper ping on first post (never posted on the discord guild prior to 10 minutes ago,
-                    // -> never posted in any other channel, pings a helper/dev/bot,
-                    // -> and nobody else has posted in that channel since their first post) reaction,
-                    // -> and if not in a help lobby redirect to help lobby (in same response)
-                    string authorName = NameUtilities.Username(message.Author);
-                    if (WarningUtilities.GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, message.Author.Id).SeenUsername(authorName, out string oldName))
-                    {
-                        UserCommands.SendGenericPositiveMessageReply(message, "Rename Notice", $"Notice: User <@{message.Author.Id}> changed their base username from `{oldName}` to `{authorName}`.");
-                    }
-                    // TODO: Spam detection
-                    NameUtilities.AsciiNameRuleCheck(message as IUserMessage, message.Author as SocketGuildUser);
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error while processing a message: {ex}");
-                }
-            };
             bot.Client.UserJoined += (user) =>
             {
                 if (bot.BotMonitor.ShouldStopAllLogic())
