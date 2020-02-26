@@ -8,17 +8,18 @@
     <LangVersion>Latest</LangVersion>
     <Product>DiscordModBot</Product>
     <PackageId>DiscordModBot</PackageId>
-    <Copyright>Copyright (C) mcmonkey4eva 2018-2020</Copyright>
+    <Copyright>Copyright (C) Alex "mcmonkey" Goodwin 2018-2020</Copyright>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="2.0.1" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.1" />
+    <PackageReference Include="Discord.Net" Version="2.1.1" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.1.1" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="FreneticUtilities\*.*" />
-    <Compile Remove="FreneticUtilities\**\*.*" />
+    <Compile Remove="mcmonkeyDiscordBotBase\*.*" />
+    <Compile Remove="mcmonkeyDiscordBotBase\**\*.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="FreneticUtilities\FreneticUtilities\FreneticUtilities.csproj" />
+    <ProjectReference Include="mcmonkeyDiscordBotBase\mcmonkeyDiscordBotBase.csproj" />
+    <ProjectReference Include="mcmonkeyDiscordBotBase\FreneticUtilities\FreneticUtilities\FreneticUtilities.csproj" />
   </ItemGroup>
 </Project>

@@ -484,7 +484,7 @@ namespace ModBot
         /// <summary>
         /// Generates a link to a Discord message.
         /// </summary>
-        public string LinkToMessage(Discord.Rest.RestMessage message)
+        public string LinkToMessage(IMessage message)
         {
             return "https://discordapp.com/channels/" + (message.Channel as SocketGuildChannel).Guild.Id + "/" + message.Channel.Id + "/" + message.Id;
         }
