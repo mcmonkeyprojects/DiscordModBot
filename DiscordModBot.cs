@@ -130,10 +130,7 @@ namespace DiscordModBot
             EnforceNameStartRule = configFile.GetBool("enforce_name_start_rule", EnforceNameStartRule).Value;
             JoinNotifChannel = configFile.GetDataList("join_notif_channel")?.Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value)?.ToList() ?? new List<ulong>();
             FDSSection logChannelsSection = configFile.GetSection("log_channels");
-            foreach (string key in logChannelsSection.GetRootKeys())
-            {
-                LogChannels.Add(ulong.Parse(key), logChannelsSection.GetUlong(key).Value);
-            }
+            LogChannels = logChannelsSection.GetRootKeys().ToDictionary(key => ulong.Parse(key), key => logChannelsSection.GetUlong(key).Value);
         }
 
         /// <summary>
