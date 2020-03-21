@@ -7,6 +7,7 @@ using DiscordBotBase.CommandHandlers;
 using Discord;
 using Discord.WebSocket;
 using FreneticUtilities.FreneticToolkit;
+using DiscordBotBase.Reactables;
 
 namespace DiscordModBot.CommandHandlers
 {
@@ -262,15 +263,28 @@ namespace DiscordModBot.CommandHandlers
                     return;
                 }
             }
+            int argPos = message.MentionedUserIds.Count == 2 ? 0 : 1;
+            if ((cmds.Length <= argPos) || !int.TryParse(cmds[argPos], out int min))
+            {
+                min = 1;
+            }
+            min--;
+            if (min < 0)
+            {
+                SendErrorMessageReply(message, "Invalid Input", "Page input invalid.");
+                return;
+            }
+            bool hasMore = false;
             WarnableUser user = WarningUtilities.GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userID);
             StringBuilder warnStringOutput = new StringBuilder();
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
             int warnID = 0;
-            foreach (Warning warned in user.GetWarnings().OrderByDescending(w => (int)w.Level).Take(6))
+            foreach (Warning warned in user.GetWarnings().OrderByDescending(w => (int)w.Level).Skip(min * 5))
             {
                 if (warnID == 5)
                 {
-                    warnStringOutput.Append("... And more warnings (not able to list all).");
+                    warnStringOutput.Append($"... And more warnings. Click the {Constants.ACCEPT_EMOJI} react to show more.");
+                    hasMore = true;
                     break;
                 }
                 warnID++;
@@ -282,11 +296,23 @@ namespace DiscordModBot.CommandHandlers
             }
             if (warnID == 0)
             {
-                SendGenericPositiveMessageReply(message, "Nothing Found", $"User {user.LastKnownUsername} does not have any warnings logged.");
+                if (min > 0)
+                {
+                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User {user.LastKnownUsername} does not have that page of warnings.");
+                }
+                else
+                {
+                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User {user.LastKnownUsername} does not have any warnings logged.");
+                }
             }
             else
             {
-                SendGenericPositiveMessageReply(message, $"{warnID} Warnings Found", $"User {user.LastKnownUsername} has the following warnings logged:\n{warnStringOutput}");
+                IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: GetGenericPositiveMessageEmbed($"{warnID} Warnings Found", $"User {user.LastKnownUsername} has the following warnings logged:\n{warnStringOutput}")).Result;
+                if (hasMore && sentMessage != null)
+                {
+                    sentMessage.AddReactionsAsync(new IEmote[] { new Emoji(Constants.ACCEPT_EMOJI), new Emoji(Constants.DENY_EMOJI) }).Wait();
+                    ReactionsHandler.AddReactable(message, sentMessage, $"listwarn {userID} {min + 2}");
+                }
             }
         }
 
