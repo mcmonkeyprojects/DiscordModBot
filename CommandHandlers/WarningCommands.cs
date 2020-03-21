@@ -263,8 +263,7 @@ namespace DiscordModBot.CommandHandlers
                     return;
                 }
             }
-            int argPos = message.MentionedUserIds.Count == 2 ? 0 : 1;
-            if ((cmds.Length <= argPos) || !int.TryParse(cmds[argPos], out int min))
+            if (!(cmds.Length == 2 && int.TryParse(cmds[1], out int min) || (cmds.Length == 1 && int.TryParse(cmds[0], out min))))
             {
                 min = 1;
             }
