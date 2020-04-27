@@ -50,6 +50,11 @@ namespace DiscordModBot
         public static List<ulong> JoinNotifChannel;
 
         /// <summary>
+        /// Configuration value: The ID of the role-change log message channel.
+        /// </summary>
+        public static List<ulong> RoleChangeNotifChannel;
+
+        /// <summary>
         /// Configuration value: whether the ASCII name rule should be enforced by the bot.
         /// </summary>
         public static bool EnforceAsciiNameRule = true;
@@ -129,6 +134,7 @@ namespace DiscordModBot
             EnforceAsciiNameRule = configFile.GetBool("enforce_ascii_name_rule", EnforceAsciiNameRule).Value;
             EnforceNameStartRule = configFile.GetBool("enforce_name_start_rule", EnforceNameStartRule).Value;
             JoinNotifChannel = configFile.GetDataList("join_notif_channel")?.Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value)?.ToList() ?? new List<ulong>();
+            RoleChangeNotifChannel = configFile.GetDataList("role_change_notif_channel")?.Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value)?.ToList() ?? new List<ulong>();
             FDSSection logChannelsSection = configFile.GetSection("log_channels");
             LogChannels = logChannelsSection.GetRootKeys().ToDictionary(key => ulong.Parse(key), key => logChannelsSection.GetUlong(key).Value);
         }
@@ -246,6 +252,14 @@ namespace DiscordModBot
             };
             bot.Client.MessageUpdated += (cache, message, channel) =>
             {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (message.Author.Id == bot.Client.CurrentUser.Id)
+                {
+                    return Task.CompletedTask;
+                }
                 if (cache.HasValue && cache.Value.Content == message.Content)
                 {
                     // Its a reaction/embed-load/similar, ignore it.
@@ -263,16 +277,57 @@ namespace DiscordModBot
                 }
                 originalText = TrimForDifferencing(originalText, 700, firstDifference, lastDifference, longerLength);
                 newText = TrimForDifferencing(newText, 900, firstDifference, lastDifference, longerLength);
-                string editNotice = $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in <#{channel.Id}>:\n{originalText} Became:\n{newText}";
-                LogChannelActivity(channel.Id, editNotice);
+                LogChannelActivity(channel.Id, $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in <#{channel.Id}>:\n{originalText} Became:\n{newText}");
                 return Task.CompletedTask;
             };
             bot.Client.MessageDeleted += (cache, channel) =>
             {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (cache.HasValue && cache.Value.Author.Id == bot.Client.CurrentUser.Id)
+                {
+                    return Task.CompletedTask;
+                }
                 string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content) : "(not cached)";
                 string author = cache.HasValue ? $"`{NameUtilities.Username(cache.Value.Author)}` (`{cache.Value.Author.Id}`)" : "(unknown)";
-                string editNotice = $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`";
-                LogChannelActivity(channel.Id, editNotice);
+                LogChannelActivity(channel.Id, $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`");
+                return Task.CompletedTask;
+            };
+            bot.Client.GuildMemberUpdated += (oldUser, newUser) =>
+            {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (newUser.Id == bot.Client.CurrentUser.Id)
+                {
+                    return Task.CompletedTask;
+                }
+                bool lostRoles = oldUser.Roles.Any(r => !newUser.Roles.Contains(r));
+                bool gainedRoles = newUser.Roles.Any(r => !oldUser.Roles.Contains(r));
+                if (lostRoles || gainedRoles)
+                {
+                    EmbedBuilder roleChangeEmbed = new EmbedBuilder().WithTitle("User Role Change").WithDescription($"User <@{newUser.Id}> had roles updated.");
+                    if (lostRoles)
+                    {
+                        roleChangeEmbed.AddField("Roles Removed", string.Join(", ", oldUser.Roles.Where(r => !newUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                    }
+                    if (gainedRoles)
+                    {
+                        roleChangeEmbed.AddField("Roles Added", string.Join(", ", oldUser.Roles.Where(r => !newUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                    }
+                    IReadOnlyCollection<SocketTextChannel> channels = newUser.Guild.TextChannels;
+                    foreach (ulong chan in RoleChangeNotifChannel)
+                    {
+                        IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
+                        if (possibles.Any())
+                        {
+                            possibles.First().SendMessageAsync(embed: roleChangeEmbed.Build()).Wait();
+                        }
+                    }
+                }
                 return Task.CompletedTask;
             };
         }

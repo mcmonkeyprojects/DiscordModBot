@@ -65,7 +65,8 @@ To configure the bot:
     - `incidents_channel` set to a channel ID for where to post about a muting incident. Can be set to a list, and the first ID that's valid for any given guild will be used (useful for a bot operating across multiple Guilds).
     - `enforce_ascii_name_rule` set to `true` or `false` to indicate whether the typable ASCII name rule should be enforced by the bot.
     - `enforce_name_start_rule` set to `true` or `false` to indicate whether the A-Z first symbol in names rule should be enforced by the bot.
-    - `join_notif_channel` set to the channel ID where user join message should be logged.
+    - `join_notif_channel` set to the channel ID where user join messages should be logged.
+    - `role_change_notif_channel` set to the channel ID where role change messages should be logged.
     - `log_channels` set to a sub-mapping of channel-IDs-to-be-logged to channel-ID-to-log-into. Use channel '0' as a catch-all.
 
 `config.fds` sample text content (the mention code is my own user ID, `mcmonkey#6666`):
@@ -77,6 +78,7 @@ incidents_channel: 493100185665142795
 enforce_ascii_name_rule: true
 enforce_name_start_rule: false
 join_notif_channel: 123456789012345678
+role_change_notif_channel: 123456789012345678
 log_channels:
     123456789012345678: 098765432109876543
     0: 543215432154321543
