@@ -188,6 +188,29 @@ namespace DiscordModBot
                         }
                     }
                 }
+                if (oldUser.Nickname != newUser.Nickname)
+                {
+                    EmbedBuilder embed = new EmbedBuilder().WithTitle("User Nickname Changed");
+                    if (oldUser.Nickname != null)
+                    {
+                        embed.AddField("Old Nickname", $"`{UserCommands.EscapeUserInput(oldUser.Nickname)}`");
+                    }
+                    if (newUser.Nickname != null)
+                    {
+                        embed.AddField("New Nickname", $"`{UserCommands.EscapeUserInput(newUser.Nickname)}`");
+                    }
+                    string changeType = newUser.Nickname == null ? "removed their" : (oldUser.Nickname == null ? "added a" : "changed their");
+                    embed.Description = $"User <@{newUser.Id}> {changeType} nickname.";
+                    IReadOnlyCollection<SocketTextChannel> channels = newUser.Guild.TextChannels;
+                    foreach (ulong chan in DiscordModBot.RoleChangeNotifChannel)
+                    {
+                        IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
+                        if (possibles.Any())
+                        {
+                            possibles.First().SendMessageAsync(embed: embed.Build()).Wait();
+                        }
+                    }
+                }
                 return Task.CompletedTask;
             };
         }
