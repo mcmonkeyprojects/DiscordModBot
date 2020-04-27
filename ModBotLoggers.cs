@@ -40,19 +40,11 @@ namespace DiscordModBot
                     return Task.CompletedTask;
                 }
                 WarnableUser warnable = WarningUtilities.GetWarnableUser(user.Guild.Id, user.Id);
-                IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
-                foreach (ulong chan in DiscordModBot.JoinNotifChannel)
-                {
-                    IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
-                    if (possibles.Any())
-                    {
-                        int nameCount = warnable.OldNames().Count();
-                        string seenNameText = nameCount < 1 ? "" : $" User has {nameCount} previously seen name(s).";
-                        string createdDateText = $"`{StringConversionHelper.DateTimeToString(user.CreatedAt, false)}` ({user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)})";
-                        string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) joined. User account first created {createdDateText}.{seenNameText}";
-                        possibles.First().SendMessageAsync(embed: new EmbedBuilder().WithTitle("User Join").WithDescription(message).Build()).Wait();
-                    }
-                }
+                int nameCount = warnable.OldNames().Count();
+                string seenNameText = nameCount < 1 ? "" : $" User has {nameCount} previously seen name(s).";
+                string createdDateText = $"`{StringConversionHelper.DateTimeToString(user.CreatedAt, false)}` ({user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)})";
+                string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) joined. User account first created {createdDateText}.{seenNameText}";
+                SendEmbedToAllFor(user, DiscordModBot.JoinNotifChannel, new EmbedBuilder().WithTitle("User Join").WithDescription(message).Build());
                 if (!warnable.GetWarnings().Any())
                 {
                     Console.WriteLine($"Pay no mind to user-join: {user.Id} to {user.Guild.Id} ({user.Guild.Name})");
@@ -70,13 +62,14 @@ namespace DiscordModBot
                         user.AddRoleAsync(role).Wait();
                     }
                 }
+                IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
                 foreach (ulong chan in DiscordModBot.IncidentChannel)
                 {
                     IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
                     if (possibles.Any())
                     {
-                        string message = $"User <@{ user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command to see details.";
-                        possibles.First().SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithDescription(message).Build()).Wait();
+                        string warnMessage = $"User <@{ user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command to see details.";
+                        possibles.First().SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithDescription(warnMessage).Build()).Wait();
                         if (warnable.IsMuted)
                         {
                             possibles.First().SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithDescription("You have been automatically muted by the system due to being muted and then rejoining the Discord."
@@ -98,16 +91,8 @@ namespace DiscordModBot
                 {
                     return Task.CompletedTask;
                 }
-                IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
-                foreach (ulong chan in DiscordModBot.JoinNotifChannel)
-                {
-                    IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
-                    if (possibles.Any())
-                    {
-                        string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) left.";
-                        possibles.First().SendMessageAsync(embed: new EmbedBuilder().WithTitle("User Left").WithDescription(message).Build()).Wait();
-                    }
-                }
+                string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) left.";
+                SendEmbedToAllFor(user, DiscordModBot.JoinNotifChannel, new EmbedBuilder().WithTitle("User Left").WithDescription(message).Build());
                 return Task.CompletedTask;
             };
             bot.Client.MessageUpdated += (cache, message, channel) =>
@@ -178,15 +163,7 @@ namespace DiscordModBot
                     {
                         roleChangeEmbed.AddField("Roles Added", string.Join(", ", newUser.Roles.Where(r => !oldUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
                     }
-                    IReadOnlyCollection<SocketTextChannel> channels = newUser.Guild.TextChannels;
-                    foreach (ulong chan in DiscordModBot.RoleChangeNotifChannel)
-                    {
-                        IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
-                        if (possibles.Any())
-                        {
-                            possibles.First().SendMessageAsync(embed: roleChangeEmbed.Build()).Wait();
-                        }
-                    }
+                    SendEmbedToAllFor(newUser, DiscordModBot.RoleChangeNotifChannel, roleChangeEmbed.Build());
                 }
                 if (oldUser.Nickname != newUser.Nickname)
                 {
@@ -201,22 +178,30 @@ namespace DiscordModBot
                     }
                     string changeType = newUser.Nickname == null ? "removed their" : (oldUser.Nickname == null ? "added a" : "changed their");
                     embed.Description = $"User <@{newUser.Id}> {changeType} nickname.";
-                    IReadOnlyCollection<SocketTextChannel> channels = newUser.Guild.TextChannels;
-                    foreach (ulong chan in DiscordModBot.RoleChangeNotifChannel)
-                    {
-                        IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
-                        if (possibles.Any())
-                        {
-                            possibles.First().SendMessageAsync(embed: embed.Build()).Wait();
-                        }
-                    }
+                    SendEmbedToAllFor(newUser, DiscordModBot.RoleChangeNotifChannel, embed.Build());
                 }
                 return Task.CompletedTask;
             };
         }
 
         /// <summary>
-        /// Utility for edit notifications.
+        /// Utility to send an embed to all channels in a list of IDs for a specific user's guild.
+        /// </summary>
+        public void SendEmbedToAllFor(SocketGuildUser user, List<ulong> notifChannels, Embed embed)
+        {
+            IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
+            foreach (ulong chan in notifChannels)
+            {
+                IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
+                if (possibles.Any())
+                {
+                    possibles.First().SendMessageAsync(embed: embed).Wait();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Utility for edit notification processing.
         /// </summary>
         public string TrimForDifferencing(string text, int cap, int firstDiff, int lastDiff, int longerLength)
         {
