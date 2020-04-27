@@ -13,11 +13,11 @@ namespace DiscordModBot
     public class NameUtilities
     {
         /// <summary>
-        /// Gets the full proper username for a user.
+        /// Gets the full proper username#disc for a user.
         /// </summary>
         public static string Username(IUser user)
         {
-            return user.Username.Replace('\\', '/').Replace("\r", "/r").Replace("\n", "/n").Replace('`', '\'') + "#" + user.Discriminator;
+            return UserCommands.EscapeUserInput(user.Username.Replace("\r", "/r").Replace("\n", "/n")) + "#" + user.Discriminator;
         }
 
         public static readonly string[] ASCII_NAME_PART1 = new string[] { "HEY", "hey", "YO", "yo", "YOU", "you", "EY", "ey", "" };

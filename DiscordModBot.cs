@@ -226,61 +226,67 @@ namespace DiscordModBot
             {
                 if (cache.HasValue && cache.Value.Content == message.Content)
                 {
-                    // Its a reaction/embed load/similar, ignore it.
+                    // Its a reaction/embed-load/similar, ignore it.
                     return Task.CompletedTask;
                 }
-                LogChannelActivity(channel.Id, (embed) =>
+                string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content) : "(not cached)";
+                string newText = UserCommands.EscapeUserInput(message.Content);
+                int longerLength = Math.Max(originalText.Length, newText.Length);
+                int firstDifference = StringConversionHelper.FindFirstDifference(originalText, newText);
+                int lastDifference = longerLength - StringConversionHelper.FindFirstDifference(originalText.ReverseFast(), newText.ReverseFast());
+                if (firstDifference == -1 || lastDifference == -1)
                 {
-                    embed.Title = "Message Edited";
-                    embed.AddField("Author", $"<@{message.Author.Id}>", true);
-                    embed.AddField("Channel", $"<#{channel.Id}>", true);
-                    embed.ThumbnailUrl = cache.Value.Author.GetAvatarUrl();
-                    if (!cache.HasValue)
-                    {
-                        embed.AddField("Original Post", "(Not cached)");
-                    }
-                    else
-                    {
-                        string content = cache.Value.Content.Replace('`', '\'').Replace('\\', '/');
-                        if (content.Length > 700)
-                        {
-                            content = content.Substring(0, 650) + "...";
-                        }
-                        embed.AddField("Original Post", $"```{content}```");
-                    }
-                    string newContent = message.Content.Replace('`', '\'').Replace('\\', '/');
-                    if (newContent.Length > 1300)
-                    {
-                        newContent = newContent.Substring(0, 1250) + "...";
-                    }
-                    embed.AddField("New Post", $"```{newContent}```");
-                });
+                    // Shouldn't be possible.
+                    return Task.CompletedTask;
+                }
+                originalText = TrimForDifferencing(originalText, 700, firstDifference, lastDifference, longerLength);
+                newText = TrimForDifferencing(newText, 900, firstDifference, lastDifference, longerLength);
+                string editNotice = $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in <#{channel.Id}>:\n`{originalText}`\nBecame: `{newText}`";
+                LogChannelActivity(channel.Id, editNotice);
                 return Task.CompletedTask;
             };
             bot.Client.MessageDeleted += (cache, channel) =>
             {
-                LogChannelActivity(channel.Id, (embed) =>
-                {
-                    embed.Title = "Message Deleted";
-                    embed.AddField("Channel", $"<#{channel.Id}>", true);
-                    if (!cache.HasValue)
-                    {
-                        embed.AddField("Original Post", "(Not cached)");
-                    }
-                    else
-                    {
-                        embed.AddField("Author", $"<@{cache.Value.Author.Id}>", true);
-                        embed.ThumbnailUrl = cache.Value.Author.GetAvatarUrl();
-                        string content = cache.Value.Content.Replace('`', '\'').Replace('\\', '/');
-                        if (content.Length > 700)
-                        {
-                            content = content.Substring(0, 650) + "...";
-                        }
-                        embed.AddField("Original Post", $"```{content}```");
-                    }
-                });
+                string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content) : "(not cached)";
+                string author = cache.HasValue ? $"`{NameUtilities.Username(cache.Value.Author)}` (`{cache.Value.Author.Id}`)" : "(unknown)";
+                string editNotice = $"+> Message from {author} * *deleted** in <#{channel.Id}>: `{originalText}`";
+                LogChannelActivity(channel.Id, editNotice);
                 return Task.CompletedTask;
             };
+        }
+
+        /// <summary>
+        /// Utility for edit notifications.
+        /// </summary>
+        public static string TrimForDifferencing(string text, int cap, int firstDiff, int lastDiff, int longerLength)
+        {
+            int initialFirstDiff = firstDiff;
+            int initialLastDiff = lastDiff;
+            if (text.Length > cap)
+            {
+                if (firstDiff > 100)
+                {
+                    text = "..." + text.Substring(firstDiff - 50);
+                    lastDiff -= (firstDiff - 50 - "...".Length);
+                    firstDiff = 50 + "...".Length;
+                }
+                if (text.Length > cap)
+                {
+                    text = text.Substring(0, Math.Min(lastDiff + 50, (cap - 50))) + "...";
+                    lastDiff = Math.Min(lastDiff, (cap - 50));
+                }
+            }
+            if (initialFirstDiff > 10 || initialLastDiff < longerLength - 10)
+            {
+                string preText = firstDiff == 0 ? "" : $"`{text.Substring(0, firstDiff)}`";
+                string lastText = lastDiff >= text.Length ? "" : $"`{text.Substring(lastDiff)}`";
+                text = $"{preText} **__`{text.Substring(firstDiff, Math.Min(lastDiff, text.Length) - firstDiff)}`__** {lastText}";
+            }
+            else
+            {
+                text = $"`{text}`";
+            }
+            return text;
         }
 
         /// <summary>
@@ -303,8 +309,8 @@ namespace DiscordModBot
         /// Sends a log message to a log channel (if applicable).
         /// </summary>
         /// <param name="channelId">The channel where a loggable action happened.</param>
-        /// <param name="message">An action that builds a message to log.</param>
-        public static void LogChannelActivity(ulong channelId, Action<EmbedBuilder> message)
+        /// <param name="message">A message to log.</param>
+        public static void LogChannelActivity(ulong channelId, string message)
         {
             if (!LogChannels.TryGetValue(channelId, out ulong logChannel))
             {
@@ -315,14 +321,7 @@ namespace DiscordModBot
                 Console.WriteLine($"Bad channel log output ID: {logChannel}");
                 return;
             }
-            EmbedBuilder embed = new EmbedBuilder
-            {
-                Title = "Mod Bot Log",
-                Timestamp = DateTimeOffset.Now,
-                Color = new Color(255, 128, 0)
-            };
-            message(embed);
-            channel.SendMessageAsync(embed: embed.Build()).Wait();
+            channel.SendMessageAsync(message).Wait();
         }
     }
 }
