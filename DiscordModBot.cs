@@ -312,7 +312,7 @@ namespace DiscordModBot
         /// <param name="message">A message to log.</param>
         public static void LogChannelActivity(ulong channelId, string message)
         {
-            if (!LogChannels.TryGetValue(channelId, out ulong logChannel))
+            if (!LogChannels.TryGetValue(channelId, out ulong logChannel) && !LogChannels.TryGetValue(0, out logChannel))
             {
                 return;
             }
