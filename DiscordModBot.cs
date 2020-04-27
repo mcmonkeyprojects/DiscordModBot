@@ -241,7 +241,7 @@ namespace DiscordModBot
                 }
                 originalText = TrimForDifferencing(originalText, 700, firstDifference, lastDifference, longerLength);
                 newText = TrimForDifferencing(newText, 900, firstDifference, lastDifference, longerLength);
-                string editNotice = $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in <#{channel.Id}>:\n`{originalText}`\nBecame: `{newText}`";
+                string editNotice = $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in <#{channel.Id}>:\n{originalText}\nBecame: {newText}";
                 LogChannelActivity(channel.Id, editNotice);
                 return Task.CompletedTask;
             };
