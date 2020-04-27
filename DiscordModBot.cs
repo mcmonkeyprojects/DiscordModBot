@@ -316,7 +316,7 @@ namespace DiscordModBot
                     }
                     if (gainedRoles)
                     {
-                        roleChangeEmbed.AddField("Roles Added", string.Join(", ", oldUser.Roles.Where(r => !newUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                        roleChangeEmbed.AddField("Roles Added", string.Join(", ", newUser.Roles.Where(r => !oldUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
                     }
                     IReadOnlyCollection<SocketTextChannel> channels = newUser.Guild.TextChannels;
                     foreach (ulong chan in RoleChangeNotifChannel)
