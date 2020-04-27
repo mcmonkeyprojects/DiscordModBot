@@ -222,6 +222,28 @@ namespace DiscordModBot
                 Console.WriteLine("Failed to warn of dangerous user-join: " + user.Id + " to " + user.Guild.Id + "(" + user.Guild.Name + ")");
                 return Task.CompletedTask;
             };
+            bot.Client.UserLeft += (user) =>
+            {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (user.Id == bot.Client.CurrentUser.Id)
+                {
+                    return Task.CompletedTask;
+                }
+                IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
+                foreach (ulong chan in JoinNotifChannel)
+                {
+                    IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
+                    if (possibles.Any())
+                    {
+                        string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) left.";
+                        possibles.First().SendMessageAsync(embed: new EmbedBuilder().WithTitle("User Left").WithDescription(message).Build()).Wait();
+                    }
+                }
+                return Task.CompletedTask;
+            };
             bot.Client.MessageUpdated += (cache, message, channel) =>
             {
                 if (cache.HasValue && cache.Value.Content == message.Content)
@@ -241,7 +263,7 @@ namespace DiscordModBot
                 }
                 originalText = TrimForDifferencing(originalText, 700, firstDifference, lastDifference, longerLength);
                 newText = TrimForDifferencing(newText, 900, firstDifference, lastDifference, longerLength);
-                string editNotice = $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in <#{channel.Id}>:\n{originalText}\nBecame: {newText}";
+                string editNotice = $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in <#{channel.Id}>:\n{originalText} Became:\n{newText}";
                 LogChannelActivity(channel.Id, editNotice);
                 return Task.CompletedTask;
             };
