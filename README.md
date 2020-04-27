@@ -76,9 +76,9 @@ mute_role_name: muted
 incidents_channel: 493100185665142795
 enforce_ascii_name_rule: true
 enforce_name_start_rule: false
-join_notif_channel: 358800231598653440
+join_notif_channel: 123456789012345678
 log_channels:
-    358800231598653440: 618076259364110371
+    123456789012345678: 098765432109876543
 ```
 
 To start the bot up:
