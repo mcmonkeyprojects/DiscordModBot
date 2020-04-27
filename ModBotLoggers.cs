@@ -44,7 +44,7 @@ namespace DiscordModBot
                 string seenNameText = nameCount < 1 ? "" : $" User has {nameCount} previously seen name(s).";
                 string createdDateText = $"`{StringConversionHelper.DateTimeToString(user.CreatedAt, false)}` ({user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)})";
                 string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) joined. User account first created {createdDateText}.{seenNameText}";
-                SendEmbedToAllFor(user, DiscordModBot.JoinNotifChannel, new EmbedBuilder().WithTitle("User Join").WithDescription(message).Build());
+                SendEmbedToAllFor(user.Guild, DiscordModBot.JoinNotifChannel, new EmbedBuilder().WithColor(32, 255, 128).WithTitle("User Join").WithDescription(message).Build());
                 if (!warnable.GetWarnings().Any())
                 {
                     Console.WriteLine($"Pay no mind to user-join: {user.Id} to {user.Guild.Id} ({user.Guild.Name})");
@@ -69,10 +69,10 @@ namespace DiscordModBot
                     if (possibles.Any())
                     {
                         string warnMessage = $"User <@{ user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command to see details.";
-                        possibles.First().SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithDescription(warnMessage).Build()).Wait();
+                        possibles.First().SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build()).Wait();
                         if (warnable.IsMuted)
                         {
-                            possibles.First().SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithDescription("You have been automatically muted by the system due to being muted and then rejoining the Discord."
+                            possibles.First().SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription("You have been automatically muted by the system due to being muted and then rejoining the Discord."
                                 + " You may discuss the situation in this channel only, until a moderator unmutes you.").Build()).Wait();
                         }
                         return Task.CompletedTask;
@@ -92,7 +92,21 @@ namespace DiscordModBot
                     return Task.CompletedTask;
                 }
                 string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) left.";
-                SendEmbedToAllFor(user, DiscordModBot.JoinNotifChannel, new EmbedBuilder().WithTitle("User Left").WithDescription(message).Build());
+                SendEmbedToAllFor(user.Guild, DiscordModBot.JoinNotifChannel, new EmbedBuilder().WithTitle("User Left").WithColor(64, 64, 0).WithDescription(message).Build());
+                return Task.CompletedTask;
+            };
+            bot.Client.UserBanned += (user, guild) =>
+            {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (user.Id == bot.Client.CurrentUser.Id)
+                {
+                    return Task.CompletedTask;
+                }
+                string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) was banned.";
+                SendEmbedToAllFor(guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("User Banned").WithColor(128, 0, 0).WithDescription(message).Build());
                 return Task.CompletedTask;
             };
             bot.Client.MessageUpdated += (cache, message, channel) =>
@@ -152,7 +166,7 @@ namespace DiscordModBot
                 }
                 if (oldState.VoiceChannel?.Id != newState.VoiceChannel?.Id)
                 {
-                    EmbedBuilder embed = new EmbedBuilder().WithTitle("User Move In Voice Channels");
+                    EmbedBuilder embed = new EmbedBuilder().WithTitle("User Move In Voice Channels").WithColor(0, 64, 255);
                     if (oldState.VoiceChannel != null)
                     {
                         embed.AddField("Old Channel", $"`{UserCommands.EscapeUserInput(oldState.VoiceChannel.Name)}`");
@@ -163,7 +177,7 @@ namespace DiscordModBot
                     }
                     string changeType = newState.VoiceChannel == null ? "left a" : (oldState.VoiceChannel == null ? "entered a" : "moved to a different");
                     embed.Description = $"User <@{user.Id}> {changeType} voice channel.";
-                    SendEmbedToAllFor((newState.VoiceChannel ?? oldState.VoiceChannel).Guild.GetUser(user.Id), DiscordModBot.VoiceChannelJoinNotifs, embed.Build());
+                    SendEmbedToAllFor((newState.VoiceChannel ?? oldState.VoiceChannel).Guild, DiscordModBot.VoiceChannelJoinNotifs, embed.Build());
                 }
                 return Task.CompletedTask;
             };
@@ -190,11 +204,11 @@ namespace DiscordModBot
                     {
                         roleChangeEmbed.AddField("Roles Added", string.Join(", ", newUser.Roles.Where(r => !oldUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
                     }
-                    SendEmbedToAllFor(newUser, DiscordModBot.RoleChangeNotifChannel, roleChangeEmbed.Build());
+                    SendEmbedToAllFor(newUser.Guild, DiscordModBot.RoleChangeNotifChannel, roleChangeEmbed.Build());
                 }
                 if (oldUser.Nickname != newUser.Nickname)
                 {
-                    EmbedBuilder embed = new EmbedBuilder().WithTitle("User Nickname Changed");
+                    EmbedBuilder embed = new EmbedBuilder().WithTitle("User Nickname Changed").WithColor(0, 255, 255);
                     if (oldUser.Nickname != null)
                     {
                         embed.AddField("Old Nickname", $"`{UserCommands.EscapeUserInput(oldUser.Nickname)}`");
@@ -205,18 +219,18 @@ namespace DiscordModBot
                     }
                     string changeType = newUser.Nickname == null ? "removed their" : (oldUser.Nickname == null ? "added a" : "changed their");
                     embed.Description = $"User <@{newUser.Id}> {changeType} nickname.";
-                    SendEmbedToAllFor(newUser, DiscordModBot.RoleChangeNotifChannel, embed.Build());
+                    SendEmbedToAllFor(newUser.Guild, DiscordModBot.RoleChangeNotifChannel, embed.Build());
                 }
                 return Task.CompletedTask;
             };
         }
 
         /// <summary>
-        /// Utility to send an embed to all channels in a list of IDs for a specific user's guild.
+        /// Utility to send an embed to all channels in a list of IDs for a specific guild.
         /// </summary>
-        public void SendEmbedToAllFor(SocketGuildUser user, List<ulong> notifChannels, Embed embed)
+        public static void SendEmbedToAllFor(SocketGuild guild, List<ulong> notifChannels, Embed embed)
         {
-            IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
+            IReadOnlyCollection<SocketTextChannel> channels = guild.TextChannels;
             foreach (ulong chan in notifChannels)
             {
                 IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);

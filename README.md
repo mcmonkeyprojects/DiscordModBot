@@ -69,6 +69,7 @@ To configure the bot:
     - `role_change_notif_channel` set to the channel ID where role and nickname change messages should be logged.
     - `log_channels` set to a sub-mapping of channel-IDs-to-be-logged to channel-ID-to-log-into. Use channel '0' as a catch-all.
     - `voice_join_notif_channel` set to the channel ID where voice channel join/leave notifications should be sent.
+    - `mod_log_channel` set to the channel ID where logs of mod activity (warns, bans, etc) should be sent.
 
 `config.fds` sample text content (the mention code is my own user ID, `mcmonkey#6666`):
 ```
@@ -81,6 +82,7 @@ enforce_name_start_rule: false
 join_notif_channel: 123456789012345678
 role_change_notif_channel: 123456789012345678
 voice_join_notif_channel: 123456789012345678
+mod_log_channel: 123456789012345678
 log_channels:
     123456789012345678: 098765432109876543
     0: 543215432154321543

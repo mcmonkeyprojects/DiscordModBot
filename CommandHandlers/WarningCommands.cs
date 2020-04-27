@@ -67,6 +67,7 @@ namespace DiscordModBot.CommandHandlers
             if (wasMuted)
             {
                 SendGenericPositiveMessageReply(message, "Unmuted", $"<@{message.Author.Id}> has unmuted <@{userID}>.");
+                ModBotLoggers.SendEmbedToAllFor((message.Channel as SocketGuildChannel).Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("User Unmuted").WithColor(0, 255, 0).WithDescription($"User <@{userID}> was unmuted.").Build());
             }
             else
             {
@@ -247,6 +248,7 @@ namespace DiscordModBot.CommandHandlers
                         break;
                     }
                 }
+                ModBotLoggers.SendEmbedToAllFor(user.Guild as SocketGuild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("User Muted").WithColor(255, 0, 0).WithDescription($"User <@{user.Id}> was muted.").Build());
             }
         }
 

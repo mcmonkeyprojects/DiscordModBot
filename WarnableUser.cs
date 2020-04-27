@@ -13,6 +13,7 @@ using System.Diagnostics;
 using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticDataSyntax;
 using FreneticUtilities.FreneticToolkit;
+using DiscordBotBase;
 
 namespace DiscordModBot
 {
@@ -98,6 +99,11 @@ namespace DiscordModBot
             warn.SaveToSection(newSection);
             WarningFileSection.Set("warnings." + currentId, newSection);
             Save();
+            SocketGuild guild = DiscordBotBaseHelper.CurrentBot.Client.GetGuild(ServerID);
+            string warnPostfix = warn.Level == WarningLevel.NOTE ? "" : " warning";
+            string message = $"User <@{UserID}> received a {warn.Level}{warnPostfix} from moderator <@{warn.GivenBy}>.\n[Click For Details]({warn.Link})";
+            Color color = warn.Level == WarningLevel.NOTE ? new Color(255, 255, 0) : new Color(255, 0, 0);
+            ModBotLoggers.SendEmbedToAllFor(guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithColor(color).WithTitle("User Warning/Note Applied").WithDescription(message).Build());
         }
 
         /// <summary>

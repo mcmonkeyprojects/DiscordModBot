@@ -60,6 +60,11 @@ namespace DiscordModBot
         public static List<ulong> RoleChangeNotifChannel;
 
         /// <summary>
+        /// Configuration value: The ID of the moderation activity (warns, bans, etc) log message channel.
+        /// </summary>
+        public static List<ulong> ModLogsChannel;
+
+        /// <summary>
         /// Configuration value: whether the ASCII name rule should be enforced by the bot.
         /// </summary>
         public static bool EnforceAsciiNameRule = true;
@@ -142,6 +147,7 @@ namespace DiscordModBot
             JoinNotifChannel = getChannelList("join_notif_channel");
             RoleChangeNotifChannel = getChannelList("role_change_notif_channel");
             VoiceChannelJoinNotifs = getChannelList("voice_join_notif_channel");
+            ModLogsChannel = getChannelList("mod_log_channel");
             FDSSection logChannelsSection = configFile.GetSection("log_channels");
             LogChannels = logChannelsSection.GetRootKeys().ToDictionary(key => ulong.Parse(key), key => logChannelsSection.GetUlong(key).Value);
         }
