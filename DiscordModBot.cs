@@ -50,6 +50,11 @@ namespace DiscordModBot
         public static List<ulong> JoinNotifChannel;
 
         /// <summary>
+        /// Configuration value: The ID of the voicechannel join/leave log message channel.
+        /// </summary>
+        public static List<ulong> VoiceChannelJoinNotifs;
+
+        /// <summary>
         /// Configuration value: The ID of the role-change log message channel.
         /// </summary>
         public static List<ulong> RoleChangeNotifChannel;
@@ -127,14 +132,16 @@ namespace DiscordModBot
         /// </summary>
         static void LoadConfig(FDSSection configFile)
         {
+            List<ulong> getChannelList(string name) => configFile.GetDataList(name)?.Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value)?.ToList() ?? new List<ulong>();
             HelperRoleName = configFile.GetString("helper_role_name").ToLowerInvariant();
             MuteRoleName = configFile.GetString("mute_role_name").ToLowerInvariant();
             AttentionNotice = configFile.GetString("attention_notice");
             IncidentChannel = configFile.GetDataList("incidents_channel").Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value).ToList();
             EnforceAsciiNameRule = configFile.GetBool("enforce_ascii_name_rule", EnforceAsciiNameRule).Value;
             EnforceNameStartRule = configFile.GetBool("enforce_name_start_rule", EnforceNameStartRule).Value;
-            JoinNotifChannel = configFile.GetDataList("join_notif_channel")?.Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value)?.ToList() ?? new List<ulong>();
-            RoleChangeNotifChannel = configFile.GetDataList("role_change_notif_channel")?.Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value)?.ToList() ?? new List<ulong>();
+            JoinNotifChannel = getChannelList("join_notif_channel");
+            RoleChangeNotifChannel = getChannelList("role_change_notif_channel");
+            VoiceChannelJoinNotifs = getChannelList("voice_join_notif_channel");
             FDSSection logChannelsSection = configFile.GetSection("log_channels");
             LogChannels = logChannelsSection.GetRootKeys().ToDictionary(key => ulong.Parse(key), key => logChannelsSection.GetUlong(key).Value);
         }

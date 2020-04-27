@@ -140,6 +140,33 @@ namespace DiscordModBot
                 LogChannelActivity(channel.Id, $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`");
                 return Task.CompletedTask;
             };
+            bot.Client.UserVoiceStateUpdated += (user, oldState, newState) =>
+            {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (user.Id == bot.Client.CurrentUser.Id)
+                {
+                    return Task.CompletedTask;
+                }
+                if (oldState.VoiceChannel?.Id != newState.VoiceChannel?.Id)
+                {
+                    EmbedBuilder embed = new EmbedBuilder().WithTitle("User Move In Voice Channels");
+                    if (oldState.VoiceChannel != null)
+                    {
+                        embed.AddField("Old Channel", $"`{UserCommands.EscapeUserInput(oldState.VoiceChannel.Name)}`");
+                    }
+                    if (newState.VoiceChannel != null)
+                    {
+                        embed.AddField("New Channel", $"`{UserCommands.EscapeUserInput(newState.VoiceChannel.Name)}`");
+                    }
+                    string changeType = newState.VoiceChannel == null ? "left a" : (oldState.VoiceChannel == null ? "entered a" : "moved to a different");
+                    embed.Description = $"User <@{user.Id}> {changeType} voice channel.";
+                    SendEmbedToAllFor((newState.VoiceChannel ?? oldState.VoiceChannel).Guild.GetUser(user.Id), DiscordModBot.VoiceChannelJoinNotifs, embed.Build());
+                }
+                return Task.CompletedTask;
+            };
             bot.Client.GuildMemberUpdated += (oldUser, newUser) =>
             {
                 if (bot.BotMonitor.ShouldStopAllLogic())
