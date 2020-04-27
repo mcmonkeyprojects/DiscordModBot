@@ -249,7 +249,7 @@ namespace DiscordModBot
             {
                 string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content) : "(not cached)";
                 string author = cache.HasValue ? $"`{NameUtilities.Username(cache.Value.Author)}` (`{cache.Value.Author.Id}`)" : "(unknown)";
-                string editNotice = $"+> Message from {author} * *deleted** in <#{channel.Id}>: `{originalText}`";
+                string editNotice = $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`";
                 LogChannelActivity(channel.Id, editNotice);
                 return Task.CompletedTask;
             };
