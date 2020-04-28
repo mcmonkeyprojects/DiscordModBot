@@ -266,13 +266,20 @@ namespace DiscordModBot
             {
                 string preText = firstDiff == 0 ? "" : $"`{text.Substring(0, firstDiff)}`";
                 string lastText = lastDiff >= text.Length ? "" : $"`{text.Substring(lastDiff)}`";
-                text = $"{preText} **__`{text.Substring(firstDiff, Math.Min(lastDiff, text.Length) - firstDiff)}`__** {lastText}";
+                string middleText = text.Substring(firstDiff, Math.Min(lastDiff, text.Length) - firstDiff);
+                if (!string.IsNullOrWhiteSpace(middleText))
+                {
+                    return $"{preText} **__`{middleText}`__** {lastText}";
+                }
+            }
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return "(blank)";
             }
             else
             {
-                text = $"`{text}`";
+                return $"`\"{text}\"`";
             }
-            return text;
         }
 
         /// <summary>
