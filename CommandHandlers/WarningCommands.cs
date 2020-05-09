@@ -7,6 +7,7 @@ using DiscordBotBase.CommandHandlers;
 using Discord;
 using Discord.WebSocket;
 using FreneticUtilities.FreneticToolkit;
+using FreneticUtilities.FreneticExtensions;
 using DiscordBotBase.Reactables;
 
 namespace DiscordModBot.CommandHandlers
@@ -31,6 +32,73 @@ namespace DiscordModBot.CommandHandlers
             { "instant", WarningLevel.INSTANT_MUTE },
             { "mute", WarningLevel.INSTANT_MUTE }
         };
+
+        /// <summary>
+        /// User command to temporarily ban a user.
+        /// </summary>
+        public void CMD_TempBan(string[] cmds, IUserMessage message)
+        {
+            if (!DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            {
+                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                return;
+            }
+            if ((message.MentionedUserIds.Count() < 2 && cmds.Length < 2) || cmds.Length < 1)
+            {
+                SendErrorMessageReply(message, "Invalid Input", "Usage: tempban [user] [duration]");
+                return;
+            }
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
+            {
+                return;
+            }
+            SocketGuildUser guildUser = (message.Channel as SocketGuildChannel).GetUser(userID);
+            if (guildUser != null && DiscordModBot.IsHelper(guildUser))
+            {
+                SendErrorMessageReply(message, "I Can't Let You Do That", "That user is too powerful to be banned.");
+                return;
+            }
+            string durationText = cmds[message.MentionedUserIds.Count == 2 ? 0 : 1];
+            TimeSpan realDuration;
+            if (durationText.EndsWith("h") && double.TryParse(durationText.Before('h'), out double hours))
+            {
+                realDuration = TimeSpan.FromHours(hours);
+            }
+            else if (durationText.EndsWith("d") && double.TryParse(durationText.Before('d'), out double days))
+            {
+                realDuration = TimeSpan.FromDays(days);
+            }
+            else if (durationText.EndsWith("w") && double.TryParse(durationText.Before('w'), out double weeks))
+            {
+                realDuration = TimeSpan.FromDays(weeks * 7);
+            }
+            else if (durationText.EndsWith("m") && double.TryParse(durationText.Before('m'), out double months))
+            {
+                realDuration = TimeSpan.FromDays(months * 31);
+            }
+            else if (durationText.EndsWith("y") && double.TryParse(durationText.Before('y'), out double years))
+            {
+                realDuration = TimeSpan.FromDays(years * 365);
+            }
+            else
+            {
+                SendErrorMessageReply(message, "Invalid Input", "Duration must be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
+                return;
+            }
+            if (realDuration.TotalMinutes < 1)
+            {
+                SendErrorMessageReply(message, "Invalid Input", "Duration must be a positive value greater than one minute.");
+                return;
+            }
+            if (realDuration.TotalDays > 365 * 2)
+            {
+                SendErrorMessageReply(message, "Invalid Input", "Duration must be less than 2 years.");
+                return;
+            }
+            DiscordModBot.TempBanHandler.TempBan((message.Channel as SocketGuildChannel).Guild.Id, userID, realDuration);
+            string durationFormat = realDuration.SimpleFormat(false);
+            ModBotLoggers.SendEmbedToAllFor((message.Channel as SocketGuildChannel).Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("User TempBanned").WithColor(255, 0, 0).WithDescription($"User <@{userID}> was temporarily banned for {durationFormat}.").Build());
+        }
 
         /// <summary>
         /// User command to remove a user's muted status.

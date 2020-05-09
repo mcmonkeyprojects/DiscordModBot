@@ -39,6 +39,7 @@ namespace DiscordModBot
                 {
                     return Task.CompletedTask;
                 }
+                DiscordModBot.TempBanHandler.CheckShouldScan();
                 WarnableUser warnable = WarningUtilities.GetWarnableUser(user.Guild.Id, user.Id);
                 int nameCount = warnable.OldNames().Count();
                 string seenNameText = nameCount < 1 ? "" : $" User has {nameCount} previously seen name(s).";
@@ -107,6 +108,7 @@ namespace DiscordModBot
                 {
                     return Task.CompletedTask;
                 }
+                DiscordModBot.TempBanHandler.CheckShouldScan();
                 string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) left.";
                 SendEmbedToAllFor(user.Guild, DiscordModBot.JoinNotifChannel, new EmbedBuilder().WithTitle("User Left").WithColor(64, 64, 0).WithDescription(message).Build());
                 return Task.CompletedTask;

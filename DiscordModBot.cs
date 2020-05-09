@@ -95,6 +95,11 @@ namespace DiscordModBot
         public static WarningCommands WarningCommandHandler;
 
         /// <summary>
+        /// The relevant TempBanManager instance.
+        /// </summary>
+        public static TempBanManager TempBanHandler;
+
+        /// <summary>
         /// Software entry point - starts the bot.
         /// </summary>
         static void Main(string[] args)
@@ -106,9 +111,11 @@ namespace DiscordModBot
                 {
                     LoadConfig(bot.ConfigFile);
                     InitCommands(bot);
+                    TempBanHandler = new TempBanManager();
                     bot.Client.Ready += () =>
                     {
                         bot.Client.SetGameAsync("Guardian Over The People").Wait();
+                        TempBanHandler.Scan();
                         return Task.CompletedTask;
                     };
                     new ModBotLoggers().InitLoggers(bot);
@@ -185,6 +192,7 @@ namespace DiscordModBot
             bot.RegisterCommand(WarningCommandHandler.CMD_Unmute, "unmute");
             bot.RegisterCommand(WarningCommandHandler.CMD_DoNotSupport, "nosupport", "donotsupport", "crack", "cracked", "cracks");
             bot.RegisterCommand(WarningCommandHandler.CMD_RemoveDoNotSupport, "removenosupport", "removedonotsupport", "removecrack", "removecracked", "removecracks", "uncrack", "uncracked", "uncracks", "legitimate");
+            bot.RegisterCommand(WarningCommandHandler.CMD_TempBan, "tempban", "tmpban", "ban", "bantmp", "bantemp", "temporaryban", "bantemporary");
             // Admin
             bot.RegisterCommand(adminCommands.CMD_Sweep, "sweep");
             bot.RegisterCommand(adminCommands.CMD_TestName, "testname");

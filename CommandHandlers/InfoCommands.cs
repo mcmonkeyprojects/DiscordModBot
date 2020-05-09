@@ -33,6 +33,7 @@ namespace DiscordModBot.CommandHandlers
                 + "`unmute` removes the Muted role from a user - in format `unmute @User`, "
                 + "`nosupport` marks a user as DoNotSupport - in the format `nosupport @User`, "
                 + "`removenosupport` removes the 'DoNotSupport' mark from a user - in the format `removenosupport @User`, "
+                + "`tempban` to temporarily ban a user - in the format `tempban @User [duration]`, "
                 + "...";
 
         /// <summary>
