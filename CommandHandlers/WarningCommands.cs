@@ -45,7 +45,7 @@ namespace DiscordModBot.CommandHandlers
             }
             if ((message.MentionedUserIds.Count() < 2 && cmds.Length < 2) || cmds.Length < 1)
             {
-                SendErrorMessageReply(message, "Invalid Input", "Usage: tempban [user] [duration]");
+                SendErrorMessageReply(message, "Invalid Input", "Usage: tempban [user] [duration] ... Duration can be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
                 return;
             }
             if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
