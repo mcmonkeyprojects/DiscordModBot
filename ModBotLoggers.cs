@@ -45,6 +45,10 @@ namespace DiscordModBot
                 string createdDateText = $"`{StringConversionHelper.DateTimeToString(user.CreatedAt, false)}` ({user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)})";
                 string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) joined. User account first created {createdDateText}.{seenNameText}";
                 SendEmbedToAllFor(user.Guild, DiscordModBot.JoinNotifChannel, new EmbedBuilder().WithColor(32, 255, 128).WithTitle("User Join").WithDescription(message).Build());
+                if (DateTimeOffset.Now.Subtract(user.CreatedAt).TotalDays < 31 * 6)
+                {
+                    SendEmbedToAllFor(user.Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("New Account Join").WithDescription($"User <@{user.Id}> joined the Discord as an account first created {createdDateText}.").Build());
+                }
                 if (!warnable.GetWarnings().Any())
                 {
                     Console.WriteLine($"Pay no mind to user-join: {user.Id} to {user.Guild.Id} ({user.Guild.Name})");
@@ -56,6 +60,18 @@ namespace DiscordModBot
                     if (role == null)
                     {
                         Console.WriteLine("Cannot apply mute: no muted role found.");
+                    }
+                    else
+                    {
+                        user.AddRoleAsync(role).Wait();
+                    }
+                }
+                if (warnable.IsDoNotSupport)
+                {
+                    SocketRole role = user.Guild.Roles.FirstOrDefault((r) => r.Name.ToLowerInvariant() == DiscordModBot.DoNotSupportRoleName);
+                    if (role == null)
+                    {
+                        Console.WriteLine("Cannot apply do-not-support: no do-not-support role found.");
                     }
                     else
                     {

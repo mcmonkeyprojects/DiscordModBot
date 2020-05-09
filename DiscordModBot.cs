@@ -40,6 +40,16 @@ namespace DiscordModBot
         public static string MuteRoleName;
 
         /// <summary>
+        /// Configuration value: The name of the role given to DoNotSupport users.
+        /// </summary>
+        public static string DoNotSupportRoleName;
+
+        /// <summary>
+        /// Configuration value: The message to show to do-not-support users.
+        /// </summary>
+        public static string DoNotSupportMessage;
+
+        /// <summary>
         /// Configuration value: The ID of the incident notice channel.
         /// </summary>
         public static List<ulong> IncidentChannel;
@@ -140,6 +150,8 @@ namespace DiscordModBot
             List<ulong> getChannelList(string name) => configFile.GetDataList(name)?.Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value)?.ToList() ?? new List<ulong>();
             HelperRoleName = configFile.GetString("helper_role_name").ToLowerInvariant();
             MuteRoleName = configFile.GetString("mute_role_name").ToLowerInvariant();
+            DoNotSupportRoleName = configFile.GetString("no_support_role_name").ToLowerInvariant();
+            DoNotSupportMessage = configFile.GetString("no_support_message");
             AttentionNotice = configFile.GetString("attention_notice");
             IncidentChannel = configFile.GetDataList("incidents_channel").Select(d => ObjectConversionHelper.ObjectToULong(d.Internal).Value).ToList();
             EnforceAsciiNameRule = configFile.GetBool("enforce_ascii_name_rule", EnforceAsciiNameRule).Value;
@@ -171,6 +183,8 @@ namespace DiscordModBot
             bot.RegisterCommand(WarningCommandHandler.CMD_Note, "note");
             bot.RegisterCommand(WarningCommandHandler.CMD_Warn, "warn", "warning");
             bot.RegisterCommand(WarningCommandHandler.CMD_Unmute, "unmute");
+            bot.RegisterCommand(WarningCommandHandler.CMD_DoNotSupport, "nosupport", "donotsupport", "crack", "cracked", "cracks");
+            bot.RegisterCommand(WarningCommandHandler.CMD_RemoveDoNotSupport, "removenosupport", "removedonotsupport", "removecrack", "removecracked", "removecracks", "uncrack", "uncracked", "uncracks", "legitimate");
             // Admin
             bot.RegisterCommand(adminCommands.CMD_Sweep, "sweep");
             bot.RegisterCommand(adminCommands.CMD_TestName, "testname");

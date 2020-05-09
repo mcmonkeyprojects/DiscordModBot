@@ -76,6 +76,97 @@ namespace DiscordModBot.CommandHandlers
         }
 
         /// <summary>
+        /// User command to mark a user as do-not-support.
+        /// </summary>
+        public void CMD_DoNotSupport(string[] cmds, IUserMessage message)
+        {
+            if (!DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            {
+                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                return;
+            }
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
+            {
+                return;
+            }
+            SocketGuildUser guildUser = (message.Channel as SocketGuildChannel).GetUser(userID);
+            WarnableUser warnable = WarningUtilities.GetWarnableUser((message.Channel as IGuildChannel).GuildId, userID);
+            bool wasDNS = warnable.IsDoNotSupport;
+            if (!wasDNS)
+            {
+                warnable.IsDoNotSupport = true;
+                warnable.Save();
+            }
+            if (guildUser != null)
+            {
+                IRole role = guildUser.Guild.Roles.FirstOrDefault((r) => r.Name.ToLowerInvariant() == DiscordModBot.DoNotSupportRoleName);
+                if (role == null)
+                {
+                    SendErrorMessageReply(message, "Failed To Apply", "Cannot apply Do-Not-Support: no matching role found.");
+                    return;
+                }
+                guildUser.AddRoleAsync(role).Wait();
+            }
+            if (!wasDNS)
+            {
+                Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
+                warning.Reason = "Marked as Do-Not-Support. User should not receive support unless this status is rescinded.";
+                IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Do Not Support Status Applied").WithDescription($"<@{message.Author.Id}> has marked <@{userID}> as do-not-support.\n{DiscordModBot.DoNotSupportMessage}").Build()).Result;
+                warning.Link = LinkToMessage(sentMessage);
+                WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
+            }
+            else
+            {
+                SendGenericNegativeMessageReply(message, "Cannot Apply", $"User {warnable.LastKnownUsername} is already marked as Do-Not-Support.");
+            }
+        }
+
+        /// <summary>
+        /// User command to remove a Do-Not-Support status from a user.
+        /// </summary>
+        public void CMD_RemoveDoNotSupport(string[] cmds, IUserMessage message)
+        {
+            if (!DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            {
+                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                return;
+            }
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
+            {
+                return;
+            }
+            SocketGuildUser guildUser = (message.Channel as SocketGuildChannel).GetUser(userID);
+            WarnableUser warnable = WarningUtilities.GetWarnableUser((message.Channel as IGuildChannel).GuildId, userID);
+            bool wasDNS = warnable.IsDoNotSupport;
+            if (wasDNS)
+            {
+                warnable.IsDoNotSupport = false;
+                warnable.Save();
+            }
+            if (guildUser != null)
+            {
+                IRole role = guildUser.Roles.FirstOrDefault((r) => r.Name.ToLowerInvariant() == DiscordModBot.DoNotSupportRoleName);
+                if (role != null)
+                {
+                    guildUser.RemoveRoleAsync(role).Wait();
+                    wasDNS = true;
+                }
+            }
+            if (wasDNS)
+            {
+                Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
+                warning.Reason = "Do-not-support status rescinded. The user may receive help going forward.";
+                IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Do Not Support Status Removed").WithDescription($"<@{message.Author.Id}> has rescinded the DoNotSupport status of <@{userID}>.\nYou are now allowed to receive support.").Build()).Result;
+                warning.Link = LinkToMessage(sentMessage);
+                WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
+            }
+            else
+            {
+                SendGenericNegativeMessageReply(message, "Cannot Remove", $"User {warnable.LastKnownUsername} already is not marked as Do-Not-Support.");
+            }
+        }
+
+        /// <summary>
         /// User command to add a note to a user.
         /// </summary>
         public void CMD_Note(string[] cmds, IUserMessage message)

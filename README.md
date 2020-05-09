@@ -61,6 +61,8 @@ To configure the bot:
 - Within the `config` directory, create file `config.fds` (a FreneticDataSyntax file) with the following options (See also the full file text sample below):
     - `helper_role_name` set to the name of the role for helpers (who can issue warnings).
     - `mute_role_name` set to the name of the role for muted users (given automatically by the bot).
+    - `no_support_role_name` set to the name of the role for do-not-support users (given by moderator command).
+    - `no_support_message` set to the message to show to users who are marked as do-not-support.
     - `attention_notice` set to text to append to a mute notice. You can use Discord internal format codes, including `<@12345>` where `12345` is a user's ID to create a Discord `@` mention (helpful to auto-mention an admin).
     - `incidents_channel` set to a channel ID for where to post about a muting incident. Can be set to a list, and the first ID that's valid for any given guild will be used (useful for a bot operating across multiple Guilds).
     - `enforce_ascii_name_rule` set to `true` or `false` to indicate whether the typable ASCII name rule should be enforced by the bot.
@@ -76,6 +78,8 @@ To configure the bot:
 helper_role_name: helper
 attention_notice: (Attn: <@105458332365504512>)
 mute_role_name: muted
+no_support_role_name: DoNotSupport
+no_support_message: This means you will not be supported on our Discord!
 incidents_channel: 493100185665142795
 enforce_ascii_name_rule: true
 enforce_name_start_rule: false

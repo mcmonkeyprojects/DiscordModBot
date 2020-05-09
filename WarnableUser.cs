@@ -14,6 +14,7 @@ using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticDataSyntax;
 using FreneticUtilities.FreneticToolkit;
 using DiscordBotBase;
+using DiscordBotBase.CommandHandlers;
 
 namespace DiscordModBot
 {
@@ -69,6 +70,22 @@ namespace DiscordModBot
         }
 
         /// <summary>
+        /// Gets or sets the do-not-support status for this user.
+        /// Setting does not save.
+        /// </summary>
+        public bool IsDoNotSupport
+        {
+            get
+            {
+                return WarningFileSection.GetBool("is_nosupport", false).Value;
+            }
+            set
+            {
+                WarningFileSection.Set("is_nosupport", value);
+            }
+        }
+
+        /// <summary>
         /// Gets all warnings for this user, starting at most recent and going back in time.
         /// </summary>
         public IEnumerable<Warning> GetWarnings()
@@ -101,7 +118,9 @@ namespace DiscordModBot
             Save();
             SocketGuild guild = DiscordBotBaseHelper.CurrentBot.Client.GetGuild(ServerID);
             string warnPostfix = warn.Level == WarningLevel.NOTE ? "" : " warning";
-            string message = $"User <@{UserID}> received a {warn.Level}{warnPostfix} from moderator <@{warn.GivenBy}>.\n[Click For Details]({warn.Link})";
+            string reason = (warn.Reason.Length > 250) ? (warn.Reason.Substring(0, 250) + "(... trimmed ...)") : warn.Reason;
+            reason = UserCommands.EscapeUserInput(reason);
+            string message = $"User <@{UserID}> received a {warn.Level}{warnPostfix} from moderator <@{warn.GivenBy}>.\n\nReason: `{reason}`\n\n[Click For Details]({warn.Link})";
             Color color = warn.Level == WarningLevel.NOTE ? new Color(255, 255, 0) : new Color(255, 0, 0);
             ModBotLoggers.SendEmbedToAllFor(guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithColor(color).WithTitle("User Warning/Note Applied").WithDescription(message).Build());
         }

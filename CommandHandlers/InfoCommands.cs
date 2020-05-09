@@ -31,6 +31,8 @@ namespace DiscordModBot.CommandHandlers
                 + "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed, "
                 + "`listnotes` lists notes and warnings for any user - in format `listnotes @User [page]`, "
                 + "`unmute` removes the Muted role from a user - in format `unmute @User`, "
+                + "`nosupport` marks a user as DoNotSupport - in the format `nosupport @User`, "
+                + "`removenosupport` removes the 'DoNotSupport' mark from a user - in the format `removenosupport @User`, "
                 + "...";
 
         /// <summary>
