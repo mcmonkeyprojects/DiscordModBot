@@ -107,6 +107,8 @@ namespace DiscordModBot
             DiscordBotBaseHelper.StartBotHandler(args, new DiscordBotConfig()
             {
                 CommandPrefix = null,
+                CacheSize = 1024,
+                EnsureCaching = true,
                 Initialize = (bot) =>
                 {
                     LoadConfig(bot.ConfigFile);
