@@ -65,6 +65,8 @@ namespace DiscordModBot
                     else
                     {
                         user.AddRoleAsync(role).Wait();
+                        Task.Delay(6000).Wait();
+                        user.AddRoleAsync(role).Wait();
                     }
                 }
                 if (warnable.IsDoNotSupport)
@@ -76,6 +78,8 @@ namespace DiscordModBot
                     }
                     else
                     {
+                        user.AddRoleAsync(role).Wait();
+                        Task.Delay(6000).Wait();
                         user.AddRoleAsync(role).Wait();
                     }
                 }
