@@ -146,8 +146,8 @@ namespace DiscordModBot
                     // Its a reaction/embed-load/similar, ignore it.
                     return Task.CompletedTask;
                 }
-                string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content) : "(not cached)";
-                string newText = UserCommands.EscapeUserInput(message.Content);
+                string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content + string.Join(", ", cache.Value.Attachments.Select(a => a.Url))) : "(not cached)";
+                string newText = UserCommands.EscapeUserInput(message.Content + string.Join(", ", message.Attachments.Select(a => a.Url)));
                 int longerLength = Math.Max(originalText.Length, newText.Length);
                 int firstDifference = StringConversionHelper.FindFirstDifference(originalText, newText);
                 int lastDifference = longerLength - StringConversionHelper.FindFirstDifference(originalText.ReverseFast(), newText.ReverseFast());
@@ -171,7 +171,7 @@ namespace DiscordModBot
                 {
                     return Task.CompletedTask;
                 }
-                string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content) : "(not cached)";
+                string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content + string.Join(", ", cache.Value.Attachments.Select(a => a.Url))) : "(not cached)";
                 string author = cache.HasValue ? $"`{NameUtilities.Username(cache.Value.Author)}` (`{cache.Value.Author.Id}`)" : "(unknown)";
                 LogChannelActivity(channel.Id, $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`");
                 return Task.CompletedTask;
