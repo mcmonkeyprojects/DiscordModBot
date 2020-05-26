@@ -48,7 +48,7 @@ namespace DiscordModBot
                 SendEmbedToAllFor(user.Guild, DiscordModBot.JoinNotifChannel, new EmbedBuilder().WithColor(32, 255, 128).WithTitle("User Join").WithDescription(message).Build());
                 if (DateTimeOffset.Now.Subtract(user.CreatedAt).TotalDays < 31 * 6)
                 {
-                    SendEmbedToAllFor(user.Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("New Account Join").WithDescription($"User <@{user.Id}> joined the Discord as an account first created {createdDateText}.").Build());
+                    SendEmbedToAllFor(user.Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("New Account Join").WithDescription($"User <@{user.Id}> (`{NameUtilities.Username(user)}`) joined the Discord as an account first created {createdDateText}.").Build(), text: $"<@{user.Id}>");
                 }
                 if (!warnable.GetWarnings().Any())
                 {
@@ -246,7 +246,7 @@ namespace DiscordModBot
         /// <summary>
         /// Utility to send an embed to all channels in a list of IDs for a specific guild.
         /// </summary>
-        public static void SendEmbedToAllFor(SocketGuild guild, List<ulong> notifChannels, Embed embed)
+        public static void SendEmbedToAllFor(SocketGuild guild, List<ulong> notifChannels, Embed embed, string text = null)
         {
             IReadOnlyCollection<SocketTextChannel> channels = guild.TextChannels;
             foreach (ulong chan in notifChannels)
@@ -254,7 +254,7 @@ namespace DiscordModBot
                 IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
                 if (possibles.Any())
                 {
-                    possibles.First().SendMessageAsync(embed: embed).Wait();
+                    possibles.First().SendMessageAsync(text: text, embed: embed).Wait();
                 }
             }
         }
