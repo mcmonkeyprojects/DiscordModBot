@@ -143,6 +143,15 @@ namespace DiscordModBot
             string banReason = $"Temporary ban for {duration.SimpleFormat(false)}";
             if (user != null)
             {
+                try
+                {
+                    IDMChannel channel = user.GetOrCreateDMChannelAsync().Result;
+                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. This ban expires **{duration.SimpleFormat(true)}**.").Build()).Wait();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Excepting sending tempban notice: {ex}");
+                }
                 user.BanAsync(0, banReason).Wait();
             }
             else
