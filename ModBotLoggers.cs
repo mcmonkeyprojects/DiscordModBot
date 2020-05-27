@@ -288,7 +288,7 @@ namespace DiscordModBot
             {
                 string preText = firstDiff == 0 ? "" : $"`{text.Substring(0, firstDiff)}`";
                 string lastText = lastDiff >= text.Length ? "" : $"`{text.Substring(lastDiff)}`";
-                string middleText = text.Substring(firstDiff, Math.Min(lastDiff, text.Length) - firstDiff);
+                string middleText = text[firstDiff..Math.Min(lastDiff, text.Length)];
                 if (!string.IsNullOrWhiteSpace(middleText))
                 {
                     return $"{preText} **__`{middleText}`__** {lastText}";
