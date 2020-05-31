@@ -171,7 +171,7 @@ namespace DiscordModBot
                 {
                     return Task.CompletedTask;
                 }
-                string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content + string.Join(", ", cache.Value.Attachments.Select(a => a.Url))) : "(not cached)";
+                string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content + string.Join(", ", cache.Value.Attachments.Select(a => a.Url))) : $"(not cached post ID `{cache.Id}`)";
                 string author = cache.HasValue ? $"`{NameUtilities.Username(cache.Value.Author)}` (`{cache.Value.Author.Id}`)" : "(unknown)";
                 LogChannelActivity(channel.Id, $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`");
                 return Task.CompletedTask;
