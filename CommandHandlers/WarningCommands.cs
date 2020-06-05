@@ -412,6 +412,57 @@ namespace DiscordModBot.CommandHandlers
             }
         }
 
+        public static void SendWarningList(WarnableUser user, int startId, IMessageChannel channel, IUserMessage message)
+        {
+            bool hasMore = false;
+            StringBuilder warnStringOutput = new StringBuilder();
+            DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+            int warnID = 0;
+            foreach (Warning warned in user.GetWarnings().OrderByDescending(w => (int)w.Level).Skip(startId * 5))
+            {
+                if (warnID == 5)
+                {
+                    if (message == null)
+                    {
+                        warnStringOutput.Append($"... And more warnings. Use the `listwarn` command to show more.");
+                    }
+                    else
+                    {
+                        warnStringOutput.Append($"... And more warnings. Click the {Constants.ACCEPT_EMOJI} react to show more.");
+                        hasMore = true;
+                    }
+                    break;
+                }
+                warnID++;
+                SocketUser giver = DiscordBotBaseHelper.CurrentBot.Client.GetUser(warned.GivenBy);
+                string giverLabel = (giver == null) ? ("DiscordID:" + warned.GivenBy) : (giver.Username + "#" + giver.Discriminator);
+                string reason = (warned.Reason.Length > 250) ? (warned.Reason.Substring(0, 250) + "(... trimmed ...)") : warned.Reason;
+                reason = EscapeUserInput(reason);
+                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at `{StringConversionHelper.DateTimeToString(warned.TimeGiven, false)}` by {giverLabel} with reason: `{reason}`. [Click For Detail]({warned.Link})\n");
+            }
+            if (warnID == 0)
+            {
+                if (startId > 0)
+                {
+                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User {user.LastKnownUsername} does not have that page of warnings.");
+                }
+                else
+                {
+                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User {user.LastKnownUsername} does not have any warnings logged.");
+                }
+            }
+            else
+            {
+                int warnCount = user.GetWarnings().Count();
+                IUserMessage sentMessage = channel.SendMessageAsync(embed: GetGenericPositiveMessageEmbed($"{warnCount} Warnings Found", $"User {user.LastKnownUsername} has the following warnings logged:\n{warnStringOutput}")).Result;
+                if (hasMore && sentMessage != null && message != null)
+                {
+                    sentMessage.AddReactionsAsync(new IEmote[] { new Emoji(Constants.ACCEPT_EMOJI), new Emoji(Constants.DENY_EMOJI) }).Wait();
+                    ReactionsHandler.AddReactable(message, sentMessage, $"listwarn {user.UserID} {startId + 2}");
+                }
+            }
+        }
+
         /// <summary>
         /// User command to list user warnings.
         /// </summary>
@@ -435,47 +486,8 @@ namespace DiscordModBot.CommandHandlers
                 SendErrorMessageReply(message, "Invalid Input", "Page input invalid.");
                 return;
             }
-            bool hasMore = false;
             WarnableUser user = WarningUtilities.GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userID);
-            StringBuilder warnStringOutput = new StringBuilder();
-            DateTimeOffset utcNow = DateTimeOffset.UtcNow;
-            int warnID = 0;
-            foreach (Warning warned in user.GetWarnings().OrderByDescending(w => (int)w.Level).Skip(min * 5))
-            {
-                if (warnID == 5)
-                {
-                    warnStringOutput.Append($"... And more warnings. Click the {Constants.ACCEPT_EMOJI} react to show more.");
-                    hasMore = true;
-                    break;
-                }
-                warnID++;
-                SocketUser giver = Bot.Client.GetUser(warned.GivenBy);
-                string giverLabel = (giver == null) ? ("DiscordID:" + warned.GivenBy) : (giver.Username + "#" + giver.Discriminator);
-                string reason = (warned.Reason.Length > 250) ? (warned.Reason.Substring(0, 250) + "(... trimmed ...)") : warned.Reason;
-                reason = EscapeUserInput(reason);
-                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at `{StringConversionHelper.DateTimeToString(warned.TimeGiven, false)}` by {giverLabel} with reason: `{reason}`. [Click For Detail]({warned.Link})\n");
-            }
-            if (warnID == 0)
-            {
-                if (min > 0)
-                {
-                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User {user.LastKnownUsername} does not have that page of warnings.");
-                }
-                else
-                {
-                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User {user.LastKnownUsername} does not have any warnings logged.");
-                }
-            }
-            else
-            {
-                int warnCount = user.GetWarnings().Count();
-                IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: GetGenericPositiveMessageEmbed($"{warnCount} Warnings Found", $"User {user.LastKnownUsername} has the following warnings logged:\n{warnStringOutput}")).Result;
-                if (hasMore && sentMessage != null)
-                {
-                    sentMessage.AddReactionsAsync(new IEmote[] { new Emoji(Constants.ACCEPT_EMOJI), new Emoji(Constants.DENY_EMOJI) }).Wait();
-                    ReactionsHandler.AddReactable(message, sentMessage, $"listwarn {userID} {min + 2}");
-                }
-            }
+            SendWarningList(user, min, message.Channel, message);
         }
 
         /// <summary>

@@ -50,11 +50,6 @@ namespace DiscordModBot
                 {
                     SendEmbedToAllFor(user.Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("New Account Join").WithDescription($"User <@{user.Id}> (`{NameUtilities.Username(user)}`) joined the Discord as an account first created {createdDateText}.").Build(), text: $"<@{user.Id}>");
                 }
-                if (!warnable.GetWarnings().Any())
-                {
-                    Console.WriteLine($"Pay no mind to user-join: {user.Id} to {user.Guild.Id} ({user.Guild.Name})");
-                    return Task.CompletedTask;
-                }
                 if (warnable.IsMuted)
                 {
                     SocketRole role = user.Guild.Roles.FirstOrDefault((r) => r.Name.ToLowerInvariant() == DiscordModBot.MuteRoleName);
@@ -83,13 +78,28 @@ namespace DiscordModBot
                         user.AddRoleAsync(role).Wait();
                     }
                 }
+                if (!warnable.GetWarnings().Any())
+                {
+                    Console.WriteLine($"Pay no mind to user-join: {user.Id} to {user.Guild.Id} ({user.Guild.Name})");
+                    return Task.CompletedTask;
+                }
                 IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
+                foreach (ulong chan in DiscordModBot.ModLogsChannel)
+                {
+                    IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
+                    if (possibles.Any())
+                    {
+                        string description = $"User <@{user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings.";
+                        SendEmbedToAllFor(user.Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("Warned User Join").WithDescription(description).Build(), text: $"<@{user.Id}>");
+                        WarningCommands.SendWarningList(warnable, 0, possibles.First(), null);
+                    }
+                }
                 foreach (ulong chan in DiscordModBot.IncidentChannel)
                 {
                     IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
                     if (possibles.Any())
                     {
-                        string warnMessage = $"User <@{ user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command to see details.";
+                        string warnMessage = $"User <@{ user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command or refer to the private logs channel to see details.";
                         possibles.First().SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build()).Wait();
                         if (warnable.IsMuted)
                         {
