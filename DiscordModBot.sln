@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.29001.49
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordModBot", "DiscordModBot.csproj", "{1DB47D6A-4225-4F36-8559-2C6292442953}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-8A1E7A4F7556}") = "mcmonkeyDiscordBotBase", "mcmonkeyDiscordBotBase\mcmonkeyDiscordBotBase.csproj", "{1DB47D6A-4225-4F36-3559-2C6292442953}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mcmonkeyDiscordBotBase", "mcmonkeyDiscordBotBase\mcmonkeyDiscordBotBase.csproj", "{1DB47D6A-4225-4F36-3559-2C6292442953}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FreneticUtilities", "mcmonkeyDiscordBotBase\FreneticUtilities\FreneticUtilities\FreneticUtilities.csproj", "{1DB47D6A-4225-4F25-8559-2C6292496953}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FreneticUtilities", "FreneticUtilities\FreneticUtilities\FreneticUtilities.csproj", "{1DB47D6A-4225-4F25-8559-2C6292496953}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
