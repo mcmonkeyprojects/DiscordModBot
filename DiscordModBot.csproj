@@ -17,7 +17,7 @@
   <ItemGroup>
     <Compile Remove="mcmonkeyDiscordBotBase\*.*" />
     <Compile Remove="mcmonkeyDiscordBotBase\**\*.*" />
-    <Compile Remove="FreneticUtilities\**\*.*" />
+    <Compile Remove="FreneticUtilities\*.*" />
     <Compile Remove="FreneticUtilities\**\*.*" />
   </ItemGroup>
   <ItemGroup>
