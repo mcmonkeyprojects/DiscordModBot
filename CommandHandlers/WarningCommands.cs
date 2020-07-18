@@ -179,13 +179,13 @@ namespace DiscordModBot.CommandHandlers
             if (!wasDNS)
             {
                 int warningCount = warnable.GetWarnings().Count();
-                string pastWarningsText = warningCount == 0 ? "" : $"\nUser has {warningCount} previous warnings or notes.";
+                string pastWarningsText = warningCount == 0 ? "" : $"\n\nUser has {warningCount} previous warnings or notes.";
                 Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NORMAL };
                 warning.Reason = "Marked as Do-Not-Support. User should not receive support unless this status is rescinded.";
                 string wasDNSdBefore = "";
                 if (warnable.GetWarnings().Any(w => w.Reason == warning.Reason))
                 {
-                    wasDNSdBefore = "\nUser has previously had a Do-Not-Support status applied.";
+                    wasDNSdBefore = "\n\nUser has previously had a Do-Not-Support status applied.";
                 }
                 IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Do Not Support Status Applied").WithDescription($"<@{message.Author.Id}> has marked <@{userID}> as do-not-support.\n{DiscordModBot.DoNotSupportMessage}{pastWarningsText}{wasDNSdBefore}").Build()).Result;
                 warning.Link = LinkToMessage(sentMessage);
@@ -296,7 +296,7 @@ namespace DiscordModBot.CommandHandlers
             }
             WarnableUser warnUser = WarningUtilities.GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userID);
             int warningCount = warnUser.GetWarnings().Count();
-            string pastWarningsText = warningCount == 0 ? "" : $"\nUser has {warningCount} previous warnings or notes.";
+            string pastWarningsText = warningCount == 0 ? "" : $"\n\nUser has {warningCount} previous warnings or notes.";
             Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
             warning.Reason = EscapeUserInput(string.Join(" ", cmds.Skip(1)));
             IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warning Recorded").WithDescription($"Warning from <@{message.Author.Id}> to <@{userID}> recorded.\nReason: {warning.Reason}{pastWarningsText}").Build()).Result;
