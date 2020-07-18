@@ -95,9 +95,19 @@ namespace DiscordModBot
                             Console.WriteLine($"Temp ban expiration failed: invalid guild ID {guildId}!");
                             return;
                         }
-                        guild.RemoveBanAsync(userId).Wait();
+                        bool removed = false;
+                        try
+                        {
+                            guild.RemoveBanAsync(userId).Wait();
+                            removed = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Removal failed: {ex}");
+                        }
+                        string success = removed ? "" : "\n\nBan removal failed. May already be unbanned.";
                         string name = UserCommands.EscapeUserInput(banSection.GetString("name"));
-                        ModBotLoggers.SendEmbedToAllFor(guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("Temp Ban Expired").WithDescription($"Temp ban for <@{userId}> (`{name}`) expired.").Build());
+                        ModBotLoggers.SendEmbedToAllFor(guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("Temp Ban Expired").WithDescription($"Temp ban for <@{userId}> (`{name}`) expired.{success}").Build());
                         subSection.Remove(key);
                         TempBansFile.Set($"old_bans.{key}", subSection);
                         Save();
