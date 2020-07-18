@@ -178,7 +178,7 @@ namespace DiscordModBot.CommandHandlers
             }
             if (!wasDNS)
             {
-                Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
+                Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NORMAL };
                 warning.Reason = "Marked as Do-Not-Support. User should not receive support unless this status is rescinded.";
                 IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Do Not Support Status Applied").WithDescription($"<@{message.Author.Id}> has marked <@{userID}> as do-not-support.\n{DiscordModBot.DoNotSupportMessage}").Build()).Result;
                 warning.Link = LinkToMessage(sentMessage);
