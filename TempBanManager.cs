@@ -69,6 +69,34 @@ namespace DiscordModBot
         }
 
         /// <summary>
+        /// Disables any existing temp bans for an ID (to add a new one).
+        /// </summary>
+        public void DisableTempBansFor(ulong guildId, ulong userId)
+        {
+            lock (this)
+            {
+                FDSSection subSection = TempBansFile.GetSection("temp_ban");
+                if (subSection == null)
+                {
+                    return;
+                }
+                foreach (string key in subSection.GetRootKeys())
+                {
+                    FDSSection banSection = subSection.GetSection(key);
+                    ulong sectionGuildId = banSection.GetUlong("guild").Value;
+                    ulong sectionUserId = banSection.GetUlong("user").Value;
+                    if (sectionGuildId == guildId && sectionUserId == userId)
+                    {
+                        subSection.Remove(key);
+                        TempBansFile.Set($"old_bans.{key}", subSection);
+                        Save();
+                        return;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Scan for temp-bans to remove.
         /// </summary>
         public void Scan()
@@ -142,6 +170,7 @@ namespace DiscordModBot
             string name = user == null ? "(unknown)" :  $"{user.Username}#{user.Discriminator}";
             lock (this)
             {
+                DisableTempBansFor(guildId, userId);
                 int count = TempBansFile.GetInt("count").Value + 1;
                 TempBansFile.Set("count", count);
                 TempBansFile.Set($"temp_ban.{count}.guild", guildId);
