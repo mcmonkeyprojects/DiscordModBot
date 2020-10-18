@@ -266,7 +266,15 @@ namespace DiscordModBot.CommandHandlers
             warning.Reason = EscapeUserInput(string.Join(" ", cmdsToSave));
             IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Note Recorded").WithDescription($"Note from <@{message.Author.Id}> to <@{userID}> recorded.").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
-            WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
+            try
+            {
+                WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while storing note: {ex}");
+                SendErrorMessageReply(message, "Internal Error", $"ModBot encountered an internal error while saving that user-note. Check the bot console for details.\n{DiscordModBot.AttentionNotice}");
+            }
         }
 
         /// <summary>
@@ -301,23 +309,31 @@ namespace DiscordModBot.CommandHandlers
             warning.Reason = EscapeUserInput(string.Join(" ", cmds.Skip(1)));
             IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warning Recorded").WithDescription($"Warning from <@{message.Author.Id}> to <@{userID}> recorded.\nReason: {warning.Reason}{pastWarningsText}").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
-            lock (WarningUtilities.WarnLock)
-            {
-                warnUser.AddWarning(warning);
-            }
-            SocketGuildUser socketUser = (message.Channel as SocketGuildChannel).GetUser(userID);
-            if (socketUser != null)
-            {
-                PossibleMute(socketUser, message, level);
-            }
-            else if (level == WarningLevel.INSTANT_MUTE)
+            try
             {
                 lock (WarningUtilities.WarnLock)
                 {
-                    warnUser.IsMuted = true;
-                    warnUser.Save();
+                    warnUser.AddWarning(warning);
                 }
-                SendGenericPositiveMessageReply(message, "Mute Recorded", "Mute applied for next rejoin.");
+                SocketGuildUser socketUser = (message.Channel as SocketGuildChannel).GetUser(userID);
+                if (socketUser != null)
+                {
+                    PossibleMute(socketUser, message, level);
+                }
+                else if (level == WarningLevel.INSTANT_MUTE)
+                {
+                    lock (WarningUtilities.WarnLock)
+                    {
+                        warnUser.IsMuted = true;
+                        warnUser.Save();
+                    }
+                    SendGenericPositiveMessageReply(message, "Mute Recorded", "Mute applied for next rejoin.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while warning: {ex}");
+                SendErrorMessageReply(message, "Internal Error", $"ModBot encountered an internal error while saving that warning. Check the bot console for details.\n{DiscordModBot.AttentionNotice}");
             }
         }
 

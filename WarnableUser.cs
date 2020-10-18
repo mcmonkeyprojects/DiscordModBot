@@ -194,7 +194,10 @@ namespace DiscordModBot
             AddCommentIfNeeded("is_muted", "Whether this user is muted (or should be).");
         }
 
-        public static Object SaveLock = new Object();
+        /// <summary>
+        /// The lock used when saving a WarnableUser to file.
+        /// </summary>
+        public static LockObject SaveLock = new LockObject();
 
         /// <summary>
         /// Save the warning file.

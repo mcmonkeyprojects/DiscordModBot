@@ -140,7 +140,7 @@ namespace DiscordModBot
                             UserCommands.SendGenericPositiveMessageReply(message, "Rename Notice", $"Notice: User <@{message.Author.Id}> changed their base username from `{oldName}` to `{authorName}`.");
                         }
                         // TODO: Spam detection
-                        NameUtilities.AsciiNameRuleCheck(message as IUserMessage, message.Author as SocketGuildUser);
+                        NameUtilities.AsciiNameRuleCheck(message, message.Author as SocketGuildUser);
 
                     }
                     catch (Exception ex)
