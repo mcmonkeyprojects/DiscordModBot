@@ -98,7 +98,10 @@ namespace DiscordModBot.CommandHandlers
             DiscordModBot.TempBanHandler.TempBan((message.Channel as SocketGuildChannel).Guild.Id, userID, realDuration);
             string durationFormat = realDuration.SimpleFormat(false);
             ModBotLoggers.SendEmbedToAllFor((message.Channel as SocketGuildChannel).Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("User Temporarily Banned").WithColor(255, 0, 0).WithDescription($"User <@{userID}> was temporarily banned for {durationFormat}.").Build());
-            SendGenericPositiveMessageReply(message, "Temporary Ban Applied", $"<@{message.Author.Id}> has temporarily banned <@{userID}> for {durationFormat}.");
+            IUserMessage banNotice = SendGenericPositiveMessageReply(message, "Temporary Ban Applied", $"<@{message.Author.Id}> has temporarily banned <@{userID}> for {durationFormat}.");
+            Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE, Reason = $"BANNED for {durationFormat}." };
+            warning.Link = LinkToMessage(banNotice);
+            WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
         }
 
         /// <summary>

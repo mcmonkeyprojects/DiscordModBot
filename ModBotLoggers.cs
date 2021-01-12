@@ -284,7 +284,7 @@ namespace DiscordModBot
             {
                 if (firstDiff > 100)
                 {
-                    text = "..." + text.Substring(firstDiff - 50);
+                    text = "..." + text[(firstDiff - 50)..];
                     lastDiff -= (firstDiff - 50 - "...".Length);
                     firstDiff = 50 + "...".Length;
                 }
@@ -297,7 +297,7 @@ namespace DiscordModBot
             if (initialFirstDiff > 10 || initialLastDiff < longerLength - 10)
             {
                 string preText = firstDiff == 0 ? "" : $"`{text.Substring(0, firstDiff)}`";
-                string lastText = lastDiff >= text.Length ? "" : $"`{text.Substring(lastDiff)}`";
+                string lastText = lastDiff >= text.Length ? "" : $"`{text[lastDiff..]}`";
                 string middleText = text[firstDiff..Math.Min(lastDiff, text.Length)];
                 if (!string.IsNullOrWhiteSpace(middleText))
                 {
