@@ -72,6 +72,7 @@ To configure the bot:
     - `log_channels` set to a sub-mapping of channel-IDs-to-be-logged to channel-ID-to-log-into. Use channel '0' as a catch-all.
     - `voice_join_notif_channel` set to the channel ID where voice channel join/leave notifications should be sent.
     - `mod_log_channel` set to the channel ID where logs of mod activity (warns, bans, etc) should be sent.
+    - `discord_cache_size` set to the number of messages to cache per channel.
 
 `config.fds` sample text content (the mention code is my own user ID, `mcmonkey#6666`):
 ```
@@ -90,6 +91,7 @@ mod_log_channel: 123456789012345678
 log_channels:
     123456789012345678: 098765432109876543
     0: 543215432154321543
+discord_cache_size: 1024
 ```
 
 To start the bot up:
@@ -102,7 +104,7 @@ To view the bot's terminal:
 
 The MIT License (MIT)
 
-Copyright (c) 2018-2020 Alex "mcmonkey" Goodwin
+Copyright (c) 2018-2021 Alex "mcmonkey" Goodwin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
