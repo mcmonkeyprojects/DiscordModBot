@@ -5,6 +5,7 @@ using System.Threading;
 using DiscordBotBase.CommandHandlers;
 using Discord;
 using Discord.WebSocket;
+using DiscordBotBase;
 
 namespace DiscordModBot.CommandHandlers
 {
@@ -16,32 +17,32 @@ namespace DiscordModBot.CommandHandlers
         /// <summary>
         /// Outputs an ASCII name rule test name.
         /// </summary>
-        public void CMD_TestName(string[] cmds, IUserMessage message)
+        public void CMD_TestName(CommandData command)
         {
-            if (!DiscordModBot.IsBotCommander(message.Author as SocketGuildUser))
+            if (!DiscordModBot.IsBotCommander(command.Message.Author as SocketGuildUser))
             {
-                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            string name = NameUtilities.GenerateAsciiName(string.Join(" ", cmds));
-            SendGenericPositiveMessageReply(message, "Test Name", $"Test of ASCII-Name-Rule name generator: {name}");
+            string name = NameUtilities.GenerateAsciiName(string.Join(" ", command.CleanedArguments));
+            SendGenericPositiveMessageReply(command.Message, "Test Name", $"Test of ASCII-Name-Rule name generator: {name}");
         }
 
         /// <summary>
         /// User command to sweep through all current names.
         /// </summary>
-        public void CMD_Sweep(string[] cmds, IUserMessage message)
+        public void CMD_Sweep(CommandData command)
         {
-            if (!DiscordModBot.IsBotCommander(message.Author as SocketGuildUser))
+            if (!DiscordModBot.IsBotCommander(command.Message.Author as SocketGuildUser))
             {
-                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            SocketGuildChannel channel = message.Channel as SocketGuildChannel;
+            SocketGuildChannel channel = command.Message.Channel as SocketGuildChannel;
             channel.Guild.DownloadUsersAsync();
             foreach (SocketGuildUser user in channel.Guild.Users)
             {
-                if (NameUtilities.AsciiNameRuleCheck(message, user))
+                if (NameUtilities.AsciiNameRuleCheck(command.Message, user))
                 {
                     Thread.Sleep(400);
                 }

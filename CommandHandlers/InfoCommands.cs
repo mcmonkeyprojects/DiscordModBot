@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using DiscordBotBase;
 using DiscordBotBase.CommandHandlers;
 using Discord;
 using Discord.WebSocket;
@@ -48,39 +49,39 @@ namespace DiscordModBot.CommandHandlers
         /// <summary>
         /// User command to get help (shows a list of valid bot commands).
         /// </summary>
-        public void CMD_Help(string[] cmds, IUserMessage message)
+        public void CMD_Help(CommandData command)
         {
             EmbedBuilder embed = new EmbedBuilder().WithTitle("Mod Bot Usage Help").WithColor(255, 128, 0);
             embed.AddField("Available Commands", CmdsHelp);
-            if (DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            if (DiscordModBot.IsHelper(command.Message.Author as SocketGuildUser))
             {
                 embed.AddField("Available Helper Commands", CmdsHelperHelp);
             }
-            if (DiscordModBot.IsBotCommander(message.Author as SocketGuildUser))
+            if (DiscordModBot.IsBotCommander(command.Message.Author as SocketGuildUser))
             {
                 embed.AddField("Available Admin Commands", CmdsAdminHelp);
             }
-            SendReply(message, embed.Build());
+            SendReply(command.Message, embed.Build());
         }
 
         /// <summary>
         /// User command to say 'hello' and get a source link.
         /// </summary>
-        public void CMD_Hello(string[] cmds, IUserMessage message)
+        public void CMD_Hello(CommandData command)
         {
-            SendGenericPositiveMessageReply(message, "Discord Mod Bot", "Hi! I'm a bot! Find my source code at <https://github.com/mcmonkeyprojects/DiscordModBot>.");
+            SendGenericPositiveMessageReply(command.Message, "Discord Mod Bot", "Hi! I'm a bot! Find my source code at <https://github.com/mcmonkeyprojects/DiscordModBot>.");
         }
 
         /// <summary>
         /// User command to list user old names.
         /// </summary>
-        public void CMD_ListNames(string[] cmds, IUserMessage message)
+        public void CMD_ListNames(CommandData command)
         {
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
             {
                 return;
             }
-            WarnableUser user = WarningUtilities.GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userID);
+            WarnableUser user = WarningUtilities.GetWarnableUser((command.Message.Channel as SocketGuildChannel).Guild.Id, userID);
             List<StringBuilder> builders = new List<StringBuilder>();
             StringBuilder nameStringOutput = new StringBuilder();
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
@@ -97,23 +98,23 @@ namespace DiscordModBot.CommandHandlers
             builders.Add(nameStringOutput);
             if (nameStringOutput.Length == 0)
             {
-                SendGenericNegativeMessageReply(message, "Never Seen That User", $"User {user.LastKnownUsername} does not have any known names (never spoken here).");
+                SendGenericNegativeMessageReply(command.Message, "Never Seen That User", $"User {user.LastKnownUsername} does not have any known names (never spoken here).");
             }
             else
             {
-                SendGenericPositiveMessageReply(message, "Seen Usernames", $"User {user.LastKnownUsername} has the following known usernames:\n{builders[0]}");
+                SendGenericPositiveMessageReply(command.Message, "Seen Usernames", $"User {user.LastKnownUsername} has the following known usernames:\n{builders[0]}");
                 for (int i = 1; i < builders.Count; i++)
                 {
                     if (i == 2 && builders.Count > 4)
                     {
-                        SendGenericPositiveMessageReply(message, "Too Many Usernames", $"...(Skipped {(builders.Count - 3)} paragraphs of names)...");
+                        SendGenericPositiveMessageReply(command.Message, "Too Many Usernames", $"...(Skipped {(builders.Count - 3)} paragraphs of names)...");
                         continue;
                     }
                     if (i > 2 && i + 1 < builders.Count)
                     {
                         continue;
                     }
-                    SendGenericPositiveMessageReply(message, "Seen Usernames Continued", $"... continued:\n{builders[i]}");
+                    SendGenericPositiveMessageReply(command.Message, "Seen Usernames Continued", $"... continued:\n{builders[i]}");
                 }
             }
         }

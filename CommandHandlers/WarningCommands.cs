@@ -36,29 +36,29 @@ namespace DiscordModBot.CommandHandlers
         /// <summary>
         /// User command to temporarily ban a user.
         /// </summary>
-        public void CMD_TempBan(string[] cmds, IUserMessage message)
+        public void CMD_TempBan(CommandData command)
         {
-            if (!DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            if (!DiscordModBot.IsHelper(command.Message.Author as SocketGuildUser))
             {
-                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            if ((message.MentionedUserIds.Count() < 2 && cmds.Length < 2) || cmds.Length < 1)
+            if (command.RawArguments.Length < 2)
             {
-                SendErrorMessageReply(message, "Invalid Input", "Usage: tempban [user] [duration] ... Duration can be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
+                SendErrorMessageReply(command.Message, "Invalid Input", "Usage: tempban [user] [duration] ... Duration can be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
             {
                 return;
             }
-            SocketGuildUser guildUser = (message.Channel as SocketGuildChannel).GetUser(userID);
+            SocketGuildUser guildUser = (command.Message.Channel as SocketGuildChannel).GetUser(userID);
             if (guildUser != null && DiscordModBot.IsHelper(guildUser))
             {
-                SendErrorMessageReply(message, "I Can't Let You Do That", "That user is too powerful to be banned.");
+                SendErrorMessageReply(command.Message, "I Can't Let You Do That", "That user is too powerful to be banned.");
                 return;
             }
-            string durationText = cmds[message.MentionedUserIds.Count == 2 ? 0 : 1];
+            string durationText = command.RawArguments[1];
             TimeSpan realDuration;
             if (durationText.EndsWith("h") && double.TryParse(durationText.Before('h'), out double hours))
             {
@@ -82,44 +82,44 @@ namespace DiscordModBot.CommandHandlers
             }
             else
             {
-                SendErrorMessageReply(message, "Invalid Input", "Duration must be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
+                SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
                 return;
             }
             if (realDuration.TotalMinutes < 1)
             {
-                SendErrorMessageReply(message, "Invalid Input", "Duration must be a positive value greater than one minute.");
+                SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be a positive value greater than one minute.");
                 return;
             }
             if (realDuration.TotalDays > 365 * 2)
             {
-                SendErrorMessageReply(message, "Invalid Input", "Duration must be less than 2 years.");
+                SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be less than 2 years.");
                 return;
             }
-            DiscordModBot.TempBanHandler.TempBan((message.Channel as SocketGuildChannel).Guild.Id, userID, realDuration);
+            DiscordModBot.TempBanHandler.TempBan((command.Message.Channel as SocketGuildChannel).Guild.Id, userID, realDuration);
             string durationFormat = realDuration.SimpleFormat(false);
-            ModBotLoggers.SendEmbedToAllFor((message.Channel as SocketGuildChannel).Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("User Temporarily Banned").WithColor(255, 0, 0).WithDescription($"User <@{userID}> was temporarily banned for {durationFormat}.").Build());
-            IUserMessage banNotice = SendGenericPositiveMessageReply(message, "Temporary Ban Applied", $"<@{message.Author.Id}> has temporarily banned <@{userID}> for {durationFormat}.");
-            Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE, Reason = $"BANNED for {durationFormat}." };
+            ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("User Temporarily Banned").WithColor(255, 0, 0).WithDescription($"User <@{userID}> was temporarily banned for {durationFormat}.").Build());
+            IUserMessage banNotice = SendGenericPositiveMessageReply(command.Message, "Temporary Ban Applied", $"<@{command.Message.Author.Id}> has temporarily banned <@{userID}> for {durationFormat}.");
+            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE, Reason = $"BANNED for {durationFormat}." };
             warning.Link = LinkToMessage(banNotice);
-            WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
+            WarningUtilities.Warn((command.Message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
         }
 
         /// <summary>
         /// User command to remove a user's muted status.
         /// </summary>
-        public void CMD_Unmute(string[] cmds, IUserMessage message)
+        public void CMD_Unmute(CommandData command)
         {
-            if (!DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            if (!DiscordModBot.IsHelper(command.Message.Author as SocketGuildUser))
             {
-                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
             {
                 return;
             }
-            SocketGuildUser guildUserToUnmute = (message.Channel as SocketGuildChannel).GetUser(userID);
-            WarnableUser warnable = WarningUtilities.GetWarnableUser((message.Channel as IGuildChannel).GuildId, userID);
+            SocketGuildUser guildUserToUnmute = (command.Message.Channel as SocketGuildChannel).GetUser(userID);
+            WarnableUser warnable = WarningUtilities.GetWarnableUser((command.Message.Channel as IGuildChannel).GuildId, userID);
             bool wasMuted = false;
             if (warnable.IsMuted)
             {
@@ -138,31 +138,31 @@ namespace DiscordModBot.CommandHandlers
             }
             if (wasMuted)
             {
-                SendGenericPositiveMessageReply(message, "Unmuted", $"<@{message.Author.Id}> has unmuted <@{userID}>.");
-                ModBotLoggers.SendEmbedToAllFor((message.Channel as SocketGuildChannel).Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("User Unmuted").WithColor(0, 255, 0).WithDescription($"User <@{userID}> was unmuted.").Build());
+                SendGenericPositiveMessageReply(command.Message, "Unmuted", $"<@{command.Message.Author.Id}> has unmuted <@{userID}>.");
+                ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("User Unmuted").WithColor(0, 255, 0).WithDescription($"User <@{userID}> was unmuted.").Build());
             }
             else
             {
-                SendGenericNegativeMessageReply(message, "Cannot Unmute", $"User {warnable.LastKnownUsername} is already not muted.");
+                SendGenericNegativeMessageReply(command.Message, "Cannot Unmute", $"User {warnable.LastKnownUsername} is already not muted.");
             }
         }
 
         /// <summary>
         /// User command to mark a user as do-not-support.
         /// </summary>
-        public void CMD_DoNotSupport(string[] cmds, IUserMessage message)
+        public void CMD_DoNotSupport(CommandData command)
         {
-            if (!DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            if (!DiscordModBot.IsHelper(command.Message.Author as SocketGuildUser))
             {
-                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
             {
                 return;
             }
-            SocketGuildUser guildUser = (message.Channel as SocketGuildChannel).GetUser(userID);
-            WarnableUser warnable = WarningUtilities.GetWarnableUser((message.Channel as IGuildChannel).GuildId, userID);
+            SocketGuildUser guildUser = (command.Message.Channel as SocketGuildChannel).GetUser(userID);
+            WarnableUser warnable = WarningUtilities.GetWarnableUser((command.Message.Channel as IGuildChannel).GuildId, userID);
             bool wasDNS = warnable.IsDoNotSupport;
             if (!wasDNS)
             {
@@ -174,7 +174,7 @@ namespace DiscordModBot.CommandHandlers
                 IRole role = guildUser.Guild.Roles.FirstOrDefault((r) => r.Name.ToLowerInvariant() == DiscordModBot.DoNotSupportRoleName);
                 if (role == null)
                 {
-                    SendErrorMessageReply(message, "Failed To Apply", "Cannot apply Do-Not-Support: no matching role found.");
+                    SendErrorMessageReply(command.Message, "Failed To Apply", "Cannot apply Do-Not-Support: no matching role found.");
                     return;
                 }
                 guildUser.AddRoleAsync(role).Wait();
@@ -183,39 +183,39 @@ namespace DiscordModBot.CommandHandlers
             {
                 int warningCount = warnable.GetWarnings().Count();
                 string pastWarningsText = warningCount == 0 ? "" : $"\n\nUser has {warningCount} previous warnings or notes.";
-                Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NORMAL };
+                Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NORMAL };
                 warning.Reason = "Marked as Do-Not-Support. User should not receive support unless this status is rescinded.";
                 string wasDNSdBefore = "";
                 if (warnable.GetWarnings().Any(w => w.Reason == warning.Reason))
                 {
                     wasDNSdBefore = "\n\nUser has previously had a Do-Not-Support status applied.";
                 }
-                IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Do Not Support Status Applied").WithDescription($"<@{message.Author.Id}> has marked <@{userID}> as do-not-support.\n{DiscordModBot.DoNotSupportMessage}{pastWarningsText}{wasDNSdBefore}").Build()).Result;
+                IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Do Not Support Status Applied").WithDescription($"<@{command.Message.Author.Id}> has marked <@{userID}> as do-not-support.\n{DiscordModBot.DoNotSupportMessage}{pastWarningsText}{wasDNSdBefore}").Build()).Result;
                 warning.Link = LinkToMessage(sentMessage);
-                WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
+                WarningUtilities.Warn((command.Message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
             }
             else
             {
-                SendGenericNegativeMessageReply(message, "Cannot Apply", $"User {warnable.LastKnownUsername} is already marked as Do-Not-Support.");
+                SendGenericNegativeMessageReply(command.Message, "Cannot Apply", $"User {warnable.LastKnownUsername} is already marked as Do-Not-Support.");
             }
         }
 
         /// <summary>
         /// User command to remove a Do-Not-Support status from a user.
         /// </summary>
-        public void CMD_RemoveDoNotSupport(string[] cmds, IUserMessage message)
+        public void CMD_RemoveDoNotSupport(CommandData command)
         {
-            if (!DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            if (!DiscordModBot.IsHelper(command.Message.Author as SocketGuildUser))
             {
-                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
             {
                 return;
             }
-            SocketGuildUser guildUser = (message.Channel as SocketGuildChannel).GetUser(userID);
-            WarnableUser warnable = WarningUtilities.GetWarnableUser((message.Channel as IGuildChannel).GuildId, userID);
+            SocketGuildUser guildUser = (command.Message.Channel as SocketGuildChannel).GetUser(userID);
+            WarnableUser warnable = WarningUtilities.GetWarnableUser((command.Message.Channel as IGuildChannel).GuildId, userID);
             bool wasDNS = warnable.IsDoNotSupport;
             if (wasDNS)
             {
@@ -233,84 +233,81 @@ namespace DiscordModBot.CommandHandlers
             }
             if (wasDNS)
             {
-                Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
+                Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
                 warning.Reason = "Do-not-support status rescinded. The user may receive help going forward.";
-                IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Do Not Support Status Removed").WithDescription($"<@{message.Author.Id}> has rescinded the DoNotSupport status of <@{userID}>.\nYou are now allowed to receive support.").Build()).Result;
+                IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Do Not Support Status Removed").WithDescription($"<@{command.Message.Author.Id}> has rescinded the DoNotSupport status of <@{userID}>.\nYou are now allowed to receive support.").Build()).Result;
                 warning.Link = LinkToMessage(sentMessage);
-                WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
+                WarningUtilities.Warn((command.Message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
             }
             else
             {
-                SendGenericNegativeMessageReply(message, "Cannot Remove", $"User {warnable.LastKnownUsername} already is not marked as Do-Not-Support.");
+                SendGenericNegativeMessageReply(command.Message, "Cannot Remove", $"User {warnable.LastKnownUsername} already is not marked as Do-Not-Support.");
             }
         }
 
         /// <summary>
         /// User command to add a note to a user.
         /// </summary>
-        public void CMD_Note(string[] cmds, IUserMessage message)
+        public void CMD_Note(CommandData command)
         {
-            if (!DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            if (!DiscordModBot.IsHelper(command.Message.Author as SocketGuildUser))
             {
-                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            if (message.MentionedUserIds.Count() < 2 && cmds.Length < 2)
+            if (command.RawArguments.Length < 2)
             {
-                SendErrorMessageReply(message, "Invalid Input", "Usage: note [user] [message]");
+                SendErrorMessageReply(command.Message, "Invalid Input", "Usage: note [user] [message]");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
             {
                 return;
             }
-            IEnumerable<string> cmdsToSave = message.MentionedUserIds.Count == 2 ? cmds : cmds.Skip(1);
-            Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
+            IEnumerable<string> cmdsToSave = command.RawArguments.Skip(1);
+            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
             warning.Reason = EscapeUserInput(string.Join(" ", cmdsToSave));
-            IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Note Recorded").WithDescription($"Note from <@{message.Author.Id}> to <@{userID}> recorded.").Build()).Result;
+            IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Note Recorded").WithDescription($"Note from <@{command.Message.Author.Id}> to <@{userID}> recorded.").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
             try
             {
-                WarningUtilities.Warn((message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
+                WarningUtilities.Warn((command.Message.Channel as SocketGuildChannel).Guild.Id, userID, warning);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error while storing note: {ex}");
-                SendErrorMessageReply(message, "Internal Error", $"ModBot encountered an internal error while saving that user-note. Check the bot console for details.\n{DiscordModBot.AttentionNotice}");
+                SendErrorMessageReply(command.Message, "Internal Error", $"ModBot encountered an internal error while saving that user-note. Check the bot console for details.\n{DiscordModBot.AttentionNotice}");
             }
         }
 
         /// <summary>
         /// User command to give a warning to a user.
         /// </summary>
-        public void CMD_Warn(string[] cmds, IUserMessage message)
+        public void CMD_Warn(CommandData command)
         {
-            if (!DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            if (!DiscordModBot.IsHelper(command.Message.Author as SocketGuildUser))
             {
-                SendErrorMessageReply(message, "Not Authorized", "You're not allowed to do that.");
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            if (message.MentionedUserIds.Count() < 2 && cmds.Length < 2)
+            if (command.RawArguments.Length < 3)
             {
-                SendErrorMessageReply(message, "Invalid Input", "Usage: warn [user] [level] [reason] - Valid levels: `minor`, `normal`, `serious`, or `instant_mute`");
+                SendErrorMessageReply(command.Message, "Invalid Input", "Usage: warn [user] [level] [reason] - Valid levels: `minor`, `normal`, `serious`, or `instant_mute`");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
             {
                 return;
             }
-            int cmdPos = message.MentionedUserIds.Count == 2 ? 0 : 1;
-            if (cmds.Length <= cmdPos || !LevelsTypable.TryGetValue(cmds[cmdPos].ToLowerInvariant(), out WarningLevel level))
+            if (!LevelsTypable.TryGetValue(command.RawArguments[1].ToLowerInvariant(), out WarningLevel level))
             {
-                SendErrorMessageReply(message, "Invalid Input", "Unknown level. Valid levels: `minor`, `normal`, `serious`, or `instant_mute`.");
+                SendErrorMessageReply(command.Message, "Invalid Input", "Unknown level. Valid levels: `minor`, `normal`, `serious`, or `instant_mute`.");
                 return;
             }
-            WarnableUser warnUser = WarningUtilities.GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userID);
-            int warningCount = warnUser.GetWarnings().Count();
-            string pastWarningsText = warningCount == 0 ? "" : $"\n\nUser has {warningCount} previous warnings or notes.";
-            Warning warning = new Warning() { GivenTo = userID, GivenBy = message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
-            warning.Reason = EscapeUserInput(string.Join(" ", cmds.Skip(1)));
-            IUserMessage sentMessage = message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warning Recorded").WithDescription($"Warning from <@{message.Author.Id}> to <@{userID}> recorded.\nReason: {warning.Reason}{pastWarningsText}").Build()).Result;
+            WarnableUser warnUser = WarningUtilities.GetWarnableUser((command.Message.Channel as SocketGuildChannel).Guild.Id, userID);
+            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
+            warning.Reason = EscapeUserInput(string.Join(" ", command.RawArguments.Skip(2)));
+            IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warning Recorded").WithDescription($"Warning from <@{command.Message.Author.Id}> to <@{userID}> recorded.\nReason: {warning.Reason}{warnUser.GetPastWarningsText()}").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
             try
             {
@@ -318,10 +315,10 @@ namespace DiscordModBot.CommandHandlers
                 {
                     warnUser.AddWarning(warning);
                 }
-                SocketGuildUser socketUser = (message.Channel as SocketGuildChannel).GetUser(userID);
+                SocketGuildUser socketUser = (command.Message.Channel as SocketGuildChannel).GetUser(userID);
                 if (socketUser != null)
                 {
-                    PossibleMute(socketUser, message, level);
+                    PossibleMute(socketUser, command.Message, level);
                 }
                 else if (level == WarningLevel.INSTANT_MUTE)
                 {
@@ -330,13 +327,13 @@ namespace DiscordModBot.CommandHandlers
                         warnUser.IsMuted = true;
                         warnUser.Save();
                     }
-                    SendGenericPositiveMessageReply(message, "Mute Recorded", "Mute applied for next rejoin.");
+                    SendGenericPositiveMessageReply(command.Message, "Mute Recorded", "Mute applied for next rejoin.");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error while warning: {ex}");
-                SendErrorMessageReply(message, "Internal Error", $"ModBot encountered an internal error while saving that warning. Check the bot console for details.\n{DiscordModBot.AttentionNotice}");
+                SendErrorMessageReply(command.Message, "Internal Error", $"ModBot encountered an internal error while saving that warning. Check the bot console for details.\n{DiscordModBot.AttentionNotice}");
             }
         }
 
@@ -438,6 +435,9 @@ namespace DiscordModBot.CommandHandlers
             }
         }
 
+        /// <summary>
+        /// Helper for the ListWarn command to dump warnings information about a user to a channel.
+        /// </summary>
         public static void SendWarningList(WarnableUser user, int startId, IMessageChannel channel, IUserMessage message)
         {
             bool hasMore = false;
@@ -492,60 +492,57 @@ namespace DiscordModBot.CommandHandlers
         /// <summary>
         /// User command to list user warnings.
         /// </summary>
-        public void CMD_ListWarnings(string[] cmds, IUserMessage message)
+        public void CMD_ListWarnings(CommandData command)
         {
-            ulong userID = message.Author.Id;
-            if (DiscordModBot.IsHelper(message.Author as SocketGuildUser))
+            ulong userID = command.Message.Author.Id;
+            if (DiscordModBot.IsHelper(command.Message.Author as SocketGuildUser))
             {
-                if (!DiscordModBot.WarningCommandHandler.GetTargetUser(cmds, message, out userID))
-                {
-                    return;
-                }
+                DiscordModBot.WarningCommandHandler.GetTargetUser(command, false, out userID);
             }
-            if (!(cmds.Length == 2 && int.TryParse(cmds[1], out int min) || (cmds.Length == 1 && int.TryParse(cmds[0], out min))))
+            int pageArg = command.RawArguments.Length - 1;
+            if (pageArg < 0 || !int.TryParse(command.RawArguments[pageArg], out int min))
             {
                 min = 1;
             }
             min--;
             if (min < 0)
             {
-                SendErrorMessageReply(message, "Invalid Input", "Page input invalid.");
+                SendErrorMessageReply(command.Message, "Invalid Input", "Page input invalid.");
                 return;
             }
-            WarnableUser user = WarningUtilities.GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, userID);
-            SendWarningList(user, min, message.Channel, message);
+            WarnableUser user = WarningUtilities.GetWarnableUser((command.Message.Channel as SocketGuildChannel).Guild.Id, userID);
+            SendWarningList(user, min, command.Message.Channel, command.Message);
         }
 
         /// <summary>
         /// Utility method to get the target of a command that allows targeting commands at others instead of self.
         /// </summary>
-        public bool GetTargetUser(string[] cmds, IUserMessage message, out ulong userId)
+        public bool GetTargetUser(CommandData command, bool errorIfNone, out ulong userId)
         {
-            userId = message.Author.Id;
-            IReadOnlyCollection<ulong> mentioned = message.MentionedUserIds;
-            if (mentioned.Count == 1 && cmds.Length > 0)
+            userId = command.Message.Author.Id;
+            if (command.RawArguments.Length == 0)
             {
-                if (!ulong.TryParse(cmds[0], out userId))
+                if (errorIfNone)
                 {
-                    SendErrorMessageReply(message, "Input Invalid", "Something went wrong - user ID not valid? Check that you properly input the user ID as the first argument.");
-                    return false;
+                    SendErrorMessageReply(command.Message, "Input Invalid", "This command requires a user mention or ID as the first argument, but none was given.\nWho are you trying to use this command on?");
                 }
-            }
-            else if (mentioned.Count == 2)
-            {
-                userId = mentioned.FirstOrDefault((su) => su != Bot.Client.CurrentUser.Id);
-                if (userId == default)
-                {
-                    SendErrorMessageReply(message, "Input Invalid", "Something went wrong - user mention not valid?");
-                    return false;
-                }
-            }
-            else if (mentioned.Count > 2)
-            {
-                SendErrorMessageReply(message, "Input Invalid", "You must only `@` mention this bot and the user to target.");
                 return false;
             }
-            return true;
+            string id = command.RawArguments[0];
+            if (id.StartsWith("<@") && id.EndsWith(">"))
+            {
+                id = id[2..^1].Replace("!", "");
+            }
+            if (ulong.TryParse(id, out ulong inputId))
+            {
+                userId = inputId;
+                return true;
+            }
+            if (errorIfNone)
+            {
+                SendErrorMessageReply(command.Message, "Input Invalid", "Something went wrong - user ID not valid? Check that you properly input the user mention or ID as the first argument.");
+            }
+            return false;
         }
     }
 }

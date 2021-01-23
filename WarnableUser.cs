@@ -106,6 +106,39 @@ namespace DiscordModBot
         }
 
         /// <summary>
+        /// Returns a short single-line string indicating if a user has previous warnings or notes.
+        /// Returns an empty string if none.
+        /// </summary>
+        public string GetPastWarningsText()
+        {
+            int warns = 0, notes = 0;
+            foreach (Warning warn in GetWarnings())
+            {
+                if (warn.Level == WarningLevel.NOTE)
+                {
+                    notes++;
+                }
+                else
+                {
+                    warns++;
+                }
+            }
+            if (warns > 0 && notes > 0)
+            {
+                return $"User has {warns} previous warnings and {notes} previous notes.";
+            }
+            else if (warns > 0)
+            {
+                return $"User has {warns} previous warnings.";
+            }
+            else if (notes > 0)
+            {
+                return $"User has {notes} previous notes.";
+            }
+            return "";
+        }
+
+        /// <summary>
         /// Adds a new warning to this user and saves the warning file.
         /// </summary>
         public void AddWarning(Warning warn)
