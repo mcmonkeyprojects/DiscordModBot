@@ -22,43 +22,43 @@ namespace ModBot.CommandHandlers
         /// Simple output string for general public commands.
         /// </summary>
         public static string CmdsHelp =
-                "`help` shows help output, `hello` shows a source code link, "
-                + "`listnames` views known past names of a user - in format `listnames @User`, ";
+                "`help` shows help output, `hello` shows a source code link\n"
+                + "`listnames` views known past names of a user - in format `listnames @User`\n";
 
         /// <summary>
         /// Simple output string for general user-facing warning commands.
         /// </summary>
         public static string CmdsWarningsUserHelp =
-                "`listnotes [page]` views your own notes and warnings (if any), ";
+                "`listnotes [page]` views your own notes and warnings (if any)\n";
 
         /// <summary>
         /// Simple output string for warning-related commands.
         /// </summary>
         public static string CmdsWarningsHelp =
-                "`note` leaves a note about a user - in format `note @User [message...]`, "
-                + "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed, "
-                + "`listnotes` lists notes and warnings for any user - in format `listnotes @User [page]`, ";
+                "`note` leaves a note about a user - in format `note @User [message...]`\n"
+                + "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed\n"
+                + "`listnotes` lists notes and warnings for any user - in format `listnotes @User [page]`\n";
 
         /// <summary>
         /// Simple output string for mute-related commands.
         /// </summary>
         public static string CmdsMuteHelp =
-                "`unmute` removes the Muted role from a user - in format `unmute @User`, ";
+                "`unmute` removes the Muted role from a user - in format `unmute @User`\n";
 
         /// <summary>
         /// Simple output string for ban-related commands.
         /// </summary>
         public static string CmdsBansHelp =
-                "`tempban` to temporarily ban a user - in the format `tempban @User [duration]`, ";
+                "`tempban` to temporarily ban a user - in the format `tempban @User [duration]`\n";
 
         /// <summary>
         /// Simple output string for admin commands.
         /// </summary>
         public static string CmdsAdminHelp =
-                "`restart` restarts the bot, "
-                + "`testname` shows a test name, "
-                + "`sweep` sweeps current usernames on the Discord and applies corrections as needed, "
-                + "`admin-configure` configures per-guild admin settings, ";
+                "`restart` restarts the bot\n"
+                + "`testname` shows a test name\n"
+                + "`sweep` sweeps current usernames on the Discord and applies corrections as needed\n"
+                + "`admin-configure` configures per-guild admin settings\n";
 
         /// <summary>
         /// User command to get help (shows a list of valid bot commands).
@@ -73,7 +73,7 @@ namespace ModBot.CommandHandlers
             {
                 message += CmdsWarningsUserHelp;
             }
-            embed.AddField("Available Commands", message + "...");
+            embed.AddField("Available Commands", message);
             if (DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
             {
                 message = "";
@@ -91,11 +91,11 @@ namespace ModBot.CommandHandlers
                 }
                 if (message != "")
                 {
-                    embed.AddField("Available Moderator Commands", message + "...");
+                    embed.AddField("Available Moderator Commands", message);
                 }
                 if (config.SpecialRoles.Any())
                 {
-                    embed.AddField("Available Special-Role Commands", string.Join(", ", config.SpecialRoles.Values.Select(r => $"`{r.Name}` can be added with `{r.AddCommands[0]}` and removed with `{r.RemoveCommands[0]}`")));
+                    embed.AddField("Available Special-Role Commands", string.Join("\n", config.SpecialRoles.Values.Select(r => $"`{r.Name}` can be added with `{r.AddCommands[0]}` and removed with `{r.RemoveCommands[0]}`")));
                 }
             }
             if (DiscordModBot.IsBotCommander(command.Message.Author as SocketGuildUser))
