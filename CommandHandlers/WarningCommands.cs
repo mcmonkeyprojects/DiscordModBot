@@ -57,7 +57,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", "Usage: tempban [user] [duration] ... Duration can be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
             {
                 return;
             }
@@ -135,7 +135,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
             {
                 return;
             }
@@ -195,7 +195,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", "Usage: note [user] [message]");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
             {
                 return;
             }
@@ -242,7 +242,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", "Usage: warn [user] [level] [reason] - Valid levels: `minor`, `normal`, `serious`, or `instant_mute`");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
             {
                 return;
             }
@@ -455,7 +455,7 @@ namespace ModBot.CommandHandlers
             ulong userID = command.Message.Author.Id;
             if (DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
             {
-                DiscordModBot.WarningCommandHandler.GetTargetUser(command, false, out userID);
+                DiscordModBot.WarningCommandHandler.GetTargetUser(command, false, true, out userID);
             }
             int pageArg = command.RawArguments.Length - 1;
             if (pageArg < 0 || !int.TryParse(command.RawArguments[pageArg], out int min))
@@ -475,7 +475,7 @@ namespace ModBot.CommandHandlers
         /// <summary>
         /// Utility method to get the target of a command that allows targeting commands at others instead of self.
         /// </summary>
-        public bool GetTargetUser(CommandData command, bool errorIfNone, out ulong userId)
+        public bool GetTargetUser(CommandData command, bool errorIfNone, bool errorIfInvalid, out ulong userId)
         {
             userId = command.Message.Author.Id;
             if (command.RawArguments.Length == 0)
@@ -496,7 +496,7 @@ namespace ModBot.CommandHandlers
                 userId = inputId;
                 return true;
             }
-            if (errorIfNone)
+            if (errorIfInvalid)
             {
                 SendErrorMessageReply(command.Message, "Input Invalid", "Something went wrong - user ID not valid? Check that you properly input the user mention or ID as the first argument.");
             }

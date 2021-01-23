@@ -29,7 +29,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
             {
                 return;
             }
@@ -83,7 +83,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
             {
                 return;
             }

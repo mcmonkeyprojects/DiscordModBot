@@ -79,7 +79,7 @@ namespace ModBot.CommandHandlers
         /// </summary>
         public void CMD_ListNames(CommandData command)
         {
-            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, out ulong userID))
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
             {
                 return;
             }
