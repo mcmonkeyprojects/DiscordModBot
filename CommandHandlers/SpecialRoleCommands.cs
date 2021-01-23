@@ -107,7 +107,7 @@ namespace ModBot.CommandHandlers
             }
             if (!hasRole)
             {
-                SendGenericNegativeMessageReply(command.Message, "Cannot Remove Special Role", $"User <@{userID}> does not have the special role `{role.RoleID}`.");
+                SendGenericNegativeMessageReply(command.Message, "Cannot Remove Special Role", $"User <@{userID}> does not have the special role `{role.Name}`.");
                 return;
             }
             warnable.SpecialRoles.Remove(role.Name);

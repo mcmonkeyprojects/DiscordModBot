@@ -454,7 +454,7 @@ namespace ModBot.CommandHandlers
                         {
                             SendHelpInfo("This command can be used to add a special role, with the format `add_special_role (name) (RoleID) (AddCommands) (RemoveCommands)` ... "
                                 + "if the role should auto-warn, append also newline-separated `(AddLevel) (AddWarnText) (AddExplanation) (RemoveLevel) (RemoveWarnText) (RemoveExplanation)`\n"
-                                + "For example, `add_special_role do-not-support 12345 donotsupport,nosupport,bad allowsupport,removenosupport,good NORMAL\nDo-Not-Support status applied\nYou are marked as do-not-support now\nNOTE\nDo-Not-Support status rescinded\nYou are allowed support again`", string.Join(", ", config.SpecialRoles.Keys));
+                                + "For example, `add_special_role do-not-support 12345 donotsupport,nosupport,bad allowsupport,removenosupport,good\nNORMAL\nDo-Not-Support status applied\nYou are marked as do-not-support now\nNOTE\nDo-Not-Support status rescinded\nYou are allowed support again`", string.Join(", ", config.SpecialRoles.Keys));
                             return;
                         }
                         string name = command.RawArguments[1].ToLowerFast();
@@ -477,7 +477,7 @@ namespace ModBot.CommandHandlers
                         }
                         role.RoleID = roleId;
                         role.AddCommands = command.RawArguments[3].SplitFast(',').Select(s => s.ToLowerFast()).ToList();
-                        role.RemoveCommands = command.RawArguments[4].SplitFast(',').Select(s => s.ToLowerFast()).ToList();
+                        role.RemoveCommands = command.RawArguments[4].Before("\n").SplitFast(',').Select(s => s.ToLowerFast()).ToList();
                         if (command.RawArguments.Length > 5)
                         {
                             string[] reSplitArguments = string.Join(" ", command.RawArguments).SplitFast('\n').Skip(1).Select(s => s.Trim().Replace("\\n", "\n")).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
@@ -507,7 +507,7 @@ namespace ModBot.CommandHandlers
                         config.SpecialRoles.Add(role.Name, role);
                         string addCommandsMessage = string.Join(",", role.AddCommands);
                         string removeCommandsMessage = string.Join(",", role.RemoveCommands);
-                        SendGenericPositiveMessageReply(command.Message, "Added", $"Special role `{name}` added.\nRole ID: {roleId}\nAdd commands: {addCommandsMessage}\nRemove commands: {removeCommandsMessage}");
+                        SendGenericPositiveMessageReply(command.Message, "Added", $"Special role `{name}` added.\nRole ID: `{roleId}`\nAdd commands: `{addCommandsMessage}`\nRemove commands: `{removeCommandsMessage}`");
                         break;
                     }
                 case "remove_special_role":
