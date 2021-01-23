@@ -166,6 +166,10 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
+                if (message.Author.IsBot || message.Author.IsWebhook)
+                {
+                    return Task.CompletedTask;
+                }
                 if (cache.HasValue && cache.Value.Content == message.Content)
                 {
                     // Its a reaction/embed-load/similar, ignore it.
@@ -201,6 +205,10 @@ namespace ModBot.Core
                     return Task.CompletedTask;
                 }
                 if (cache.HasValue && cache.Value.Author.Id == bot.Client.CurrentUser.Id)
+                {
+                    return Task.CompletedTask;
+                }
+                if (cache.HasValue && (cache.Value.Author.IsBot || cache.Value.Author.IsWebhook))
                 {
                     return Task.CompletedTask;
                 }
