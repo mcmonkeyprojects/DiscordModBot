@@ -454,7 +454,7 @@ namespace ModBot.CommandHandlers
                         {
                             SendHelpInfo("This command can be used to add a special role, with the format `add_special_role (name) (RoleID) (AddCommands) (RemoveCommands)` ... "
                                 + "if the role should auto-warn, append also newline-separated `(AddLevel) (AddWarnText) (AddExplanation) (RemoveLevel) (RemoveWarnText) (RemoveExplanation)`\n"
-                                + "For example, `add_special_role do-not-support 12345 donotsupport,nosupport,bad allowsupport,removenosupport,good NORMAL\nDo-Not-Support status applied\nYou are marked as do-not-support now\nNOTE\nDo-Not-Support status rescinded\nYou are allowed support again", string.Join(", ", config.SpecialRoles.Keys));
+                                + "For example, `add_special_role do-not-support 12345 donotsupport,nosupport,bad allowsupport,removenosupport,good NORMAL\nDo-Not-Support status applied\nYou are marked as do-not-support now\nNOTE\nDo-Not-Support status rescinded\nYou are allowed support again`", string.Join(", ", config.SpecialRoles.Keys));
                             return;
                         }
                         string name = command.RawArguments[1].ToLowerFast();
@@ -480,7 +480,7 @@ namespace ModBot.CommandHandlers
                         role.RemoveCommands = command.RawArguments[4].SplitFast(',').Select(s => s.ToLowerFast()).ToList();
                         if (command.RawArguments.Length > 5)
                         {
-                            string[] reSplitArguments = string.Join(" ", command.RawArguments.Skip(5)).SplitFast('\n');
+                            string[] reSplitArguments = string.Join(" ", command.RawArguments.Skip(5)).Split("\n", StringSplitOptions.RemoveEmptyEntries);
                             if (reSplitArguments.Length >= 3)
                             {
                                 if (!Enum.TryParse(reSplitArguments[0], out WarningLevel addLevel))
@@ -490,7 +490,7 @@ namespace ModBot.CommandHandlers
                                 }
                                 role.AddLevel = addLevel;
                                 role.AddWarnText = reSplitArguments[1];
-                                role.AddExplanation = reSplitArguments[2];
+                                role.AddExplanation = reSplitArguments[2].Replace("\\n", "\n");
                                 if (reSplitArguments.Length >= 6)
                                 {
                                     if (!Enum.TryParse(reSplitArguments[3], out WarningLevel removeLevel))
@@ -500,7 +500,7 @@ namespace ModBot.CommandHandlers
                                     }
                                     role.RemoveLevel = removeLevel;
                                     role.RemoveWarnText = reSplitArguments[4];
-                                    role.RemoveExplanation = reSplitArguments[5];
+                                    role.RemoveExplanation = reSplitArguments[5].Replace("\\n", "\n");
                                 }
                             }
                         }
