@@ -1,20 +1,9 @@
 using System;
 using System.Text;
-using System.IO;
 using System.Linq;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Discord.Net;
-using Discord;
-using Discord.WebSocket;
-using System.Diagnostics;
-using FreneticUtilities.FreneticExtensions;
-using FreneticUtilities.FreneticDataSyntax;
-using FreneticUtilities.FreneticToolkit;
 
-namespace DiscordModBot
+namespace ModBot.WarningHandlers
 {
     /// <summary>
     /// Possibly warning levels (how serious a warning is).

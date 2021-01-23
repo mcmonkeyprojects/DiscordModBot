@@ -9,8 +9,9 @@ using DiscordBotBase;
 using DiscordBotBase.CommandHandlers;
 using Discord;
 using Discord.WebSocket;
+using ModBot.Core;
 
-namespace DiscordModBot
+namespace ModBot.Database
 {
     /// <summary>
     /// Utility class to manage the temporary ban system.
@@ -135,7 +136,7 @@ namespace DiscordModBot
                         }
                         string success = removed ? "" : "\n\nBan removal failed. May already be unbanned.";
                         string name = UserCommands.EscapeUserInput(banSection.GetString("name"));
-                        ModBotLoggers.SendEmbedToAllFor(guild, DiscordModBot.ModLogsChannel, new EmbedBuilder().WithTitle("Temp Ban Expired").WithDescription($"Temp ban for <@{userId}> (`{name}`) expired.{success}").Build());
+                        ModBotLoggers.SendEmbedToAllFor(guild, DiscordModBot.GetConfig(guildId).ModLogsChannel, new EmbedBuilder().WithTitle("Temp Ban Expired").WithDescription($"Temp ban for <@{userId}> (`{name}`) expired.{success}").Build());
                         subSection.Remove(key);
                         TempBansFile.Set($"old_bans.{key}", subSection);
                         Save();
@@ -195,7 +196,6 @@ namespace DiscordModBot
             }
             else
             {
-
                 guild.AddBanAsync(userId, 0, banReason).Wait();
             }
         }

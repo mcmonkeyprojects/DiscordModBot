@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using Discord;
+using Discord.WebSocket;
 using FreneticUtilities.FreneticToolkit;
 using DiscordBotBase.CommandHandlers;
+using ModBot.Database;
 
-namespace DiscordModBot
+namespace ModBot.Core
 {
     /// <summary>
     /// utilities related to name handling.
@@ -63,9 +65,9 @@ namespace DiscordModBot
             return AcceptableSymbolMatcher.IsMatch(c);
         }
 
-        public static bool IsValidFirstChar(string name)
+        public static bool IsValidFirstChar(GuildConfig config, string name)
         {
-            if (!DiscordModBot.EnforceNameStartRule)
+            if (!config.EnforceNameStartRule)
             {
                 return true;
             }
@@ -78,9 +80,9 @@ namespace DiscordModBot
                 || (c >= 'A' && c <= 'Z');
         }
 
-        public static bool IsValidAsciiName(string name)
+        public static bool IsValidAsciiName(GuildConfig config, string name)
         {
-            if (!DiscordModBot.EnforceAsciiNameRule)
+            if (!config.EnforceAsciiNameRule)
             {
                 return true;
             }
@@ -123,13 +125,18 @@ namespace DiscordModBot
 
         public static bool AsciiNameRuleCheck(IUserMessage message, IGuildUser user)
         {
+            GuildConfig config = DiscordModBot.GetConfig((message.Channel as IGuildChannel).GuildId);
+            if (!config.EnforceAsciiNameRule && !config.EnforceNameStartRule)
+            {
+                return false;
+            }
             string nick = user.Nickname;
             string username = user.Username;
             if (nick != null)
             {
-                if (!IsValidAsciiName(nick))
+                if (!IsValidAsciiName(config, nick))
                 {
-                    if (IsValidAsciiName(username))
+                    if (IsValidAsciiName(config, username))
                     {
                         user.ModifyAsync(u => u.Nickname = "").Wait();
                         UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Non-ASCII nickname for <@{user.Id}> removed. Please only use a readable+typable US-English ASCII nickname.");
@@ -142,7 +149,7 @@ namespace DiscordModBot
                         return true;
                     }
                 }
-                else if (!IsValidFirstChar(nick))
+                else if (!IsValidFirstChar(config, nick))
                 {
                     if (nick.Length > 30)
                     {
@@ -156,13 +163,13 @@ namespace DiscordModBot
             }
             else
             {
-                if (!IsValidAsciiName(username))
+                if (!IsValidAsciiName(config, username))
                 {
                     user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username)).Wait();
                     UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Non-ASCII username for <@{user.Id}> has been overriden with a placeholder nickname. Please change to a readable+typable US-English ASCII nickname or username.");
                     return true;
                 }
-                else if (!IsValidFirstChar(username))
+                else if (!IsValidFirstChar(config, username))
                 {
                     if (username.Length > 30)
                     {

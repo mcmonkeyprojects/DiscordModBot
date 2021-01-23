@@ -7,8 +7,10 @@ using DiscordBotBase.CommandHandlers;
 using Discord;
 using Discord.WebSocket;
 using FreneticUtilities.FreneticToolkit;
+using ModBot.WarningHandlers;
+using ModBot.Core;
 
-namespace DiscordModBot.CommandHandlers
+namespace ModBot.CommandHandlers
 {
     /// <summary>
     /// Handlers for information commands like 'help'.
@@ -53,7 +55,7 @@ namespace DiscordModBot.CommandHandlers
         {
             EmbedBuilder embed = new EmbedBuilder().WithTitle("Mod Bot Usage Help").WithColor(255, 128, 0);
             embed.AddField("Available Commands", CmdsHelp);
-            if (DiscordModBot.IsHelper(command.Message.Author as SocketGuildUser))
+            if (DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
             {
                 embed.AddField("Available Helper Commands", CmdsHelperHelp);
             }
@@ -85,15 +87,14 @@ namespace DiscordModBot.CommandHandlers
             List<StringBuilder> builders = new List<StringBuilder>();
             StringBuilder nameStringOutput = new StringBuilder();
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
-            IEnumerable<KeyValuePair<string, DateTimeOffset>> oldNames = user.OldNames();
-            foreach (KeyValuePair<string, DateTimeOffset> old_name in user.OldNames().OrderBy((n) => n.Value.ToUnixTimeSeconds()))
+            foreach (WarnableUser.OldName old_name in user.SeenNames.OrderBy((n) => n.FirstSeen.ToUnixTimeSeconds()))
             {
                 if (nameStringOutput.Length > 1500)
                 {
                     builders.Add(nameStringOutput);
                     nameStringOutput = new StringBuilder();
                 }
-                nameStringOutput.Append($"`{old_name.Key}` (first seen: {StringConversionHelper.DateTimeToString(old_name.Value, false)})\n");
+                nameStringOutput.Append($"`{old_name.Name}` (first seen: {StringConversionHelper.DateTimeToString(old_name.FirstSeen, false)})\n");
             }
             builders.Add(nameStringOutput);
             if (nameStringOutput.Length == 0)

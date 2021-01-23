@@ -8,25 +8,41 @@ Created by mcmonkey4eva for use on my own Discord groups, though made available 
 
 I made this largely for usage on servers I control and may not have documented everything super thoroughly or made it as customizable as possible. If you're unsure how to use it or you want better customization options, please feel free to contact me to ask - either post an issue on GitHub, or send a DM to me (`mcmonkey#6666`) on Discord (GitHub issues are preferred for project-related contact).
 
+## Features
+
+DiscordModBot has the following core features:
+- Multi-guild compatibility (you can add the bot to multiple guilds and configure it on a per-guild basis)
+- Detailed configurability (every feature can be enabled or disabled per-guild)
+- Detailed persistent warnings system (see explanation below) that also ties in with most other features (mutes, bans, etc)
+- Automatic special role persisters (to apply static roles that users cannot evade by rejoining or similar, and that get logged forever)
+- Automatic mute system
+- Message edit/delete logs (can be configured on a per-channel, per-category, or per-guild basis)
+- Role change logs
+- User join/leave logs
+- Voice channel activity logs
+- Nickname and base username change logs
+- Clean name format enforcement
+- Temporary ban system
+
 ## How Warnings Work
 
 - A Discord bot user, controlled by this program, will sit idly in your Discord guild.
-- At any time, a 'helper' ranked user (a role to give to moderators, name can be changed in config) can issue a `warn` or `listwarnings` command on any other user.
-    - To issue a warning, a helper can use the following format: `@Bot warn @User normal Did a bad thing!` where `@Bot` is a mention of this bot, and `@User` is the user to warn, and `normal` is any of the following levels:
+- At any time, a 'moderator' ranked user (can be specified in config) can issue a `warn` or `listwarnings` command on any other user.
+    - To issue a warning, a moderator can use the following format: `@Bot warn @User normal Did a bad thing!` where `@Bot` is a mention of this bot, and `@User` is the user to warn, and `normal` is any of the following levels:
         - `Minor`: Not very significant warning.
         - `Normal`: Standard warning. Counted towards automatic muting.
         - `Serious`: More significant than normal warning. Counted extra towardsd automatic muting.
         - `InstantMute`: Extremely significant warning. Induces an immediate automatic muting.
-    - To list the warnings of another user, a helper can type: `@Bot listwarnings @User` where `@Bot` is a mention of this bot, and `@User` is the user to list the warnings for.
-- At any time, a user with the `botcommander` role (create a role with this exact name if needed) can issue a `restart` command to restart the bot.
+    - To list the warnings of another user, a moderator can type: `@Bot listwarnings @User` where `@Bot` is a mention of this bot, and `@User` is the user to list the warnings for.
+- At any time, a user in the `bot_commanders` list can issue a `restart` command to restart the bot.
 - At any time, a user may use the commands `help` or `hello` for general information, or `listwarnings` to see their own active warnings.
 - When a user receives a warning:
-    - That warning is recorded permanently, including metadata about it (timestamp, helper giving it, etc).
+    - That warning is recorded permanently, including metadata about it (timestamp, moderator giving it, etc).
     - Depending on severity that warning can cause the bot to mute a user (if `InstantMute` is used, or if multiple `Normal` or `Serious` warnings were issued within a few days long period).
 
-# Additional Functionality
+## Clean Name Enforcer
 
-- By default, ModBot will have some additional functionalities enabled and running out-of-the-box, including:
+- ModBot has an optional clean-name enforcement tool:
     - US-English ASCII name rule. The bot will enforce that users must have their visible name (nickname if present, otherwise username) be valid readable US-English ASCII.
         - That means, characters A-Z upper/lower and 0-9.
         - This is checked as having at least 4 such characters in a row (or a name of 3 characters exclusively having this. 2/1 character names are not allowed).
@@ -34,9 +50,6 @@ I made this largely for usage on servers I control and may not have documented e
             - Removes then nickname if the nickname is invalid but username is fine.
             - Otherwises, adds a generated nickname containing a randomly altered sentence telling the user to fix their name (and also alerts them in the text channel).
         - The reasoning for this is to discourage names that a normal English speaker on an English keyboard will be neither able to read nor write, and enforces as a bare minimum 4 symbols as that should suffice to be able to type an `@` followed by the letters and select the user from the mentionable users list (note that this is the bare minimum, not the ideal).
-    - Username change tracking. If a user changes their base username (not nickname), the bot will post a message notifying of this, as well as track all known usernames and when they were first seen.
-        - The notice is posted when and where a user sends a message. If a user changes their base username but never says anything again, the bot won't even mention it.
-        - The reasoning for this is that it may be hard to keep track of users if they choose to do something like changing their base username and avatar simultaneously (it may look as though they're a whole new user).
 
 ## Tips
 
@@ -58,39 +71,15 @@ To configure the bot:
 - Create directory `config` within this bot's directory.
 - Within the `config` directory, create file `token.txt` containing only the Discord bot token without newlines or anything else.
     - To create a bot token, refer to official Discord documentation. Alternately, you can follow the bot-user-creation parts of https://discord.foxbot.me/docs/guides/getting_started/intro.html (ignore the coding parts, just follow the first bits about creating a bot user on the Discord application system, and getting the token).
-- Within the `config` directory, create file `config.fds` (a FreneticDataSyntax file) with the following options (See also the full file text sample below):
-    - `helper_role_name` set to the name of the role for helpers (who can issue warnings).
-    - `mute_role_name` set to the name of the role for muted users (given automatically by the bot).
-    - `no_support_role_name` set to the name of the role for do-not-support users (given by moderator command).
-    - `no_support_message` set to the message to show to users who are marked as do-not-support.
-    - `attention_notice` set to text to append to a mute notice. You can use Discord internal format codes, including `<@12345>` where `12345` is a user's ID to create a Discord `@` mention (helpful to auto-mention an admin).
-    - `incidents_channel` set to a channel ID for where to post about a muting incident. Can be set to a list, and the first ID that's valid for any given guild will be used (useful for a bot operating across multiple Guilds).
-    - `enforce_ascii_name_rule` set to `true` or `false` to indicate whether the typable ASCII name rule should be enforced by the bot.
-    - `enforce_name_start_rule` set to `true` or `false` to indicate whether the A-Z first symbol in names rule should be enforced by the bot.
-    - `join_notif_channel` set to the channel ID where user join messages should be logged.
-    - `role_change_notif_channel` set to the channel ID where role and nickname change messages should be logged.
-    - `log_channels` set to a sub-mapping of channel-IDs-to-be-logged to channel-ID-to-log-into. Use channel '0' as a catch-all.
-    - `voice_join_notif_channel` set to the channel ID where voice channel join/leave notifications should be sent.
-    - `mod_log_channel` set to the channel ID where logs of mod activity (warns, bans, etc) should be sent.
+- Within the `config` directory, create file `config.fds` (a FreneticDataSyntax file) with the following options (See also the file text sample below):
+    - `bot_commanders` set to a list of global bot commander user IDs.
     - `discord_cache_size` set to the number of messages to cache per channel.
+- Specific features are configured on a per-guild basis (use `@Bot admin-configure`, you must be an admin or owner on the Discord to use that command)
 
-`config.fds` sample text content (the mention code is my own user ID, `mcmonkey#6666`):
+`config.fds` sample text content:
 ```
-helper_role_name: helper
-attention_notice: (Attn: <@105458332365504512>)
-mute_role_name: muted
-no_support_role_name: DoNotSupport
-no_support_message: This means you will not be supported on our Discord!
-incidents_channel: 493100185665142795
-enforce_ascii_name_rule: true
-enforce_name_start_rule: false
-join_notif_channel: 123456789012345678
-role_change_notif_channel: 123456789012345678
-voice_join_notif_channel: 123456789012345678
-mod_log_channel: 123456789012345678
-log_channels:
-    123456789012345678: 098765432109876543
-    0: 543215432154321543
+bot_commanders:
+- 105458332365504512
 discord_cache_size: 1024
 ```
 
