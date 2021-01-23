@@ -485,7 +485,7 @@ namespace ModBot.CommandHandlers
                             {
                                 if (!Enum.TryParse(reSplitArguments[0], out WarningLevel addLevel))
                                 {
-                                    SendErrorMessageReply(command.Message, "Invalid Value", "That role add warn level is invalid.");
+                                    SendErrorMessageReply(command.Message, "Invalid Value", $"That role add warn level, `{reSplitArguments[0]}` is invalid.");
                                     return;
                                 }
                                 role.AddLevel = addLevel;
@@ -495,7 +495,7 @@ namespace ModBot.CommandHandlers
                                 {
                                     if (!Enum.TryParse(reSplitArguments[3], out WarningLevel removeLevel))
                                     {
-                                        SendErrorMessageReply(command.Message, "Invalid Value", "That role remove warn level is invalid.");
+                                        SendErrorMessageReply(command.Message, "Invalid Value", $"That role remove warn level, `{reSplitArguments[0]}` is invalid.");
                                         return;
                                     }
                                     role.RemoveLevel = removeLevel;
