@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using DiscordBotBase;
 using DiscordBotBase.CommandHandlers;
 using ModBot.Core;
+using LiteDB;
 
 namespace ModBot.WarningHandlers
 {
@@ -18,17 +19,18 @@ namespace ModBot.WarningHandlers
         /// <summary>
         /// The user's Discord ID.
         /// </summary>
-        public ulong UserID;
+        [BsonId]
+        public ulong UserID { get; set; }
 
         /// <summary>
         /// ID of the relevant Discord guild/server.
         /// </summary>
-        public ulong GuildID;
+        public ulong GuildID { get; set; }
 
         /// <summary>
         /// A list of the user's previous names.
         /// </summary>
-        public List<OldName> SeenNames;
+        public List<OldName> SeenNames { get; set; }
 
         /// <summary>
         /// Helper class that represents a user's previous name.
@@ -38,33 +40,33 @@ namespace ModBot.WarningHandlers
             /// <summary>
             /// The old name's actual text.
             /// </summary>
-            public string Name;
+            public string Name { get; set; }
 
             /// <summary>
             /// The first time the old name was seen.
             /// </summary>
-            public DateTimeOffset FirstSeen;
+            public DateTimeOffset FirstSeen { get; set; }
         }
 
         /// <summary>
         /// Whether the user is currently muted.
         /// </summary>
-        public bool IsMuted;
+        public bool IsMuted { get; set; }
 
         /// <summary>
         /// A list of special roles applied to the user (special role names only, refer to per-server config for details of the role).
         /// </summary>
-        public List<string> SpecialRoles;
+        public List<string> SpecialRoles { get; set; }
 
         /// <summary>
         /// A list of warnings and notes for this user.
         /// </summary>
-        public List<Warning> Warnings;
+        public List<Warning> Warnings { get; set; }
 
         /// <summary>
         /// The last known username for this user.
         /// </summary>
-        public string LastKnownUsername;
+        public string LastKnownUsername { get; set; }
 
         /// <summary>
         /// Ensures the warnable user instance has all fields containing either a real value, or the default.

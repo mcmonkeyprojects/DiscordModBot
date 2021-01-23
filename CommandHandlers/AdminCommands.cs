@@ -10,6 +10,7 @@ using DiscordBotBase;
 using ModBot.Core;
 using FreneticUtilities.FreneticExtensions;
 using ModBot.Database;
+using ModBot.WarningHandlers;
 
 namespace ModBot.CommandHandlers
 {
@@ -482,20 +483,22 @@ namespace ModBot.CommandHandlers
                             string[] reSplitArguments = string.Join(" ", command.RawArguments.Skip(5)).SplitFast('\n');
                             if (reSplitArguments.Length >= 3)
                             {
-                                if (!Enum.TryParse(reSplitArguments[0], out role.AddLevel))
+                                if (!Enum.TryParse(reSplitArguments[0], out WarningLevel addLevel))
                                 {
                                     SendErrorMessageReply(command.Message, "Invalid Value", "That role add warn level is invalid.");
                                     return;
                                 }
+                                role.AddLevel = addLevel;
                                 role.AddWarnText = reSplitArguments[1];
                                 role.AddExplanation = reSplitArguments[2];
                                 if (reSplitArguments.Length >= 6)
                                 {
-                                    if (!Enum.TryParse(reSplitArguments[3], out role.RemoveLevel))
+                                    if (!Enum.TryParse(reSplitArguments[3], out WarningLevel removeLevel))
                                     {
                                         SendErrorMessageReply(command.Message, "Invalid Value", "That role remove warn level is invalid.");
                                         return;
                                     }
+                                    role.RemoveLevel = removeLevel;
                                     role.RemoveWarnText = reSplitArguments[4];
                                     role.RemoveExplanation = reSplitArguments[5];
                                 }

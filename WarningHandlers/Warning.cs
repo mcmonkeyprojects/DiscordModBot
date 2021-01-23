@@ -13,31 +13,31 @@ namespace ModBot.WarningHandlers
         /// <summary>
         /// The time the warning was given.
         /// </summary>
-        public DateTimeOffset TimeGiven;
+        public DateTimeOffset TimeGiven { get; set; }
 
         /// <summary>
         /// Who the warning was given by (Discord ID).
         /// </summary>
-        public ulong GivenBy;
+        public ulong GivenBy { get; set; }
 
         /// <summary>
         /// Who the warning was given to (Discord ID).
         /// </summary>
-        public ulong GivenTo;
+        public ulong GivenTo { get; set; }
 
         /// <summary>
         /// The warning reason (as input by a helper).
         /// </summary>
-        public string Reason;
+        public string Reason { get; set; }
 
         /// <summary>
         /// The warning level (as input by a helper).
         /// </summary>
-        public WarningLevel Level;
+        public WarningLevel Level { get; set; }
 
         /// <summary>
         /// A generated link to where the warning was given.
         /// </summary>
-        public string Link;
+        public string Link { get; set; }
     }
 }

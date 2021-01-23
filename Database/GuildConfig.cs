@@ -14,78 +14,78 @@ namespace ModBot.Database
         /// <summary>
         /// The ID of a mute role (if any).
         /// </summary>
-        public ulong? MuteRole;
+        public ulong? MuteRole { get; set; }
 
         /// <summary>
         /// The IDs of roles that are allowed moderator access.
         /// </summary>
-        public List<ulong> ModeratorRoles;
+        public List<ulong> ModeratorRoles { get; set; }
 
         /// <summary>
         /// What text to use to 'get attention' when a mute is given (eg. an @ mention to an admin).
         /// </summary>
-        public string AttentionNotice;
+        public string AttentionNotice { get; set; }
 
         /// <summary>
         /// The ID of the incident notice channel(s).
         /// </summary>
-        public List<ulong> IncidentChannel;
+        public List<ulong> IncidentChannel { get; set; }
 
         /// <summary>
         /// The ID of the join log message channel(s).
         /// </summary>
-        public List<ulong> JoinNotifChannel;
+        public List<ulong> JoinNotifChannel { get; set; }
 
         /// <summary>
         /// The ID of the voicechannel join/leave log message channel(s).
         /// </summary>
-        public List<ulong> VoiceChannelJoinNotifs;
+        public List<ulong> VoiceChannelJoinNotifs { get; set; }
 
         /// <summary>
         /// The ID of the role-change log message channel(s).
         /// </summary>
-        public List<ulong> RoleChangeNotifChannel;
+        public List<ulong> RoleChangeNotifChannel { get; set; }
 
         /// <summary>
         /// The ID of the nickname-change log message channel(s).
         /// </summary>
-        public List<ulong> NameChangeNotifChannel;
+        public List<ulong> NameChangeNotifChannel { get; set; }
 
         /// <summary>
         /// The ID of the moderation activity (warns, bans, etc) log message channel(s).
         /// </summary>
-        public List<ulong> ModLogsChannel;
+        public List<ulong> ModLogsChannel { get; set; }
 
         /// <summary>
         /// Channels to log, mapping from (channel being logged) to (channel that shows the logs).
         /// Key value 0 means log all unspecified to there.
         /// </summary>
-        public Dictionary<ulong, ulong> LogChannels;
+        public Dictionary<ulong, ulong> LogChannels { get; set; }
 
         /// <summary>
         /// Whether the ASCII name rule should be enforced by the bot.
         /// </summary>
-        public bool EnforceAsciiNameRule;
+        public bool EnforceAsciiNameRule { get; set; }
 
         /// <summary>
         /// Whether the A-Z first character name rule should be enforced by the bot.
         /// </summary>
-        public bool EnforceNameStartRule;
+        public bool EnforceNameStartRule { get; set; }
 
         /// <summary>
         /// Whether warnings are enabled.
         /// </summary>
-        public bool WarningsEnabled;
+        public bool WarningsEnabled { get; set; }
 
         /// <summary>
         /// Whether (temp)bans are enabled.
         /// </summary>
-        public bool BansEnabled;
+        public bool BansEnabled { get; set; }
 
         /// <summary>
         /// A map of special roles that persist across rejoins. Keys are names, values are data.
         /// </summary>
-        public Dictionary<string, SpecialRole> SpecialRoles;
+        public Dictionary<string, SpecialRole> SpecialRoles { get; set; }
 
         /// <summary>
         /// Represents a special role that a user can be stuck with.
@@ -95,52 +95,52 @@ namespace ModBot.Database
             /// <summary>
             /// The (modbot-side) name of the special role (not the same as the Discord role name).
             /// </summary>
-            public string Name;
+            public string Name { get; set; }
 
             /// <summary>
             /// The ID of the role.
             /// </summary>
-            public ulong RoleID;
+            public ulong RoleID { get; set; }
 
             /// <summary>
             /// The explanation text to display when adding the role to a user.
             /// </summary>
-            public string AddExplanation;
+            public string AddExplanation { get; set; }
 
             /// <summary>
             /// The explanation text to display when removing the role from a user.
             /// </summary>
-            public string RemoveExplanation;
+            public string RemoveExplanation { get; set; }
 
             /// <summary>
             /// The warning text to apply when adding the role (if any).
             /// </summary>
-            public string AddWarnText;
+            public string AddWarnText { get; set; }
 
             /// <summary>
             /// The warning text to apply when removing the role (if any).
             /// </summary>
-            public string RemoveWarnText;
+            public string RemoveWarnText { get; set; }
 
             /// <summary>
             /// The level of warning to apply when adding the role (if any).
             /// </summary>
-            public WarningLevel AddLevel;
+            public WarningLevel AddLevel { get; set; }
 
             /// <summary>
             /// The level of warning to apply when removing the role (if any).
             /// </summary>
-            public WarningLevel RemoveLevel;
+            public WarningLevel RemoveLevel { get; set; }
 
             /// <summary>
             /// A list of moderator commands that add this role to a user.
             /// </summary>
-            public List<string> AddCommands;
+            public List<string> AddCommands { get; set; }
 
             /// <summary>
             /// A list of moderator commands that remove this role from a user.
             /// </summary>
-            public List<string> RemoveCommands;
+            public List<string> RemoveCommands { get; set; }
 
             /// <summary>
             /// Returns a duplicate of this SpecialRole.

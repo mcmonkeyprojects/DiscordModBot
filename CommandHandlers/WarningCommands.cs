@@ -494,7 +494,7 @@ namespace ModBot.CommandHandlers
             if (ulong.TryParse(id, out ulong inputId))
             {
                 userId = inputId;
-                Console.WriteLine("Current command will target userr ID: " + userId);
+                Console.WriteLine("Current command will target user ID: " + userId);
                 return true;
             }
             if (errorIfInvalid)
