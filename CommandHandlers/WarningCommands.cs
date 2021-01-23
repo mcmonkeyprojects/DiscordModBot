@@ -418,21 +418,26 @@ namespace ModBot.CommandHandlers
                 reason = EscapeUserInput(reason);
                 warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at `{StringConversionHelper.DateTimeToString(warned.TimeGiven, false)}` by {giverLabel} with reason: `{reason}`. [Click For Detail]({warned.Link})\n");
             }
+            if (startId == 0 && user.SpecialRoles.Any())
+            {
+                string rolesText = string.Join(", ", user.SpecialRoles.Select(s => $"`{s}`"));
+                SendGenericPositiveMessageReply(message, "Special Roles", $"User `{user.LastKnownUsername}` has the following special roles applied:\n{rolesText}");
+            }
             if (warnID == 0)
             {
                 if (startId > 0)
                 {
-                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User {user.LastKnownUsername} does not have that page of warnings.");
+                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User `{user.LastKnownUsername}` does not have that page of warnings.");
                 }
                 else
                 {
-                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User {user.LastKnownUsername} does not have any warnings logged.");
+                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User `{user.LastKnownUsername}` does not have any warnings logged.");
                 }
             }
             else
             {
                 int warnCount = user.Warnings.Count;
-                IUserMessage sentMessage = channel.SendMessageAsync(embed: GetGenericPositiveMessageEmbed($"{warnCount} Warnings Found", $"User {user.LastKnownUsername} has the following warnings logged:\n{warnStringOutput}")).Result;
+                IUserMessage sentMessage = channel.SendMessageAsync(embed: GetGenericPositiveMessageEmbed($"{warnCount} Warnings Found", $"User `{user.LastKnownUsername}` has the following warnings logged:\n{warnStringOutput}")).Result;
                 if (hasMore && sentMessage != null && message != null)
                 {
                     sentMessage.AddReactionsAsync(new IEmote[] { new Emoji(Constants.ACCEPT_EMOJI), new Emoji(Constants.DENY_EMOJI) }).Wait();
