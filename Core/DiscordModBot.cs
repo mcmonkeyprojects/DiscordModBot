@@ -154,7 +154,6 @@ namespace ModBot.Core
 #warning TODO: Eventually remove legacy config updater.
         public static void LegacyConfigUpdate(FDSSection configFile)
         {
-            DefaultGuildConfig = new GuildConfig();
             string HelperRoleName = configFile.GetString("helper_role_name", "").ToLowerInvariant();
             string MuteRoleName = configFile.GetString("mute_role_name", "").ToLowerInvariant();
             string DoNotSupportRoleName = configFile.GetString("no_support_role_name", "").ToLowerInvariant();
@@ -223,6 +222,8 @@ namespace ModBot.Core
         public static void LoadConfig(FDSSection configFile)
         {
             BotCommanders = new HashSet<ulong>(GetIDList(configFile, "bot_commanders"));
+            DefaultGuildConfig = new GuildConfig();
+            DefaultGuildConfig.Ensure();
             LegacyConfigUpdate(configFile);
         }
 

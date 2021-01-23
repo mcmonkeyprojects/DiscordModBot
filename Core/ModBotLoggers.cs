@@ -46,7 +46,7 @@ namespace ModBot.Core
                 GuildConfig config = DiscordModBot.GetConfig(user.Guild.Id);
                 if (config.JoinNotifChannel.Any() || config.ModLogsChannel.Any())
                 {
-                    int nameCount = warnable.SeenNames.Count();
+                    int nameCount = warnable.SeenNames.Count;
                     string seenNameText = nameCount < 1 ? "" : $" User has {nameCount} previously seen name(s).";
                     string createdDateText = $"`{StringConversionHelper.DateTimeToString(user.CreatedAt, false)}` ({user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)})";
                     string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) joined. User account first created {createdDateText}.{seenNameText}";

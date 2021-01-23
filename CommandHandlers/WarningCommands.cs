@@ -431,7 +431,7 @@ namespace ModBot.CommandHandlers
             }
             else
             {
-                int warnCount = user.Warnings.Count();
+                int warnCount = user.Warnings.Count;
                 IUserMessage sentMessage = channel.SendMessageAsync(embed: GetGenericPositiveMessageEmbed($"{warnCount} Warnings Found", $"User {user.LastKnownUsername} has the following warnings logged:\n{warnStringOutput}")).Result;
                 if (hasMore && sentMessage != null && message != null)
                 {
