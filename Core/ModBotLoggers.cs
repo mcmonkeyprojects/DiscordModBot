@@ -390,6 +390,7 @@ namespace ModBot.Core
             {
                 return;
             }
+            channel = channel.Guild.GetChannel(logChannel);
             if (channel is not SocketTextChannel textChannel)
             {
                 Console.WriteLine($"Bad channel log output ID: {logChannel}");
