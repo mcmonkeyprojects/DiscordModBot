@@ -16,19 +16,14 @@ namespace ModBot.WarningHandlers
     public class WarnableUser
     {
         /// <summary>
-        /// The user ID (for database caching).
+        /// The user's Discord ID.
         /// </summary>
-        public ulong _id;
+        public ulong UserID;
 
         /// <summary>
         /// ID of the relevant Discord guild/server.
         /// </summary>
         public ulong GuildID;
-
-        /// <summary>
-        /// The user's Discord ID.
-        /// </summary>
-        public ulong UserID => _id;
 
         /// <summary>
         /// A list of the user's previous names.
@@ -164,7 +159,7 @@ namespace ModBot.WarningHandlers
         /// </summary>
         public void Save()
         {
-            DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(_id, this);
+            DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(UserID, this);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace ModBot.WarningHandlers
                 WarnableUser user = guildData.Users.FindById(id);
                 if (user == null)
                 {
-                    user = new WarnableUser() { _id = id, GuildID = guildId };
+                    user = new WarnableUser() { UserID = id, GuildID = guildId };
                 }
                 user.Ensure();
                 return user;

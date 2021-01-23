@@ -90,7 +90,7 @@ namespace ModBot.Database
             }
             WarnableUser user = new WarnableUser()
             {
-                _id = id,
+                UserID = id,
                 GuildID = guild.ID,
                 IsMuted = section.GetBool("is_muted", false).Value,
                 LastKnownUsername = section.GetString("last_known_username")
@@ -117,7 +117,7 @@ namespace ModBot.Database
                         FDSSection warnSection = section.GetSection("warnings." + i);
                         Warning warn = new Warning
                         {
-                            GivenTo = user._id,
+                            GivenTo = user.UserID,
                             TimeGiven = StringConversionHelper.StringToDateTime(warnSection.GetString("time_given", "MISSING")).Value,
                             GivenBy = warnSection.GetUlong("given_by").Value,
                             Reason = warnSection.GetString("reason", "MISSING"),
@@ -128,7 +128,7 @@ namespace ModBot.Database
                     }
                 }
             }
-            guild.Users.Insert(user._id, user);
+            guild.Users.Insert(user.UserID, user);
         }
 
         /// <summary>
