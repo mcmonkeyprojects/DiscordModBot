@@ -91,6 +91,10 @@ namespace ModBot.Core
                     };
                     new ModBotLoggers().InitLoggers(bot);
                 },
+                OnShutdown = () =>
+                {
+                    DatabaseHandler.Shutdown();
+                }
                 ShouldPayAttentionToMessage = (message) =>
                 {
                     return message.Channel is IGuildChannel;

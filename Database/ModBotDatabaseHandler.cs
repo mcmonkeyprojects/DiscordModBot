@@ -64,6 +64,18 @@ namespace ModBot.Database
         /// </summary>
         public ConcurrentDictionary<ulong, Guild> Guilds = new ConcurrentDictionary<ulong, Guild>();
 
+        /// <summary>
+        /// Shuts down the database handler cleanly.
+        /// </summary>
+        public void Shutdown()
+        {
+            foreach (Guild guild in Guilds.Values)
+            {
+                guild.DB.Dispose();
+            }
+            Guilds.Clear();
+        }
+
 #warning TODO: Eventually, remove legacy user updater logic
         public void UpdateLegacyUser(Guild guild, string fileName, FDSSection section)
         {
@@ -143,7 +155,7 @@ namespace ModBot.Database
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Error updating legacy user {id}/{file}: {ex}");
+                            Console.WriteLine($"Error updating legacy user {file}: {ex}");
                         }
                     }
                     if (!Directory.Exists("./warnings/archive_old_data_backup"))
