@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using FreneticUtilities.FreneticToolkit;
 using ModBot.WarningHandlers;
 using ModBot.Core;
+using ModBot.Database;
 
 namespace ModBot.CommandHandlers
 {
@@ -22,22 +23,33 @@ namespace ModBot.CommandHandlers
         /// </summary>
         public static string CmdsHelp =
                 "`help` shows help output, `hello` shows a source code link, "
-                + "`listnotes [page]` views your own notes and warnings (if any), "
-                + "`listnames` views known past names of a user - in format `listnames @User`, "
-                + "...";
+                + "`listnames` views known past names of a user - in format `listnames @User`, ";
 
         /// <summary>
-        /// Simple output string for helper commands.
+        /// Simple output string for general user-facing warning commands.
         /// </summary>
-        public static string CmdsHelperHelp =
+        public static string CmdsWarningsUserHelp =
+                "`listnotes [page]` views your own notes and warnings (if any), ";
+
+        /// <summary>
+        /// Simple output string for warning-related commands.
+        /// </summary>
+        public static string CmdsWarningsHelp =
                 "`note` leaves a note about a user - in format `note @User [message...]`, "
                 + "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed, "
-                + "`listnotes` lists notes and warnings for any user - in format `listnotes @User [page]`, "
-                + "`unmute` removes the Muted role from a user - in format `unmute @User`, "
-                + "`nosupport` marks a user as DoNotSupport - in the format `nosupport @User`, "
-                + "`removenosupport` removes the 'DoNotSupport' mark from a user - in the format `removenosupport @User`, "
-                + "`tempban` to temporarily ban a user - in the format `tempban @User [duration]`, "
-                + "...";
+                + "`listnotes` lists notes and warnings for any user - in format `listnotes @User [page]`, ";
+
+        /// <summary>
+        /// Simple output string for mute-related commands.
+        /// </summary>
+        public static string CmdsMuteHelp =
+                "`unmute` removes the Muted role from a user - in format `unmute @User`, ";
+
+        /// <summary>
+        /// Simple output string for ban-related commands.
+        /// </summary>
+        public static string CmdsBansHelp =
+                "`tempban` to temporarily ban a user - in the format `tempban @User [duration]`, ";
 
         /// <summary>
         /// Simple output string for admin commands.
@@ -46,18 +58,45 @@ namespace ModBot.CommandHandlers
                 "`restart` restarts the bot, "
                 + "`testname` shows a test name, "
                 + "`sweep` sweeps current usernames on the Discord and applies corrections as needed, "
-                + "...";
+                + "`admin-configure` configures per-guild admin settings, ";
 
         /// <summary>
         /// User command to get help (shows a list of valid bot commands).
         /// </summary>
         public void CMD_Help(CommandData command)
         {
+            SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
+            GuildConfig config = DiscordModBot.GetConfig(guild.Id);
             EmbedBuilder embed = new EmbedBuilder().WithTitle("Mod Bot Usage Help").WithColor(255, 128, 0);
-            embed.AddField("Available Commands", CmdsHelp);
+            string message = CmdsHelp;
+            if (config.WarningsEnabled)
+            {
+                message += CmdsWarningsUserHelp;
+            }
+            embed.AddField("Available Commands", message + "...");
             if (DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
             {
-                embed.AddField("Available Helper Commands", CmdsHelperHelp);
+                message = "";
+                if (config.WarningsEnabled)
+                {
+                    message += CmdsWarningsHelp;
+                }
+                if (config.MuteRole.HasValue)
+                {
+                    message += CmdsMuteHelp;
+                }
+                if (config.BansEnabled)
+                {
+                    message += CmdsBansHelp;
+                }
+                if (message != "")
+                {
+                    embed.AddField("Available Moderator Commands", message + "...");
+                }
+                if (config.SpecialRoles.Any())
+                {
+                    embed.AddField("Available Special-Role Commands", string.Join(", ", config.SpecialRoles.Values.Select(r => $"`{r.Name}` can be added with `{r.AddCommands[0]}` and removed with `{r.RemoveCommands[0]}`")));
+                }
             }
             if (DiscordModBot.IsBotCommander(command.Message.Author as SocketGuildUser))
             {
