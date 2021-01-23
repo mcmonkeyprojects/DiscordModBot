@@ -505,7 +505,9 @@ namespace ModBot.CommandHandlers
                             }
                         }
                         config.SpecialRoles.Add(role.Name, role);
-                        SendGenericPositiveMessageReply(command.Message, "Added", $"Special role `{name}` added.");
+                        string addCommandsMessage = string.Join(",", role.AddCommands);
+                        string removeCommandsMessage = string.Join(",", role.RemoveCommands);
+                        SendGenericPositiveMessageReply(command.Message, "Added", $"Special role `{name}` added.\nRole ID: {roleId}\nAdd commands: {addCommandsMessage}\nRemove commands: {removeCommandsMessage}");
                         break;
                     }
                 case "remove_special_role":
