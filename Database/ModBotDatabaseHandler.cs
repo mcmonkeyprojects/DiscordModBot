@@ -10,6 +10,7 @@ using ModBot.WarningHandlers;
 using ModBot.Core;
 using FreneticUtilities.FreneticDataSyntax;
 using FreneticUtilities.FreneticToolkit;
+using FreneticUtilities.FreneticExtensions;
 
 namespace ModBot.Database
 {
@@ -70,7 +71,7 @@ namespace ModBot.Database
             {
                 return;
             }
-            ulong id = ulong.Parse(fileName[..^4]);
+            ulong id = ulong.Parse(fileName.AfterLast("/").BeforeLast("."));
             if (guild.Users.FindById(id) != null)
             {
                 return;
