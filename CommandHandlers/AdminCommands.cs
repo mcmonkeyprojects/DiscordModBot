@@ -480,7 +480,7 @@ namespace ModBot.CommandHandlers
                         role.RemoveCommands = command.RawArguments[4].SplitFast(',').Select(s => s.ToLowerFast()).ToList();
                         if (command.RawArguments.Length > 5)
                         {
-                            string[] reSplitArguments = string.Join(" ", command.RawArguments.Skip(5)).Split("\n", StringSplitOptions.RemoveEmptyEntries);
+                            string[] reSplitArguments = string.Join(" ", command.RawArguments.Skip(5)).SplitFast('\n').Select(s => s.Trim().Replace("\\n", "\n")).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
                             if (reSplitArguments.Length >= 3)
                             {
                                 if (!Enum.TryParse(reSplitArguments[0], out WarningLevel addLevel))
@@ -490,7 +490,7 @@ namespace ModBot.CommandHandlers
                                 }
                                 role.AddLevel = addLevel;
                                 role.AddWarnText = reSplitArguments[1];
-                                role.AddExplanation = reSplitArguments[2].Replace("\\n", "\n");
+                                role.AddExplanation = reSplitArguments[2];
                                 if (reSplitArguments.Length >= 6)
                                 {
                                     if (!Enum.TryParse(reSplitArguments[3], out WarningLevel removeLevel))
@@ -500,7 +500,7 @@ namespace ModBot.CommandHandlers
                                     }
                                     role.RemoveLevel = removeLevel;
                                     role.RemoveWarnText = reSplitArguments[4];
-                                    role.RemoveExplanation = reSplitArguments[5].Replace("\\n", "\n");
+                                    role.RemoveExplanation = reSplitArguments[5];
                                 }
                             }
                         }
