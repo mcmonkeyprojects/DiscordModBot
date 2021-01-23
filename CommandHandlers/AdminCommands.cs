@@ -480,7 +480,7 @@ namespace ModBot.CommandHandlers
                         role.RemoveCommands = command.RawArguments[4].SplitFast(',').Select(s => s.ToLowerFast()).ToList();
                         if (command.RawArguments.Length > 5)
                         {
-                            string[] reSplitArguments = string.Join(" ", command.RawArguments.Skip(5)).SplitFast('\n').Select(s => s.Trim().Replace("\\n", "\n")).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+                            string[] reSplitArguments = string.Join(" ", command.RawArguments).SplitFast('\n').Skip(1).Select(s => s.Trim().Replace("\\n", "\n")).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
                             if (reSplitArguments.Length >= 3)
                             {
                                 if (!Enum.TryParse(reSplitArguments[0], out WarningLevel addLevel))
