@@ -164,7 +164,7 @@ namespace ModBot.WarningHandlers
         /// </summary>
         public void Save()
         {
-            DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(this);
+            DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(_id, this);
         }
     }
 }

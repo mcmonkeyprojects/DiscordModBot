@@ -94,7 +94,7 @@ namespace ModBot.Core
                 OnShutdown = () =>
                 {
                     DatabaseHandler.Shutdown();
-                }
+                },
                 ShouldPayAttentionToMessage = (message) =>
                 {
                     return message.Channel is IGuildChannel;
@@ -200,6 +200,11 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
+            if (!string.IsNullOrWhiteSpace(HelperRoleName)) // If this is set, definitely a legacy config
+            {
+                DefaultGuildConfig.WarningsEnabled = true;
+                DefaultGuildConfig.BansEnabled = true;
+            }
             DefaultGuildConfig.AttentionNotice = configFile.GetString("attention_notice", "");
             DefaultGuildConfig.IncidentChannel = GetIDList(configFile, "incidents_channel");
             DefaultGuildConfig.EnforceAsciiNameRule = configFile.GetBool("enforce_ascii_name_rule", false).Value;

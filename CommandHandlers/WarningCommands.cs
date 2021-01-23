@@ -67,7 +67,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "I Can't Let You Do That", "That user is too powerful to be banned.");
                 return;
             }
-            WarnableUser warnable = WarningUtilities.GetWarnableUser((command.Message.Channel as IGuildChannel).GuildId, userID);
+            WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, userID);
             if (warnable.SeenNames.IsEmpty())
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", "Cannot ban that user: user has never been seen before.");
@@ -251,7 +251,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", "Unknown level. Valid levels: `minor`, `normal`, `serious`, or `instant_mute`.");
                 return;
             }
-            WarnableUser warnUser = WarningUtilities.GetWarnableUser((command.Message.Channel as SocketGuildChannel).Guild.Id, userID);
+            WarnableUser warnUser = WarningUtilities.GetWarnableUser(guild.Id, userID);
             if (warnUser.SeenNames.IsEmpty())
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", "Cannot warn on that user: user has never been seen before.");
@@ -310,7 +310,7 @@ namespace ModBot.CommandHandlers
             if (newLevel == WarningLevel.NORMAL || newLevel == WarningLevel.SERIOUS)
             {
                 double warningNeed = 0.0;
-                foreach (Warning oldWarn in WarningUtilities.GetWarnableUser((message.Channel as SocketGuildChannel).Guild.Id, user.Id).Warnings)
+                foreach (Warning oldWarn in WarningUtilities.GetWarnableUser(guild.Id, user.Id).Warnings)
                 {
                     TimeSpan relative = DateTimeOffset.UtcNow.Subtract(oldWarn.TimeGiven);
                     if (relative.TotalDays > 30)
@@ -468,7 +468,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", "Page input invalid.");
                 return;
             }
-            WarnableUser user = WarningUtilities.GetWarnableUser((command.Message.Channel as SocketGuildChannel).Guild.Id, userID);
+            WarnableUser user = WarningUtilities.GetWarnableUser(guild.Id, userID);
             SendWarningList(user, min, command.Message.Channel, command.Message);
         }
 

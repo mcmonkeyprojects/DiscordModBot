@@ -128,7 +128,7 @@ namespace ModBot.Database
                     }
                 }
             }
-            guild.Users.Insert(user);
+            guild.Users.Insert(user._id, user);
         }
 
         /// <summary>
