@@ -128,6 +128,10 @@ namespace ModBot.Database
                     }
                 }
             }
+            if (section.GetBool("is_nosupport", false).Value)
+            {
+                user.SpecialRoles.Add("nosupport-other");
+            }
             guild.Users.Insert(user.UserID, user);
         }
 

@@ -183,7 +183,7 @@ namespace ModBot.Core
                     {
                         GuildConfig.SpecialRole doNotSupport = new GuildConfig.SpecialRole
                         {
-                            Name = "do-not-support",
+                            Name = "nosupport-other",
                             AddCommands = new List<string>() { "nosupport", "donotsupport", "crack", "cracked", "cracks" },
                             RemoveCommands = new List<string>() { "removenosupport", "removedonotsupport", "removecrack", "removecracked", "removecracks", "uncrack", "uncracked", "uncracks", "legitimate" },
                             AddLevel = WarningLevel.NORMAL,
@@ -194,7 +194,7 @@ namespace ModBot.Core
                             RemoveExplanation = "You are now allowed to receive support.",
                             RoleID = dnsRole.Id
                         };
-                        config.SpecialRoles.Add("do-not-support", doNotSupport);
+                        config.SpecialRoles.Add("nosupport-other", doNotSupport);
                     }
                     database.SaveConfig();
                 }
