@@ -95,6 +95,11 @@ namespace ModBot.CommandHandlers
                 return;
             }
             bool hasRole = warnable.SpecialRoles.Contains(role.Name);
+            if (!hasRole)
+            {
+                SendGenericNegativeMessageReply(command.Message, "Cannot Remove Special Role", $"User <@{userID}> does not have the special role `{role.Name}`.");
+                return;
+            }
             if (guildUser != null)
             {
                 SocketRole socketRole = guild.GetRole(role.RoleID);
@@ -104,11 +109,6 @@ namespace ModBot.CommandHandlers
                     return;
                 }
                 guildUser.RemoveRoleAsync(socketRole).Wait();
-            }
-            if (!hasRole)
-            {
-                SendGenericNegativeMessageReply(command.Message, "Cannot Remove Special Role", $"User <@{userID}> does not have the special role `{role.Name}`.");
-                return;
             }
             warnable.SpecialRoles.Remove(role.Name);
             warnable.Save();
