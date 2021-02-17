@@ -287,6 +287,22 @@ namespace ModBot.CommandHandlers
                 Console.WriteLine($"Error while warning: {ex}");
                 SendErrorMessageReply(command.Message, "Internal Error", $"ModBot encountered an internal error while saving that warning. Check the bot console for details.\n{config.AttentionNotice}");
             }
+            if (config.NotifyWarnsInDM)
+            {
+                try
+                {
+                    SocketGuildUser user = guild.GetUser(userID);
+                    if (user != null)
+                    {
+                        user.GetOrCreateDMChannelAsync().Result.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Notification Of Moderator Warning").WithColor(255, 128, 0)
+                            .WithDescription($"You have received a warning in {guild.Name}.").AddField("Level", warning.Level.ToString()).AddField("Reason", warning.Reason).Build()).Wait();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error while DMing user {userID} about warning: {ex}");
+                }
+            }
         }
 
         /// <summary>

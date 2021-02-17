@@ -448,6 +448,30 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "notify_warns_in_dm":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("Whether warnings (when enabled) should send a notification to the warned user via Direct Message with the warning text.", config.NotifyWarnsInDM ? "true" : "false");
+                            return;
+                        }
+                        if (command.RawArguments[1] == "true")
+                        {
+                            config.NotifyWarnsInDM = true;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"DM'd warning notifications are now enabled.");
+                        }
+                        else if (command.RawArguments[1] == "false")
+                        {
+                            config.NotifyWarnsInDM = false;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"DM'd warning notifications are now disabled.");
+                        }
+                        else
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "New value must be `true` or `false` only.");
+                            return;
+                        }
+                        break;
+                    }
                 case "add_special_role":
                     {
                         if (command.RawArguments.Length < 5)
@@ -533,9 +557,11 @@ namespace ModBot.CommandHandlers
                 default:
                     {
                         EmbedBuilder embed = new EmbedBuilder().WithTitle("Admin-Configure Usage Help").WithColor(255, 128, 0);
-                        embed.Description = "ModBot's admin-configure command exists as a temporary trick pending plans to build a web interface to control ModBot more easily.\nAny sub-command without further arguments will show more info about current value.\nMost sub-command accept `null` to mean remove/clear any value (except where not possible).";
+                        embed.Description = "ModBot's admin-configure command exists as a temporary trick pending plans to build a web interface to control ModBot more easily."
+                            + "\nAny sub-command without further arguments will show more info about current value.\nMost sub-command accept `null` to mean remove/clear any value (except where not possible).";
                         embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
-                            + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, `enforce_ascii_name_rule`, `enforce_name_start_rule`, `warnings_enabled`, `bans_enabled`, `add_special_role`, `remove_special_role`");
+                            + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, "
+                            + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `warnings_enabled`, `bans_enabled`, `notify_warns_in_dm`, `add_special_role`, `remove_special_role`");
                         SendReply(command.Message, embed.Build());
                         return;
                     }

@@ -88,6 +88,11 @@ namespace ModBot.Database
         public Dictionary<string, SpecialRole> SpecialRoles { get; set; }
 
         /// <summary>
+        /// Whether to notify users about warnings received via a DM.
+        /// </summary>
+        public bool NotifyWarnsInDM { get; set; }
+
+        /// <summary>
         /// Represents a special role that a user can be stuck with.
         /// </summary>
         public class SpecialRole
@@ -227,6 +232,7 @@ namespace ModBot.Database
                 EnforceNameStartRule = EnforceNameStartRule,
                 WarningsEnabled = WarningsEnabled,
                 BansEnabled = BansEnabled,
+                NotifyWarnsInDM = NotifyWarnsInDM,
                 SpecialRoles = new Dictionary<string, SpecialRole>(SpecialRoles.Select(pair => new KeyValuePair<string, SpecialRole>(pair.Key, pair.Value.Duplicate())))
             };
         }
