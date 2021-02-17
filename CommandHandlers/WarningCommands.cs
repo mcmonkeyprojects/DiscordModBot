@@ -246,10 +246,16 @@ namespace ModBot.CommandHandlers
             {
                 return;
             }
+            int argsSkip = 2;
             if (!LevelsTypable.TryGetValue(command.RawArguments[1].ToLowerInvariant(), out WarningLevel level))
             {
-                SendErrorMessageReply(command.Message, "Invalid Input", "Unknown level. Valid levels: `minor`, `normal`, `serious`, or `instant_mute`.");
-                return;
+                if (StringConversionHelper.FindClosestString(Enum.GetNames<WarningLevel>().Select(s => s.ToLowerFast()), command.RawArguments[1].ToLowerInvariant(), maxDistance: 3) != null)
+                {
+                    SendErrorMessageReply(command.Message, "Invalid Input", "First argument is not a valid level name, but looks similar to one. Valid levels: `minor`, `normal`, `serious`, or `instant_mute`.");
+                    return;
+                }
+                argsSkip = 1;
+                level = WarningLevel.NORMAL;
             }
             WarnableUser warnUser = WarningUtilities.GetWarnableUser(guild.Id, userID);
             if (warnUser.SeenNames.IsEmpty())
@@ -258,7 +264,7 @@ namespace ModBot.CommandHandlers
                 return;
             }
             Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
-            warning.Reason = EscapeUserInput(string.Join(" ", command.RawArguments.Skip(2)));
+            warning.Reason = EscapeUserInput(string.Join(" ", command.RawArguments.Skip(argsSkip)));
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warning Recorded").WithDescription($"Warning from <@{command.Message.Author.Id}> to <@{userID}> recorded.\nReason: {warning.Reason}{warnUser.GetPastWarningsText()}").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
             try
