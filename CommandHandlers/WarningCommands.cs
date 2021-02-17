@@ -249,7 +249,7 @@ namespace ModBot.CommandHandlers
             int argsSkip = 2;
             if (!LevelsTypable.TryGetValue(command.RawArguments[1].ToLowerInvariant(), out WarningLevel level))
             {
-                if (StringConversionHelper.FindClosestString(Enum.GetNames<WarningLevel>().Select(s => s.ToLowerFast()), command.RawArguments[1].ToLowerInvariant(), maxDistance: 3) != null)
+                if (StringConversionHelper.FindClosestString(LevelsTypable.Keys, command.RawArguments[1].ToLowerInvariant(), maxDistance: 3) != null)
                 {
                     SendErrorMessageReply(command.Message, "Invalid Input", "First argument is not a valid level name, but looks similar to one. Valid levels: `minor`, `normal`, `serious`, or `instant_mute`.");
                     return;

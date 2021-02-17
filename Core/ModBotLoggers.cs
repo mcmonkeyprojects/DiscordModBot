@@ -102,14 +102,14 @@ namespace ModBot.Core
                     }
                     foreach (ulong chan in config.IncidentChannel)
                     {
-                        IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
-                        if (possibles.Any())
+                        SocketGuildChannel incidentChan = user.Guild.GetChannel(chan);
+                        if (incidentChan != null && incidentChan is ISocketMessageChannel incidentChanText)
                         {
                             string warnMessage = $"User <@{ user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command or refer to the private logs channel to see details.";
-                            possibles.First().SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build()).Wait();
+                            incidentChanText.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build()).Wait();
                             if (warnable.IsMuted)
                             {
-                                possibles.First().SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription("You have been automatically muted by the system due to being muted and then rejoining the Discord."
+                                incidentChanText.SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription("You have been automatically muted by the system due to being muted and then rejoining the Discord."
                                     + " You may discuss the situation in this channel only, until a moderator unmutes you.").Build()).Wait();
                             }
                             return Task.CompletedTask;
