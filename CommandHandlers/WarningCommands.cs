@@ -295,7 +295,7 @@ namespace ModBot.CommandHandlers
                     if (user != null)
                     {
                         user.GetOrCreateDMChannelAsync().Result.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Notification Of Moderator Warning").WithColor(255, 128, 0)
-                            .WithDescription($"You have received a warning in {guild.Name}.").AddField("Level", warning.Level.ToString()).AddField("Reason", warning.Reason).Build()).Wait();
+                            .WithDescription($"You have received a warning in {guild.Name}.").AddField("Level", $"`{warning.Level.ToString().ToLowerFast()}`").AddField("Reason", warning.Reason).Build()).Wait();
                     }
                 }
                 catch (Exception ex)
@@ -463,7 +463,7 @@ namespace ModBot.CommandHandlers
                 if (hasMore && sentMessage != null && message != null)
                 {
                     sentMessage.AddReactionsAsync(new IEmote[] { new Emoji(Constants.ACCEPT_EMOJI), new Emoji(Constants.DENY_EMOJI) }).Wait();
-                    ReactionsHandler.AddReactable(message, sentMessage, $"listwarn {user.UserID} {startId + 2}");
+                    ReactionsHandler.AddReactable(message, sentMessage, $"listwarn {user.RawUserID} {startId + 2}");
                 }
             }
         }

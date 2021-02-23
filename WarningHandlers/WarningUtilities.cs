@@ -41,6 +41,7 @@ namespace ModBot.WarningHandlers
                 {
                     user = new WarnableUser() { UserID = id, GuildID = guildId };
                 }
+                user.RawUserID = id;
                 user.Ensure();
                 return user;
             }

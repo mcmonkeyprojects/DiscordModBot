@@ -23,6 +23,11 @@ namespace ModBot.WarningHandlers
         public ulong UserID { get; set; }
 
         /// <summary>
+        /// Actual Discord user ID, as the BSON ID is sometimes altered inexplicably.
+        /// </summary>
+        public ulong RawUserID;
+
+        /// <summary>
         /// ID of the relevant Discord guild/server.
         /// </summary>
         public ulong GuildID { get; set; }
@@ -131,7 +136,7 @@ namespace ModBot.WarningHandlers
             string warnPostfix = warn.Level == WarningLevel.NOTE ? "" : " warning";
             string reason = (warn.Reason.Length > 250) ? (warn.Reason.Substring(0, 250) + "(... trimmed ...)") : warn.Reason;
             reason = UserCommands.EscapeUserInput(reason);
-            string message = $"User <@{UserID}> received a {warn.Level}{warnPostfix} from moderator <@{warn.GivenBy}>.\n\nReason: `{reason}`\n\n[Click For Details]({warn.Link})";
+            string message = $"User <@{RawUserID}> received a {warn.Level}{warnPostfix} from moderator <@{warn.GivenBy}>.\n\nReason: `{reason}`\n\n[Click For Details]({warn.Link})";
             Color color = warn.Level == WarningLevel.NOTE ? new Color(255, 255, 0) : new Color(255, 0, 0);
             ModBotLoggers.SendEmbedToAllFor(guild, DiscordModBot.GetConfig(GuildID).ModLogsChannel, new EmbedBuilder().WithColor(color).WithTitle("User Warning/Note Applied").WithDescription(message).Build());
         }
