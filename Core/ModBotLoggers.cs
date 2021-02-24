@@ -170,19 +170,20 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                if (cache.HasValue && cache.Value.Content == message.Content)
-                {
-                    // Its a reaction/embed-load/similar, ignore it.
-                    return Task.CompletedTask;
-                }
                 if (channel is not SocketGuildChannel socketChannel)
                 {
+                    return Task.CompletedTask;
+                }
+                bool hasCache = bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage oldMessage);
+                if (hasCache && oldMessage.Text == message.Content)
+                {
+                    // Its a reaction/embed-load/similar, ignore it.
                     return Task.CompletedTask;
                 }
                 GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
                 if (config.LogChannels.Any())
                 {
-                    string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content + string.Join(", ", cache.Value.Attachments.Select(a => a.Url))) : "(not cached)";
+                    string originalText = hasCache ? UserCommands.EscapeUserInput(oldMessage.Text + oldMessage.Attachments.Replace("\n", ", ")) : $"(not cached)";
                     string newText = UserCommands.EscapeUserInput(message.Content + string.Join(", ", message.Attachments.Select(a => a.Url)));
                     int longerLength = Math.Max(originalText.Length, newText.Length);
                     int firstDifference = StringConversionHelper.FindFirstDifference(originalText, newText);
@@ -204,23 +205,28 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                if (cache.HasValue && cache.Value.Author.Id == bot.Client.CurrentUser.Id)
-                {
-                    return Task.CompletedTask;
-                }
-                if (cache.HasValue && (cache.Value.Author.IsBot || cache.Value.Author.IsWebhook))
-                {
-                    return Task.CompletedTask;
-                }
                 if (channel is not SocketGuildChannel socketChannel)
                 {
                     return Task.CompletedTask;
                 }
+                bool hasCache = bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage message);
+                if (hasCache)
+                {
+                    if (message.SenderID == bot.Client.CurrentUser.Id)
+                    {
+                        return Task.CompletedTask;
+                    }
+                    if (cache.Value.Author.IsBot || cache.Value.Author.IsWebhook)
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
                 GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
                 if (config.LogChannels.Any())
                 {
-                    string originalText = cache.HasValue ? UserCommands.EscapeUserInput(cache.Value.Content + string.Join(", ", cache.Value.Attachments.Select(a => a.Url))) : $"(not cached post ID `{cache.Id}`)";
-                    string author = cache.HasValue ? $"`{NameUtilities.Username(cache.Value.Author)}` (`{cache.Value.Author.Id}`)" : "(unknown)";
+                    SocketUser user = hasCache ? bot.Client.GetUser(message.SenderID) : null;
+                    string originalText = hasCache ? UserCommands.EscapeUserInput(message.Text + message.Attachments.Replace("\n", ", ")) : $"(not cached post ID `{cache.Id}`)";
+                    string author = user != null ? $"`{NameUtilities.Username(user)}` (`{user.Id}`)" : "(unknown)";
                     LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`");
                 }
                 return Task.CompletedTask;
