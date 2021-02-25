@@ -162,40 +162,47 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                if (message.Author.Id == bot.Client.CurrentUser.Id)
+                try
                 {
-                    return Task.CompletedTask;
-                }
-                if (message.Author.IsBot || message.Author.IsWebhook)
-                {
-                    return Task.CompletedTask;
-                }
-                if (channel is not SocketGuildChannel socketChannel)
-                {
-                    return Task.CompletedTask;
-                }
-                bool hasCache = bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage oldMessage);
-                if (hasCache && oldMessage.Text == message.Content)
-                {
-                    // Its a reaction/embed-load/similar, ignore it.
-                    return Task.CompletedTask;
-                }
-                GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
-                if (config.LogChannels.Any())
-                {
-                    string originalText = hasCache ? UserCommands.EscapeUserInput(oldMessage.Text + oldMessage.Attachments.Replace("\n", ", ")) : $"(not cached)";
-                    string newText = UserCommands.EscapeUserInput(message.Content + string.Join(", ", message.Attachments.Select(a => a.Url)));
-                    int longerLength = Math.Max(originalText.Length, newText.Length);
-                    int firstDifference = StringConversionHelper.FindFirstDifference(originalText, newText);
-                    int lastDifference = longerLength - StringConversionHelper.FindFirstDifference(originalText.ReverseFast(), newText.ReverseFast());
-                    if (firstDifference == -1 || lastDifference == -1)
+                    if (message.Author.Id == bot.Client.CurrentUser.Id)
                     {
-                        // Shouldn't be possible.
                         return Task.CompletedTask;
                     }
-                    originalText = TrimForDifferencing(originalText, 700, firstDifference, lastDifference, longerLength);
-                    newText = TrimForDifferencing(newText, 900, firstDifference, lastDifference, longerLength);
-                    LogChannelActivity(socketChannel, $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in <#{channel.Id}>:\n{originalText} Became:\n{newText}");
+                    if (message.Author.IsBot || message.Author.IsWebhook)
+                    {
+                        return Task.CompletedTask;
+                    }
+                    if (channel is not SocketGuildChannel socketChannel)
+                    {
+                        return Task.CompletedTask;
+                    }
+                    bool hasCache = bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage oldMessage);
+                    if (hasCache && oldMessage.Text == message.Content)
+                    {
+                        // Its a reaction/embed-load/similar, ignore it.
+                        return Task.CompletedTask;
+                    }
+                    GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
+                    if (config.LogChannels.Any())
+                    {
+                        string originalText = hasCache ? UserCommands.EscapeUserInput(oldMessage.Text + oldMessage.Attachments.Replace("\n", ", ")) : $"(not cached)";
+                        string newText = UserCommands.EscapeUserInput(message.Content + string.Join(", ", message.Attachments.Select(a => a.Url)));
+                        int longerLength = Math.Max(originalText.Length, newText.Length);
+                        int firstDifference = StringConversionHelper.FindFirstDifference(originalText, newText);
+                        int lastDifference = longerLength - StringConversionHelper.FindFirstDifference(originalText.ReverseFast(), newText.ReverseFast());
+                        if (firstDifference == -1 || lastDifference == -1)
+                        {
+                            // Shouldn't be possible.
+                            return Task.CompletedTask;
+                        }
+                        originalText = TrimForDifferencing(originalText, 700, firstDifference, lastDifference, longerLength);
+                        newText = TrimForDifferencing(newText, 900, firstDifference, lastDifference, longerLength);
+                        LogChannelActivity(socketChannel, $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in <#{channel.Id}>:\n{originalText} Became:\n{newText}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error while processing message delete {ex}");
                 }
                 return Task.CompletedTask;
             };
@@ -205,29 +212,38 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                if (channel is not SocketGuildChannel socketChannel)
+                try
                 {
-                    return Task.CompletedTask;
-                }
-                bool hasCache = bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage message);
-                if (hasCache)
-                {
-                    if (message.SenderID == bot.Client.CurrentUser.Id)
+                    Console.WriteLine($"Parsing deletion of message id {cache.Id} in channel {channel.Id}");
+                    if (channel is not SocketGuildChannel socketChannel)
                     {
                         return Task.CompletedTask;
                     }
-                    if (cache.Value.Author.IsBot || cache.Value.Author.IsWebhook)
+                    bool hasCache = bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage message);
+                    if (hasCache)
                     {
-                        return Task.CompletedTask;
+                        if (message.SenderID == bot.Client.CurrentUser.Id)
+                        {
+                            return Task.CompletedTask;
+                        }
+                        SocketUser author = bot.Client.GetUser(message.SenderID);
+                        if (author != null && (author.IsBot || author.IsWebhook))
+                        {
+                            return Task.CompletedTask;
+                        }
+                    }
+                    GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
+                    if (config.LogChannels.Any())
+                    {
+                        SocketUser user = hasCache ? bot.Client.GetUser(message.SenderID) : null;
+                        string originalText = hasCache ? UserCommands.EscapeUserInput(message.Text + message.Attachments.Replace("\n", ", ")) : $"(not cached post ID `{cache.Id}`)";
+                        string author = user != null ? $"`{NameUtilities.Username(user)}` (`{user.Id}`)" : "(unknown)";
+                        LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`");
                     }
                 }
-                GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
-                if (config.LogChannels.Any())
+                catch (Exception ex)
                 {
-                    SocketUser user = hasCache ? bot.Client.GetUser(message.SenderID) : null;
-                    string originalText = hasCache ? UserCommands.EscapeUserInput(message.Text + message.Attachments.Replace("\n", ", ")) : $"(not cached post ID `{cache.Id}`)";
-                    string author = user != null ? $"`{NameUtilities.Username(user)}` (`{user.Id}`)" : "(unknown)";
-                    LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`");
+                    Console.WriteLine($"Error while processing message delete {ex}");
                 }
                 return Task.CompletedTask;
             };
