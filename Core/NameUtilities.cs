@@ -19,6 +19,10 @@ namespace ModBot.Core
         /// </summary>
         public static string Username(IUser user)
         {
+            if (user == null || user.Username == null)
+            {
+                return null;
+            }
             return UserCommands.EscapeUserInput(user.Username.Replace("\r", "/r").Replace("\n", "/n")) + "#" + user.Discriminator;
         }
 
