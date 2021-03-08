@@ -107,20 +107,8 @@ namespace ModBot.Core
                         // -> never posted in any other channel, pings a helper/dev/bot,
                         // -> and nobody else has posted in that channel since their first post) reaction,
                         // -> and if not in a help lobby redirect to help lobby (in same response)
-                        string authorName = NameUtilities.Username(message.Author);
                         SocketGuild guild = (message.Channel as SocketGuildChannel).Guild;
-                        GuildConfig config = GetConfig(guild.Id);
-                        if (WarningUtilities.GetWarnableUser(guild.Id, message.Author.Id).SeenUsername(authorName, out string oldName) && config.NameChangeNotifChannel.Any())
-                        {
-                            EmbedBuilder embed = new EmbedBuilder().WithTitle("User Changed Username").WithColor(0, 255, 255);
-                            if (oldName != null)
-                            {
-                                embed.AddField("Old Username", $"`{UserCommands.EscapeUserInput(oldName)}`");
-                            }
-                            embed.AddField("New Username", $"`{UserCommands.EscapeUserInput(authorName)}`");
-                            embed.Description = $"User <@{message.Author.Id}> changed their base username.";
-                            ModBotLoggers.SendEmbedToAllFor(guild, config.NameChangeNotifChannel, embed.Build());
-                        }
+                        TrackUsernameFor(message.Author, guild);
                         // TODO: Spam detection
                         NameUtilities.AsciiNameRuleCheck(message, message.Author as SocketGuildUser);
 
@@ -153,6 +141,26 @@ namespace ModBot.Core
                     }
                 }
             });
+        }
+
+        /// <summary>
+        /// Tracks a username change for a user, when a message is sent or when they join.
+        /// </summary>
+        public static void TrackUsernameFor(IUser user, SocketGuild guild)
+        {
+            GuildConfig config = GetConfig(guild.Id);
+            string authorName = NameUtilities.Username(user);
+            if (WarningUtilities.GetWarnableUser(guild.Id, user.Id).SeenUsername(authorName, out string oldName) && config.NameChangeNotifChannel.Any())
+            {
+                EmbedBuilder embed = new EmbedBuilder().WithTitle("User Changed Username").WithColor(0, 255, 255);
+                if (oldName != null)
+                {
+                    embed.AddField("Old Username", $"`{UserCommands.EscapeUserInput(oldName)}`");
+                }
+                embed.AddField("New Username", $"`{UserCommands.EscapeUserInput(authorName)}`");
+                embed.Description = $"User <@{user.Id}> changed their base username.";
+                ModBotLoggers.SendEmbedToAllFor(guild, config.NameChangeNotifChannel, embed.Build());
+            }
         }
 
 #warning TODO: Eventually remove legacy config updater.

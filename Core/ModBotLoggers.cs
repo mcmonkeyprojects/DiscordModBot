@@ -41,6 +41,7 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
+                DiscordModBot.TrackUsernameFor(user, user.Guild);
                 DiscordModBot.TempBanHandler.CheckShouldScan();
                 WarnableUser warnable = WarningUtilities.GetWarnableUser(user.Guild.Id, user.Id);
                 GuildConfig config = DiscordModBot.GetConfig(user.Guild.Id);
@@ -237,7 +238,27 @@ namespace ModBot.Core
                     {
                         SocketUser user = hasCache ? bot.Client.GetUser(message.SenderID) : null;
                         string originalText = hasCache ? UserCommands.EscapeUserInput(message.Text + message.Attachments.Replace("\n", ", ")) : $"(not cached post ID `{cache.Id}`)";
-                        string author = user != null ? $"`{NameUtilities.Username(user)}` (`{user.Id}`)" : "(unknown)";
+                        string author;
+                        if (user != null)
+                        {
+                            author = $"`{NameUtilities.Username(user)}` (`{user.Id}`)";
+                        }
+                        if (hasCache)
+                        {
+                            WarnableUser warnUser = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, message.SenderID);
+                            if (warnUser != null && !string.IsNullOrWhiteSpace(warnUser.LastKnownUsername))
+                            {
+                                author = $"`{warnUser.LastKnownUsername}`";
+                            }
+                            else
+                            {
+                                author = $"(broken/unknown user: `{message.SenderID}`)";
+                            }
+                        }
+                        else
+                        {
+                            author = $"(unknown)";
+                        }
                         LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`");
                     }
                 }
