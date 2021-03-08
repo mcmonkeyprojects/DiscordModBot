@@ -17,7 +17,7 @@ namespace ModBot.WarningHandlers
     public class WarnableUser
     {
         /// <summary>
-        /// The user's Discord ID.
+        /// The user's Discord ID, for database storage. May not always be correct.
         /// </summary>
         [BsonId]
         public ulong UserID { get; set; }

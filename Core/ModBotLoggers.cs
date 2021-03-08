@@ -248,7 +248,7 @@ namespace ModBot.Core
                             WarnableUser warnUser = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, message.SenderID);
                             if (warnUser != null && !string.IsNullOrWhiteSpace(warnUser.LastKnownUsername))
                             {
-                                author = $"`{warnUser.LastKnownUsername}`";
+                                author = $"`{warnUser.LastKnownUsername}` (`{warnUser.RawUserID}`";
                             }
                             else
                             {
