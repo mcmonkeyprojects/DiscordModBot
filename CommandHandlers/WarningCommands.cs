@@ -270,7 +270,7 @@ namespace ModBot.CommandHandlers
             try
             {
                 warnUser.AddWarning(warning);
-                SocketGuildUser socketUser = (command.Message.Channel as SocketGuildChannel).GetUser(userID);
+                SocketGuildUser socketUser = guild.GetUser(userID);
                 if (socketUser != null)
                 {
                     PossibleMute(socketUser, command.Message, level);
