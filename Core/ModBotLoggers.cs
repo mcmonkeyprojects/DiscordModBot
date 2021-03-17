@@ -41,7 +41,6 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                DiscordModBot.TrackUsernameFor(user, user.Guild);
                 DiscordModBot.TempBanHandler.CheckShouldScan();
                 WarnableUser warnable = WarningUtilities.GetWarnableUser(user.Guild.Id, user.Id);
                 GuildConfig config = DiscordModBot.GetConfig(user.Guild.Id);
@@ -57,6 +56,7 @@ namespace ModBot.Core
                         SendEmbedToAllFor(user.Guild, config.ModLogsChannel, new EmbedBuilder().WithTitle("New Account Join").WithDescription($"User <@{user.Id}> (`{NameUtilities.Username(user)}`) joined the Discord as an account first created {createdDateText}.").Build(), text: $"<@{user.Id}>");
                     }
                 }
+                DiscordModBot.TrackUsernameFor(user, user.Guild);
                 if (config.MuteRole.HasValue)
                 {
                     if (warnable.IsMuted)
