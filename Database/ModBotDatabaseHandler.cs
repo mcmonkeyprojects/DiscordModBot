@@ -76,66 +76,6 @@ namespace ModBot.Database
             Guilds.Clear();
         }
 
-#warning TODO: Eventually, remove legacy user updater logic
-        public void UpdateLegacyUser(Guild guild, string fileName, FDSSection section)
-        {
-            if (section == null)
-            {
-                return;
-            }
-            ulong id = ulong.Parse(fileName.AfterLast("/").BeforeLast("."));
-            if (guild.Users.FindById(id) != null)
-            {
-                return;
-            }
-            WarnableUser user = new WarnableUser()
-            {
-                UserID = id,
-                RawUserID = id,
-                GuildID = guild.ID,
-                IsMuted = section.GetBool("is_muted", false).Value,
-                LastKnownUsername = section.GetString("last_known_username")
-            };
-            user.Ensure();
-            FDSSection names_section = section.GetSection("seen_names");
-            if (names_section != null)
-            {
-                foreach (string key in names_section.GetRootKeys())
-                {
-                    FDSSection nameSection = names_section.GetRootData(key).Internal as FDSSection;
-                    DateTimeOffset time = StringConversionHelper.StringToDateTime(nameSection.GetString("first_seen_time")).Value;
-                    user.SeenNames.Add(new WarnableUser.OldName() { Name = FDSUtility.UnEscapeKey(key), FirstSeen = time });
-                }
-            }
-            long? currentId = section.GetLong("current_id", null);
-            if (currentId != null)
-            {
-                long currentValue = currentId.Value;
-                for (long i = currentValue; i > 0; i--)
-                {
-                    if (section.HasKey("warnings." + i))
-                    {
-                        FDSSection warnSection = section.GetSection("warnings." + i);
-                        Warning warn = new Warning
-                        {
-                            GivenTo = user.RawUserID,
-                            TimeGiven = StringConversionHelper.StringToDateTime(warnSection.GetString("time_given", "MISSING")).Value,
-                            GivenBy = warnSection.GetUlong("given_by").Value,
-                            Reason = warnSection.GetString("reason", "MISSING"),
-                            Level = EnumHelper<WarningLevel>.ParseIgnoreCase(warnSection.GetString("level", "MISSING")),
-                            Link = warnSection.GetString("link")
-                        };
-                        user.Warnings.Add(warn);
-                    }
-                }
-            }
-            if (section.GetBool("is_nosupport", false).Value)
-            {
-                user.SpecialRoles.Add("nosupport-other");
-            }
-            guild.Users.Insert(user.UserID, user);
-        }
-
         /// <summary>
         /// Gets the database for a guild, initializing it if needed.
         /// </summary>
@@ -149,26 +89,6 @@ namespace ModBot.Database
                     DB = new LiteDatabase($"./saves/server_{id}.ldb", null)
                 };
                 newGuild.Users = newGuild.DB.GetCollection<WarnableUser>("users");
-                if (Directory.Exists($"./warnings/{id}"))
-                {
-                    foreach (string file in Directory.GetFiles($"./warnings/{id}", "*.fds"))
-                    {
-                        try
-                        {
-                            FDSSection oldUser = FDSUtility.ReadFile(file);
-                            UpdateLegacyUser(newGuild, file, oldUser);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Error updating legacy user {file}: {ex}");
-                        }
-                    }
-                    if (!Directory.Exists("./warnings/archive_old_data_backup"))
-                    {
-                        Directory.CreateDirectory("./warnings/archive_old_data_backup");
-                    }
-                    Directory.Move($"./warnings/{id}", $"./warnings/archive_old_data_backup/{id}");
-                }
                 newGuild.ConfigCollection = newGuild.DB.GetCollection<GuildConfig>("guild_configs");
                 newGuild.Config = newGuild.ConfigCollection.FindById(0);
                 if (newGuild.Config == null)

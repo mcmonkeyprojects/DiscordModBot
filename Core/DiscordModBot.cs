@@ -163,71 +163,6 @@ namespace ModBot.Core
             }
         }
 
-#warning TODO: Eventually remove legacy config updater.
-        public static void LegacyConfigUpdate(FDSSection configFile)
-        {
-            string HelperRoleName = configFile.GetString("helper_role_name", "").ToLowerInvariant();
-            string MuteRoleName = configFile.GetString("mute_role_name", "").ToLowerInvariant();
-            string DoNotSupportRoleName = configFile.GetString("no_support_role_name", "").ToLowerInvariant();
-            string DoNotSupportMessage = configFile.GetString("no_support_message", "");
-            DiscordBotBaseHelper.CurrentBot.Client.Ready += () =>
-            {
-                foreach (SocketGuild guild in DiscordBotBaseHelper.CurrentBot.Client.Guilds)
-                {
-                    ModBotDatabaseHandler.Guild database = DatabaseHandler.GetDatabase(guild.Id);
-                    GuildConfig config = database.Config;
-                    SocketRole helperRole = guild.Roles.FirstOrDefault(r => r.Name.ToLowerFast() == HelperRoleName);
-                    if (helperRole != null && !config.ModeratorRoles.Contains(helperRole.Id))
-                    {
-                        config.ModeratorRoles.Add(helperRole.Id);
-                    }
-                    SocketRole muteRole = guild.Roles.FirstOrDefault(r => r.Name.ToLowerFast() == MuteRoleName);
-                    if (muteRole != null && !config.MuteRole.HasValue)
-                    {
-                        config.MuteRole = muteRole.Id;
-                    }
-                    SocketRole dnsRole = guild.Roles.FirstOrDefault(r => r.Name.ToLowerFast() == DoNotSupportRoleName);
-                    if (dnsRole != null && !config.SpecialRoles.ContainsKey("do-not-support"))
-                    {
-                        GuildConfig.SpecialRole doNotSupport = new GuildConfig.SpecialRole
-                        {
-                            Name = "nosupport-other",
-                            AddCommands = new List<string>() { "nosupport", "donotsupport", "crack", "cracked", "cracks" },
-                            RemoveCommands = new List<string>() { "removenosupport", "removedonotsupport", "removecrack", "removecracked", "removecracks", "uncrack", "uncracked", "uncracks", "legitimate" },
-                            AddLevel = WarningLevel.NORMAL,
-                            RemoveLevel = WarningLevel.NOTE,
-                            AddWarnText = "Marked as Do-Not-Support. User should not receive support unless this status is rescinded.",
-                            RemoveWarnText = "Do-not-support status rescinded. The user may receive help going forward.",
-                            AddExplanation = DoNotSupportMessage,
-                            RemoveExplanation = "You are now allowed to receive support.",
-                            RoleID = dnsRole.Id
-                        };
-                        config.SpecialRoles.Add("nosupport-other", doNotSupport);
-                    }
-                    database.SaveConfig();
-                }
-                return Task.CompletedTask;
-            };
-            if (!string.IsNullOrWhiteSpace(HelperRoleName)) // If this is set, definitely a legacy config
-            {
-                DefaultGuildConfig.WarningsEnabled = true;
-                DefaultGuildConfig.BansEnabled = true;
-            }
-            DefaultGuildConfig.AttentionNotice = configFile.GetString("attention_notice", "");
-            DefaultGuildConfig.IncidentChannel = GetIDList(configFile, "incidents_channel");
-            DefaultGuildConfig.EnforceAsciiNameRule = configFile.GetBool("enforce_ascii_name_rule", false).Value;
-            DefaultGuildConfig.EnforceNameStartRule = configFile.GetBool("enforce_name_start_rule", false).Value;
-            DefaultGuildConfig.JoinNotifChannel = GetIDList(configFile, "join_notif_channel");
-            DefaultGuildConfig.RoleChangeNotifChannel = GetIDList(configFile, "role_change_notif_channel");
-            DefaultGuildConfig.VoiceChannelJoinNotifs = GetIDList(configFile, "voice_join_notif_channel");
-            DefaultGuildConfig.ModLogsChannel = GetIDList(configFile, "mod_log_channel");
-            FDSSection logChannelsSection = configFile.GetSection("log_channels");
-            if (logChannelsSection != null)
-            {
-                DefaultGuildConfig.LogChannels = logChannelsSection.GetRootKeys().ToDictionary(key => ulong.Parse(key), key => logChannelsSection.GetUlong(key).Value);
-            }
-        }
-
         private static List<ulong> GetIDList(FDSSection section, string key)
         {
             return section.GetDataList(key)?.Select(d => d.AsULong.Value)?.ToList() ?? new List<ulong>();
@@ -241,7 +176,6 @@ namespace ModBot.Core
             BotCommanders = new HashSet<ulong>(GetIDList(configFile, "bot_commanders"));
             DefaultGuildConfig = new GuildConfig();
             DefaultGuildConfig.Ensure();
-            LegacyConfigUpdate(configFile);
         }
 
         /// <summary>

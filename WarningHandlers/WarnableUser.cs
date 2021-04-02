@@ -17,15 +17,17 @@ namespace ModBot.WarningHandlers
     public class WarnableUser
     {
         /// <summary>
-        /// The user's Discord ID, for database storage. May not always be correct.
+        /// The user's Discord ID, for database storage.
+        /// This is a corruption of the real user ID, due to LiteDB misinterpretting a ulong as a double.
+        /// TODO: Replace this with the real ID.
         /// </summary>
         [BsonId]
-        public ulong UserID { get; set; }
+        public ulong DatabaseID { get; set; }
 
         /// <summary>
         /// Actual Discord user ID, as the BSON ID is sometimes altered inexplicably.
         /// </summary>
-        public ulong RawUserID;
+        public ulong RawUserID { get; set; }
 
         /// <summary>
         /// ID of the relevant Discord guild/server.
@@ -152,7 +154,7 @@ namespace ModBot.WarningHandlers
             {
                 return false;
             }
-            Console.WriteLine($"User ID {UserID} / {RawUserID} in {GuildID} changed base username from {LastKnownUsername} to {name}");
+            Console.WriteLine($"User ID {DatabaseID} / {RawUserID} in {GuildID} changed base username from {LastKnownUsername} to {name}");
             LastKnownUsername = name;
             if (!SeenNames.Any(n => n.Name == name))
             {
@@ -167,7 +169,7 @@ namespace ModBot.WarningHandlers
         /// </summary>
         public void Save()
         {
-            DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(UserID, this);
+            DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(DatabaseID, this);
         }
     }
 }
