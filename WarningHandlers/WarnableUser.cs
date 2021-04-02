@@ -152,6 +152,7 @@ namespace ModBot.WarningHandlers
             {
                 return false;
             }
+            Console.WriteLine($"User ID {UserID} / {RawUserID} changed base username from {LastKnownUsername} to {name}");
             LastKnownUsername = name;
             if (!SeenNames.Any(n => n.Name == name))
             {
