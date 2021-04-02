@@ -157,8 +157,8 @@ namespace ModBot.WarningHandlers
             if (!SeenNames.Any(n => n.Name == name))
             {
                 SeenNames.Add(new OldName() { Name = name, FirstSeen = DateTimeOffset.Now });
-                Save();
             }
+            Save();
             return lastName != null;
         }
 
