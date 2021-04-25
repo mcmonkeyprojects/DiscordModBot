@@ -168,6 +168,7 @@ namespace ModBot.WarningHandlers
             {
                 return false;
             }
+            Ensure();
             Console.WriteLine($"User ID {UserID()} in {GuildID} changed base username from {LastKnownUsername} to {name}");
             LastKnownUsername = name;
             if (!SeenNames.Any(n => n.Name == name))
