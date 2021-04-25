@@ -36,14 +36,19 @@ namespace ModBot.WarningHandlers
             ModBotDatabaseHandler.Guild guildData = DiscordModBot.DatabaseHandler.GetDatabase(guildId);
             lock (guildData)
             {
-                WarnableUser user = guildData.Users.FindById(id);
+                WarnableUser user = guildData.Users.FindById(unchecked((long)id));
                 if (user == null)
                 {
-                    user = new WarnableUser() { DatabaseID = id, GuildID = guildId };
+                    user = guildData.Users_Outdated.FindById(id);
+                    if (user == null)
+                    {
+                        user = new WarnableUser() { DB_ID_Signed = unchecked((long)id), GuildID = guildId };
+                    }
                 }
-                if (user.RawUserID != id)
+                if (user.DB_ID_Signed != unchecked((long)id) || user.RawUserID > 1000UL)
                 {
-                    user.RawUserID = id;
+                    user.DB_ID_Signed = unchecked((long)id);
+                    user.RawUserID = 0;
                     user.Ensure();
                     user.Save();
                 }

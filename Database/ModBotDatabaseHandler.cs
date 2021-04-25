@@ -37,6 +37,11 @@ namespace ModBot.Database
             /// <summary>
             /// The user collection.
             /// </summary>
+            public ILiteCollection<WarnableUser> Users_Outdated;
+
+            /// <summary>
+            /// The user collection.
+            /// </summary>
             public ILiteCollection<WarnableUser> Users;
 
             /// <summary>
@@ -88,7 +93,10 @@ namespace ModBot.Database
                     ID = id,
                     DB = new LiteDatabase($"./saves/server_{id}.ldb", null)
                 };
-                newGuild.Users = newGuild.DB.GetCollection<WarnableUser>("users");
+                newGuild.Users_Outdated = newGuild.DB.GetCollection<WarnableUser>("users");
+                newGuild.Users_Outdated.EnsureIndex(u => u.Legacy_DatabaseID);
+                newGuild.Users = newGuild.DB.GetCollection<WarnableUser>("users_vtwo");
+                newGuild.Users.EnsureIndex(u => u.DB_ID_Signed);
                 newGuild.ConfigCollection = newGuild.DB.GetCollection<GuildConfig>("guild_configs");
                 newGuild.Config = newGuild.ConfigCollection.FindById(0);
                 if (newGuild.Config == null)
@@ -98,6 +106,17 @@ namespace ModBot.Database
                     newGuild.ConfigCollection.Insert(0, newGuild.Config);
                 }
                 newGuild.Config.Ensure();
+#warning TODO: Temporary outdated data autopatch
+                foreach (WarnableUser user in newGuild.Users_Outdated.FindAll())
+                {
+                    if (user.RawUserID > 1000UL)
+                    {
+                        user.DB_ID_Signed = unchecked((long)user.RawUserID);
+                        user.RawUserID = 0;
+                        user.Ensure();
+                        user.Save();
+                    }
+                }
                 return newGuild;
             });
         }

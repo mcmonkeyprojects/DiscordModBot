@@ -463,7 +463,7 @@ namespace ModBot.CommandHandlers
                 if (hasMore && sentMessage != null && message != null)
                 {
                     sentMessage.AddReactionsAsync(new IEmote[] { new Emoji(Constants.ACCEPT_EMOJI), new Emoji(Constants.DENY_EMOJI) }).Wait();
-                    ReactionsHandler.AddReactable(message, sentMessage, $"listwarn {user.RawUserID} {startId + 2}");
+                    ReactionsHandler.AddReactable(message, sentMessage, $"listwarn {user.UserID()} {startId + 2}");
                 }
             }
         }

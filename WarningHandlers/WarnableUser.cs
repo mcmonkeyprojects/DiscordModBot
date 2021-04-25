@@ -17,17 +17,31 @@ namespace ModBot.WarningHandlers
     public class WarnableUser
     {
         /// <summary>
-        /// The user's Discord ID, for database storage.
-        /// This is a corruption of the real user ID, due to LiteDB misinterpretting a ulong as a double.
-        /// TODO: Replace this with the real ID.
+        /// (OUTDATED) database ID.
+        /// Replaced due to LiteDB mishandling ulong.
         /// </summary>
-        [BsonId]
-        public ulong DatabaseID { get; set; }
+        [Obsolete]
+        public ulong Legacy_DatabaseID { get; set; }
 
         /// <summary>
-        /// Actual Discord user ID, as the BSON ID is sometimes altered inexplicably.
+        /// The user's Discord ID, for database storage.
+        /// This is an unchecked cast from ulong to long (last bit becomes a sign) to force the database to store it properly.
         /// </summary>
+        public long DB_ID_Signed { get; set; }
+
+        /// <summary>
+        /// Old backup for the legacy ID.
+        /// </summary>
+        [Obsolete]
         public ulong RawUserID { get; set; }
+
+        /// <summary>
+        /// Gets the Discord user ID.
+        /// </summary>
+        public ulong UserID()
+        {
+            return unchecked((ulong)DB_ID_Signed);
+        }
 
         /// <summary>
         /// ID of the relevant Discord guild/server.
@@ -138,7 +152,7 @@ namespace ModBot.WarningHandlers
             string warnPostfix = warn.Level == WarningLevel.NOTE ? "" : " warning";
             string reason = (warn.Reason.Length > 250) ? (warn.Reason.Substring(0, 250) + "(... trimmed ...)") : warn.Reason;
             reason = UserCommands.EscapeUserInput(reason);
-            string message = $"User <@{RawUserID}> received a {warn.Level}{warnPostfix} from moderator <@{warn.GivenBy}>.\n\nReason: `{reason}`\n\n[Click For Details]({warn.Link})";
+            string message = $"User <@{UserID()}> received a {warn.Level}{warnPostfix} from moderator <@{warn.GivenBy}>.\n\nReason: `{reason}`\n\n[Click For Details]({warn.Link})";
             Color color = warn.Level == WarningLevel.NOTE ? new Color(255, 255, 0) : new Color(255, 0, 0);
             ModBotLoggers.SendEmbedToAllFor(guild, DiscordModBot.GetConfig(GuildID).ModLogsChannel, new EmbedBuilder().WithColor(color).WithTitle("User Warning/Note Applied").WithDescription(message).Build());
         }
@@ -154,7 +168,7 @@ namespace ModBot.WarningHandlers
             {
                 return false;
             }
-            Console.WriteLine($"User ID {DatabaseID} / {RawUserID} in {GuildID} changed base username from {LastKnownUsername} to {name}");
+            Console.WriteLine($"User ID {UserID()} in {GuildID} changed base username from {LastKnownUsername} to {name}");
             LastKnownUsername = name;
             if (!SeenNames.Any(n => n.Name == name))
             {
@@ -169,7 +183,12 @@ namespace ModBot.WarningHandlers
         /// </summary>
         public void Save()
         {
-            DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(DatabaseID, this);
+            if (Legacy_DatabaseID > 1000UL)
+            {
+                DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users_Outdated.Delete(Legacy_DatabaseID);
+                Legacy_DatabaseID = 0;
+            }
+            DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(DB_ID_Signed, this);
         }
     }
 }
