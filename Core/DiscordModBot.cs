@@ -18,6 +18,7 @@ using ModBot.Database;
 using ModBot.WarningHandlers;
 using DiscordBotBase;
 using DiscordBotBase.CommandHandlers;
+using System.Runtime.Loader;
 
 namespace ModBot.Core
 {
@@ -69,6 +70,14 @@ namespace ModBot.Core
         /// </summary>
         static void Main(string[] args)
         {
+            AssemblyLoadContext.Default.Unloading += (context) =>
+            {
+                DatabaseHandler.Shutdown();
+            };
+            AppDomain.CurrentDomain.ProcessExit += (obj, e) =>
+            {
+                DatabaseHandler.Shutdown();
+            };
             DiscordBotBaseHelper.StartBotHandler(args, new DiscordBotConfig()
             {
                 CommandPrefix = null,
@@ -80,6 +89,10 @@ namespace ModBot.Core
                 {
                     LoadConfig(bot.ConfigFile);
                     InitCommands(bot);
+                    if (DatabaseHandler != null)
+                    {
+                        DatabaseHandler.Shutdown();
+                    }
                     DatabaseHandler = new ModBotDatabaseHandler();
                     TempBanHandler = new TempBanManager();
                     bot.Client.Ready += async () =>
