@@ -44,6 +44,10 @@ namespace ModBot.WarningHandlers
                 if (user == null)
                 {
                     user = guildData.Users_Outdated.FindById(id);
+                    if (user != null)
+                    {
+                        Console.WriteLine($"Legacy user data loaded for {id}");
+                    }
                     if (user == null)
                     {
                         user = new WarnableUser() { DB_ID_Signed = unchecked((long)id), GuildID = guildId };
