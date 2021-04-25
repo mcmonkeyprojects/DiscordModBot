@@ -96,9 +96,7 @@ namespace ModBot.Database
                     DB = new LiteDatabase($"./saves/server_{id}.ldb", null)
                 };
                 newGuild.Users_Outdated = newGuild.DB.GetCollection<LegacyWarnableUser>("users");
-                newGuild.Users_Outdated.EnsureIndex(u => u.Legacy_DatabaseID);
                 newGuild.Users = newGuild.DB.GetCollection<WarnableUser>("users_vtwo");
-                newGuild.Users.EnsureIndex(u => u.DB_ID_Signed);
                 newGuild.ConfigCollection = newGuild.DB.GetCollection<GuildConfig>("guild_configs");
                 newGuild.Config = newGuild.ConfigCollection.FindById(0);
                 if (newGuild.Config == null)
@@ -123,10 +121,11 @@ namespace ModBot.Database
         [Obsolete]
         public static void LegacyPatchGuild(Guild guild)
         {
-            foreach (LegacyWarnableUser user in guild.Users_Outdated.FindAll())
+            foreach (LegacyWarnableUser user in guild.Users_Outdated.FindAll().ToList())
             {
-                if (user.RawUserID > 1000UL)
+                if (user.RawUserID != 0)
                 {
+                    Console.WriteLine($"Patch legacy raw user {user.RawUserID}");
                     user.Convert(user.RawUserID).Save();
                     guild.Users_Outdated.Delete(user.Legacy_DatabaseID);
                     WarningUtilities.LegacyUsersPatched++;
@@ -164,6 +163,7 @@ namespace ModBot.Database
         public class LegacyWarnableUser
         {
             [Obsolete]
+            [BsonId]
             public ulong Legacy_DatabaseID { get; set; }
             public ulong GuildID { get; set; }
             public ulong RawUserID { get; set; }

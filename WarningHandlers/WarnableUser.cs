@@ -20,6 +20,7 @@ namespace ModBot.WarningHandlers
         /// The user's Discord ID, for database storage.
         /// This is an unchecked cast from ulong to long (last bit becomes a sign) to force the database to store it properly.
         /// </summary>
+        [BsonId]
         public long DB_ID_Signed { get; set; }
 
         /// <summary>
