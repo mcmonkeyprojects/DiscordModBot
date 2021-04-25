@@ -37,6 +37,7 @@ namespace ModBot.Database
             /// <summary>
             /// The user collection.
             /// </summary>
+            [Obsolete]
             public ILiteCollection<WarnableUser> Users_Outdated;
 
             /// <summary>

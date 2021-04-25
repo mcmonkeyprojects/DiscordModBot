@@ -78,6 +78,8 @@ namespace ModBot.Core
             {
                 DatabaseHandler.Shutdown();
             };
+            CancellationTokenSource cancel = new CancellationTokenSource();
+            Task consoleThread = Task.Run(RunConsole, cancel.Token);
             DiscordBotBaseHelper.StartBotHandler(args, new DiscordBotConfig()
             {
                 CommandPrefix = null,
@@ -183,6 +185,40 @@ namespace ModBot.Core
                     }
                 }
             });
+        }
+
+        /// <summary>Runs a simple console monitoring thread to allow some basic console commands.</summary>
+        public static async void RunConsole()
+        {
+            while (true)
+            {
+                string line = await Console.In.ReadLineAsync();
+                if (line == null)
+                {
+                    return;
+                }
+                string[] split = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                switch (split[0])
+                {
+                    case "stop":
+                        {
+                            DatabaseHandler.Shutdown();
+                            Environment.Exit(0);
+                        }
+                        break;
+                    case "count_legacy":
+                        {
+                            foreach (ModBotDatabaseHandler.Guild guild in DatabaseHandler.Guilds.Values)
+                            {
+                                Console.WriteLine($"Guild {guild.ID} has {guild.Users.Count()} valid users and {guild.Users_Outdated.Count()} legacy users");
+                            }
+                        }
+                        break;
+                    default:
+                        Console.WriteLine("Unknown command.");
+                        break;
+                }
+            }
         }
 
         /// <summary>
