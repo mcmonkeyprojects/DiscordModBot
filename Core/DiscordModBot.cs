@@ -82,12 +82,26 @@ namespace ModBot.Core
                     InitCommands(bot);
                     DatabaseHandler = new ModBotDatabaseHandler();
                     TempBanHandler = new TempBanManager();
-                    bot.Client.Ready += () =>
+                    bot.Client.Ready += async () =>
                     {
                         DatabaseHandler.Init(bot);
-                        bot.Client.SetGameAsync("Guardian Over The People").Wait();
+                        await bot.Client.SetGameAsync("Guardian Over The People");
+                        foreach (SocketGuild guild in bot.Client.Guilds)
+                        {
+                            await guild.GetUsersAsync().ForEachAwaitAsync(users =>
+                            {
+                                foreach (IGuildUser user in users)
+                                {
+                                    WarnableUser warnUser = WarningUtilities.GetWarnableUser(guild.Id, user.Id);
+                                    if (warnUser.LastKnownUsername == null)
+                                    {
+                                        warnUser.SeenUsername(NameUtilities.Username(user), out _);
+                                    }
+                                }
+                                return Task.CompletedTask;
+                            });
+                        }
                         TempBanHandler.Scan();
-                        return Task.CompletedTask;
                     };
                     new ModBotLoggers().InitLoggers(bot);
                 },
