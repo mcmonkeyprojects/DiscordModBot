@@ -28,6 +28,10 @@ namespace ModBot.WarningHandlers
             return (user as SocketGuildUser).Roles.Any((role) => role.Id == config.MuteRole.Value);
         }
 
+        /// <summary>Tracker statistic for legacy users that get patched.</summary>
+        [Obsolete]
+        public static int LegacyUsersPatched = 0;
+
         /// <summary>
         /// Gets the <see cref="WarnableUser"/> object for a Discord user (by Discord ID).
         /// </summary>
@@ -51,6 +55,7 @@ namespace ModBot.WarningHandlers
                     user.RawUserID = 0;
                     user.Ensure();
                     user.Save();
+                    LegacyUsersPatched++;
                 }
                 return user;
             }

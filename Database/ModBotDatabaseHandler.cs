@@ -106,17 +106,6 @@ namespace ModBot.Database
                     newGuild.ConfigCollection.Insert(0, newGuild.Config);
                 }
                 newGuild.Config.Ensure();
-#warning TODO: Temporary outdated data autopatch
-                foreach (WarnableUser user in newGuild.Users_Outdated.FindAll())
-                {
-                    if (user.RawUserID > 1000UL)
-                    {
-                        user.DB_ID_Signed = unchecked((long)user.RawUserID);
-                        user.RawUserID = 0;
-                        user.Ensure();
-                        user.Save();
-                    }
-                }
                 return newGuild;
             });
         }
@@ -129,6 +118,47 @@ namespace ModBot.Database
             }
         }
 
+        [Obsolete]
+        public static void LegacyPatchGuild(Guild guild)
+        {
+            foreach (WarnableUser user in guild.Users_Outdated.FindAll())
+            {
+                if (user.RawUserID > 1000UL)
+                {
+                    user.DB_ID_Signed = unchecked((long)user.RawUserID);
+                    user.RawUserID = 0;
+                    user.Ensure();
+                    user.Save();
+                }
+            }
+        }
+
+        [Obsolete]
+        public static void LegacyPatchGeneral()
+        {
+#warning TODO: Extremely Temporary user ID patch helper
+            if (Directory.Exists("./warnings/archive_old_data_backup"))
+            {
+                foreach (string guildFolder in Directory.EnumerateDirectories("./warnings/archive_old_data_backup/"))
+                {
+                    if (ulong.TryParse(guildFolder.AfterLast('/'), out ulong guildId))
+                    {
+                        Console.WriteLine($"Checking legacy save data {guildId}");
+                        string folder = $"./warnings/archive_old_data_backup/{guildId}/";
+                        foreach (string userFile in Directory.EnumerateFiles(folder))
+                        {
+                            if (userFile.EndsWith(".fds") && ulong.TryParse(userFile.AfterLast('/').Before('.'), out ulong userID))
+                            {
+                                WarningUtilities.GetWarnableUser(guildId, userID);
+                            }
+                        }
+                    }
+                }
+                Console.WriteLine($"Re-updated {WarningUtilities.LegacyUsersPatched} users.");
+                Directory.Move("./warnings/archive_old_data_backup", "./warnings/archive_old_data_backup_v2");
+            }
+        }
+
         /// <summary>
         /// inits the database handler, including all loaded guilds.
         /// </summary>
@@ -136,8 +166,10 @@ namespace ModBot.Database
         {
             foreach (SocketGuild guild in bot.Client.Guilds)
             {
-                GetDatabase(guild.Id);
+                Guild guildData = GetDatabase(guild.Id);
+                LegacyPatchGuild(guildData);
             }
+            LegacyPatchGeneral();
         }
     }
 }

@@ -86,6 +86,7 @@ namespace ModBot.Core
                     {
                         DatabaseHandler.Init(bot);
                         await bot.Client.SetGameAsync("Guardian Over The People");
+                        // Check for any missed users
                         foreach (SocketGuild guild in bot.Client.Guilds)
                         {
                             await guild.GetUsersAsync().ForEachAwaitAsync(users =>
