@@ -104,21 +104,25 @@ namespace ModBot.Core
                         // Check for any missed users
                         try
                         {
+                            int count = 0, modified = 0;
                             foreach (SocketGuild guild in bot.Client.Guilds)
                             {
                                 await guild.GetUsersAsync().ForEachAwaitAsync(users =>
                                 {
                                     foreach (IGuildUser user in users)
                                     {
+                                        count++;
                                         WarnableUser warnUser = WarningUtilities.GetWarnableUser(guild.Id, user.Id);
                                         if (warnUser.LastKnownUsername == null)
                                         {
                                             warnUser.SeenUsername(NameUtilities.Username(user), out _);
+                                            modified++;
                                         }
                                     }
                                     return Task.CompletedTask;
                                 });
                             }
+                            Console.WriteLine($"Scanned {count} users and updated {modified}");
                         }
                         catch (Exception ex)
                         {
