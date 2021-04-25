@@ -186,6 +186,7 @@ namespace ModBot.WarningHandlers
         {
             if (Legacy_DatabaseID != 0)
             {
+                Console.WriteLine($"Updating saves for user {DB_ID_Signed} with legacy ID {Legacy_DatabaseID}");
                 if (!DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users_Outdated.Delete(Legacy_DatabaseID))
                 {
                     Console.WriteLine($"Failed to delete legacy user for {DB_ID_Signed} with legacy ID {Legacy_DatabaseID}");

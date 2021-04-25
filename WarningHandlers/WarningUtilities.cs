@@ -51,10 +51,12 @@ namespace ModBot.WarningHandlers
                     if (user == null)
                     {
                         user = new WarnableUser() { DB_ID_Signed = unchecked((long)id), GuildID = guildId };
+                        Console.WriteLine($"New user data generated for {id}");
                     }
                 }
                 if (user.DB_ID_Signed != unchecked((long)id) || user.RawUserID > 1000UL)
                 {
+                    Console.WriteLine($"Legacy user data updated for {id}");
                     user.DB_ID_Signed = unchecked((long)id);
                     user.RawUserID = 0;
                     user.Ensure();
