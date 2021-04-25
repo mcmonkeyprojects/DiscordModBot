@@ -21,7 +21,7 @@ namespace ModBot.WarningHandlers
         /// Replaced due to LiteDB mishandling ulong.
         /// </summary>
         [Obsolete]
-        public ulong Legacy_DatabaseID { get; set; }
+        public double Legacy_DatabaseID { get; set; }
 
         /// <summary>
         /// The user's Discord ID, for database storage.
@@ -184,10 +184,10 @@ namespace ModBot.WarningHandlers
         /// </summary>
         public void Save()
         {
-            if (Legacy_DatabaseID > 1000UL)
+            if (Legacy_DatabaseID != 0)
             {
                 DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users_Outdated.Delete(Legacy_DatabaseID);
-                //Legacy_DatabaseID = 0;
+                Legacy_DatabaseID = 0;
             }
             DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(DB_ID_Signed, this);
         }
