@@ -187,7 +187,7 @@ namespace ModBot.WarningHandlers
             if (Legacy_DatabaseID > 1000UL)
             {
                 DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users_Outdated.Delete(Legacy_DatabaseID);
-                Legacy_DatabaseID = 0;
+                //Legacy_DatabaseID = 0;
             }
             DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(DB_ID_Signed, this);
         }
