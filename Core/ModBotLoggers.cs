@@ -237,7 +237,7 @@ namespace ModBot.Core
                     if (config.LogChannels.Any())
                     {
                         SocketUser user = hasCache ? bot.Client.GetUser(message.SenderID) : null;
-                        string originalText = hasCache ? UserCommands.EscapeUserInput(message.Text + message.Attachments.Replace("\n", ", ")) : $"(not cached post ID `{cache.Id}`)";
+                        string originalText = hasCache ? UserCommands.EscapeUserInput(message.Text + message.Attachments.Replace("\n", ", ")) : $"(not cached post ID {cache.Id})";
                         string author;
                         if (user != null)
                         {
@@ -375,6 +375,14 @@ namespace ModBot.Core
         /// </summary>
         public string TrimForDifferencing(string text, int cap, int firstDiff, int lastDiff, int longerLength)
         {
+            if (lastDiff == firstDiff)
+            {
+                return $"`\"{text}\"`";
+            }
+            if (lastDiff < firstDiff)
+            {
+                (lastDiff, firstDiff) = (firstDiff, lastDiff);
+            }
             int initialFirstDiff = firstDiff;
             int initialLastDiff = lastDiff;
             if (text.Length > cap)
