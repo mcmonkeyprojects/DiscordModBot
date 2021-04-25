@@ -87,22 +87,36 @@ namespace ModBot.Core
                         DatabaseHandler.Init(bot);
                         await bot.Client.SetGameAsync("Guardian Over The People");
                         // Check for any missed users
-                        foreach (SocketGuild guild in bot.Client.Guilds)
+                        try
                         {
-                            await guild.GetUsersAsync().ForEachAwaitAsync(users =>
+                            foreach (SocketGuild guild in bot.Client.Guilds)
                             {
-                                foreach (IGuildUser user in users)
+                                await guild.GetUsersAsync().ForEachAwaitAsync(users =>
                                 {
-                                    WarnableUser warnUser = WarningUtilities.GetWarnableUser(guild.Id, user.Id);
-                                    if (warnUser.LastKnownUsername == null)
+                                    foreach (IGuildUser user in users)
                                     {
-                                        warnUser.SeenUsername(NameUtilities.Username(user), out _);
+                                        WarnableUser warnUser = WarningUtilities.GetWarnableUser(guild.Id, user.Id);
+                                        if (warnUser.LastKnownUsername == null)
+                                        {
+                                            warnUser.SeenUsername(NameUtilities.Username(user), out _);
+                                        }
                                     }
-                                }
-                                return Task.CompletedTask;
-                            });
+                                    return Task.CompletedTask;
+                                });
+                            }
                         }
-                        TempBanHandler.Scan();
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"User list scan error {ex}");
+                        }
+                        try
+                        {
+                            TempBanHandler.Scan();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Ban-handler scan error {ex}");
+                        }
                     };
                     new ModBotLoggers().InitLoggers(bot);
                 },
