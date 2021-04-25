@@ -43,25 +43,20 @@ namespace ModBot.WarningHandlers
                 WarnableUser user = guildData.Users.FindById(unchecked((long)id));
                 if (user == null)
                 {
-                    user = guildData.Users_Outdated.FindById(id);
-                    if (user != null)
+                    ModBotDatabaseHandler.LegacyWarnableUser legacyUser = guildData.Users_Outdated.FindById(id);
+                    if (legacyUser != null)
                     {
-                        Console.WriteLine($"Legacy user data loaded for {id}");
+                        Console.WriteLine($"Legacy user data loaded and updated for {id}");
+                        user = legacyUser.Convert(id);
+                        user.Save();
+                        guildData.Users_Outdated.Delete(id);
+                        LegacyUsersPatched++;
                     }
                     if (user == null)
                     {
                         user = new WarnableUser() { DB_ID_Signed = unchecked((long)id), GuildID = guildId };
                         Console.WriteLine($"New user data generated for {id}");
                     }
-                }
-                if (user.DB_ID_Signed != unchecked((long)id) || user.RawUserID > 1000UL)
-                {
-                    Console.WriteLine($"Legacy user data updated for {id}");
-                    user.DB_ID_Signed = unchecked((long)id);
-                    user.RawUserID = 0;
-                    user.Ensure();
-                    user.Save();
-                    LegacyUsersPatched++;
                 }
                 return user;
             }

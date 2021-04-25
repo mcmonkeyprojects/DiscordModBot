@@ -17,23 +17,10 @@ namespace ModBot.WarningHandlers
     public class WarnableUser
     {
         /// <summary>
-        /// (OUTDATED) database ID.
-        /// Replaced due to LiteDB mishandling ulong.
-        /// </summary>
-        [Obsolete]
-        public double Legacy_DatabaseID { get; set; }
-
-        /// <summary>
         /// The user's Discord ID, for database storage.
         /// This is an unchecked cast from ulong to long (last bit becomes a sign) to force the database to store it properly.
         /// </summary>
         public long DB_ID_Signed { get; set; }
-
-        /// <summary>
-        /// Old backup for the legacy ID.
-        /// </summary>
-        [Obsolete]
-        public ulong RawUserID { get; set; }
 
         /// <summary>
         /// Gets the Discord user ID.
@@ -184,15 +171,6 @@ namespace ModBot.WarningHandlers
         /// </summary>
         public void Save()
         {
-            if (Legacy_DatabaseID != 0)
-            {
-                Console.WriteLine($"Updating saves for user {DB_ID_Signed} with legacy ID {Legacy_DatabaseID}");
-                if (!DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users_Outdated.Delete(Legacy_DatabaseID))
-                {
-                    Console.WriteLine($"Failed to delete legacy user for {DB_ID_Signed} with legacy ID {Legacy_DatabaseID}");
-                }
-                Legacy_DatabaseID = 0;
-            }
             DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(DB_ID_Signed, this);
         }
     }

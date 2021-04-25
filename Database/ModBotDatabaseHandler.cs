@@ -11,6 +11,7 @@ using ModBot.Core;
 using FreneticUtilities.FreneticDataSyntax;
 using FreneticUtilities.FreneticToolkit;
 using FreneticUtilities.FreneticExtensions;
+using System.Linq;
 
 namespace ModBot.Database
 {
@@ -38,7 +39,7 @@ namespace ModBot.Database
             /// The user collection.
             /// </summary>
             [Obsolete]
-            public ILiteCollection<WarnableUser> Users_Outdated;
+            public ILiteCollection<LegacyWarnableUser> Users_Outdated;
 
             /// <summary>
             /// The user collection.
@@ -94,7 +95,7 @@ namespace ModBot.Database
                     ID = id,
                     DB = new LiteDatabase($"./saves/server_{id}.ldb", null)
                 };
-                newGuild.Users_Outdated = newGuild.DB.GetCollection<WarnableUser>("users");
+                newGuild.Users_Outdated = newGuild.DB.GetCollection<LegacyWarnableUser>("users");
                 newGuild.Users_Outdated.EnsureIndex(u => u.Legacy_DatabaseID);
                 newGuild.Users = newGuild.DB.GetCollection<WarnableUser>("users_vtwo");
                 newGuild.Users.EnsureIndex(u => u.DB_ID_Signed);
@@ -122,14 +123,13 @@ namespace ModBot.Database
         [Obsolete]
         public static void LegacyPatchGuild(Guild guild)
         {
-            foreach (WarnableUser user in guild.Users_Outdated.FindAll())
+            foreach (LegacyWarnableUser user in guild.Users_Outdated.FindAll())
             {
                 if (user.RawUserID > 1000UL)
                 {
-                    user.DB_ID_Signed = unchecked((long)user.RawUserID);
-                    user.RawUserID = 0;
-                    user.Ensure();
-                    user.Save();
+                    user.Convert(user.RawUserID).Save();
+                    guild.Users_Outdated.Delete(user.Legacy_DatabaseID);
+                    WarningUtilities.LegacyUsersPatched++;
                 }
             }
         }
@@ -159,6 +159,39 @@ namespace ModBot.Database
                 Directory.Move("./warnings/archive_old_data_backup", "./warnings/archive_old_data_backup_v2");
             }
         }
+
+        [Obsolete]
+        public class LegacyWarnableUser
+        {
+            [Obsolete]
+            public ulong Legacy_DatabaseID { get; set; }
+            public ulong GuildID { get; set; }
+            public ulong RawUserID { get; set; }
+            public List<OldName> SeenNames { get; set; }
+            public class OldName
+            {
+                public string Name { get; set; }
+                public DateTimeOffset FirstSeen { get; set; }
+            }
+            public bool IsMuted { get; set; }
+            public List<string> SpecialRoles { get; set; }
+            public List<Warning> Warnings { get; set; }
+            public string LastKnownUsername { get; set; }
+            public WarnableUser Convert(ulong id)
+            {
+                return new WarnableUser()
+                {
+                    DB_ID_Signed = unchecked((long)id),
+                    GuildID = GuildID,
+                    SeenNames = SeenNames == null ? new List<WarnableUser.OldName>() : SeenNames.Select(o => new WarnableUser.OldName() { FirstSeen = o.FirstSeen, Name = o.Name }).ToList(),
+                    IsMuted = IsMuted,
+                    SpecialRoles = SpecialRoles,
+                    Warnings = Warnings,
+                    LastKnownUsername = LastKnownUsername
+                };
+            }
+        }
+
 
         /// <summary>
         /// inits the database handler, including all loaded guilds.
