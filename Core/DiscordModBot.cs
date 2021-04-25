@@ -231,7 +231,7 @@ namespace ModBot.Core
         public static void TrackUsernameFor(IUser user, SocketGuild guild)
         {
             GuildConfig config = GetConfig(guild.Id);
-            string authorName = NameUtilities.Username(user);
+            string authorName = user == null || user.Username == null ? "" : (user.Username + "#" + user.Discriminator);
             if (WarningUtilities.GetWarnableUser(guild.Id, user.Id).SeenUsername(authorName, out string oldName) && config.NameChangeNotifChannel.Any())
             {
                 EmbedBuilder embed = new EmbedBuilder().WithTitle("User Changed Username").WithColor(0, 255, 255);
