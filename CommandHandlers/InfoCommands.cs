@@ -133,16 +133,16 @@ namespace ModBot.CommandHandlers
                     builders.Add(nameStringOutput);
                     nameStringOutput = new StringBuilder();
                 }
-                nameStringOutput.Append($"`{old_name.Name}` (first seen: {StringConversionHelper.DateTimeToString(old_name.FirstSeen, false)})\n");
+                nameStringOutput.Append($"`{EscapeUserInput(old_name.Name)}` (first seen: {StringConversionHelper.DateTimeToString(old_name.FirstSeen, false)})\n");
             }
             builders.Add(nameStringOutput);
             if (nameStringOutput.Length == 0)
             {
-                SendGenericNegativeMessageReply(command.Message, "Never Seen That User", $"User {user.LastKnownUsername} does not have any known names (never spoken here).");
+                SendGenericNegativeMessageReply(command.Message, "Never Seen That User", $"User {EscapeUserInput(user.LastKnownUsername)} does not have any known names (never spoken here).");
             }
             else
             {
-                SendGenericPositiveMessageReply(command.Message, "Seen Usernames", $"User {user.LastKnownUsername} has the following known usernames:\n{builders[0]}");
+                SendGenericPositiveMessageReply(command.Message, "Seen Usernames", $"User {EscapeUserInput(user.LastKnownUsername)} has the following known usernames:\n{builders[0]}");
                 for (int i = 1; i < builders.Count; i++)
                 {
                     if (i == 2 && builders.Count > 4)
