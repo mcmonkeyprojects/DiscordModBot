@@ -48,6 +48,7 @@ namespace ModBot.WarningHandlers
                     {
                         Console.WriteLine($"Legacy user data loaded and updated for {id}");
                         user = legacyUser.Convert(id);
+                        user.Ensure();
                         user.Save();
                         guildData.Users_Outdated.Delete(id);
                         LegacyUsersPatched++;
@@ -55,6 +56,7 @@ namespace ModBot.WarningHandlers
                     if (user == null)
                     {
                         user = new WarnableUser() { DB_ID_Signed = unchecked((long)id), GuildID = guildId };
+                        user.Ensure();
                         Console.WriteLine($"New user data generated for {id}");
                     }
                 }

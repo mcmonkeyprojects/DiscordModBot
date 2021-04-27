@@ -37,87 +37,94 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                if (user.Id == bot.Client.CurrentUser.Id)
+                try
                 {
-                    return Task.CompletedTask;
-                }
-                DiscordModBot.TempBanHandler.CheckShouldScan();
-                WarnableUser warnable = WarningUtilities.GetWarnableUser(user.Guild.Id, user.Id);
-                GuildConfig config = DiscordModBot.GetConfig(user.Guild.Id);
-                if (config.JoinNotifChannel.Any() || config.ModLogsChannel.Any())
-                {
-                    int nameCount = warnable.SeenNames.Count;
-                    string seenNameText = nameCount < 1 ? "" : $" User has {nameCount} previously seen name(s).";
-                    string createdDateText = $"`{StringConversionHelper.DateTimeToString(user.CreatedAt, false)}` ({user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)})";
-                    string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) joined. User account first created {createdDateText}.{seenNameText}";
-                    SendEmbedToAllFor(user.Guild, config.JoinNotifChannel, new EmbedBuilder().WithColor(32, 255, 128).WithTitle("User Join").WithDescription(message).Build());
-                    if (DateTimeOffset.Now.Subtract(user.CreatedAt).TotalDays < 31 * 6)
+                    if (user.Id == bot.Client.CurrentUser.Id)
                     {
-                        SendEmbedToAllFor(user.Guild, config.ModLogsChannel, new EmbedBuilder().WithTitle("New Account Join").WithDescription($"User <@{user.Id}> (`{NameUtilities.Username(user)}`) joined the Discord as an account first created {createdDateText}.").Build(), text: $"<@{user.Id}>");
+                        return Task.CompletedTask;
                     }
-                }
-                DiscordModBot.TrackUsernameFor(user, user.Guild);
-                if (config.MuteRole.HasValue)
-                {
-                    if (warnable.IsMuted)
+                    DiscordModBot.TempBanHandler.CheckShouldScan();
+                    WarnableUser warnable = WarningUtilities.GetWarnableUser(user.Guild.Id, user.Id);
+                    GuildConfig config = DiscordModBot.GetConfig(user.Guild.Id);
+                    if (config.JoinNotifChannel.Any() || config.ModLogsChannel.Any())
                     {
-                        SocketRole role = user.Guild.GetRole(config.MuteRole.Value);
-                        if (role != null)
+                        int nameCount = warnable.SeenNames.Count;
+                        string seenNameText = nameCount < 1 ? "" : $" User has {nameCount} previously seen name(s).";
+                        string createdDateText = $"`{StringConversionHelper.DateTimeToString(user.CreatedAt, false)}` ({user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)})";
+                        string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) joined. User account first created {createdDateText}.{seenNameText}";
+                        SendEmbedToAllFor(user.Guild, config.JoinNotifChannel, new EmbedBuilder().WithColor(32, 255, 128).WithTitle("User Join").WithDescription(message).Build());
+                        if (DateTimeOffset.Now.Subtract(user.CreatedAt).TotalDays < 31 * 6)
                         {
-                            user.AddRoleAsync(role).Wait();
-                            Task.Delay(6000).Wait(); // Backup in case another bot conflicts with this bot (due to the weird way AddRole works inside)
-                            user.AddRoleAsync(role).Wait();
+                            SendEmbedToAllFor(user.Guild, config.ModLogsChannel, new EmbedBuilder().WithTitle("New Account Join").WithDescription($"User <@{user.Id}> (`{NameUtilities.Username(user)}`) joined the Discord as an account first created {createdDateText}.").Build(), text: $"<@{user.Id}>");
                         }
                     }
-                }
-                foreach (string specialRoleName in warnable.SpecialRoles)
-                {
-                    if (config.SpecialRoles.TryGetValue(specialRoleName, out GuildConfig.SpecialRole specialRole))
+                    DiscordModBot.TrackUsernameFor(user, user.Guild);
+                    if (config.MuteRole.HasValue)
                     {
-                        SocketRole role = user.Guild.GetRole(specialRole.RoleID);
-                        if (role != null)
+                        if (warnable.IsMuted)
                         {
-                            user.AddRoleAsync(role).Wait();
-                            Task.Delay(6000).Wait(); // Backup in case another bot conflicts with this bot (due to the weird way AddRole works inside)
-                            user.AddRoleAsync(role).Wait();
-                        }
-                    }
-                }
-                if (!warnable.Warnings.Any())
-                {
-                    Console.WriteLine($"Pay no mind to user-join: {user.Id} to {user.Guild.Id} ({user.Guild.Name})");
-                    return Task.CompletedTask;
-                }
-                if (config.ModLogsChannel.Any() || config.IncidentChannel.Any())
-                {
-                    IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
-                    foreach (ulong chan in config.ModLogsChannel)
-                    {
-                        IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
-                        if (possibles.Any())
-                        {
-                            string description = $"User <@{user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings.";
-                            SendEmbedToAllFor(user.Guild, config.ModLogsChannel, new EmbedBuilder().WithTitle("Warned User Join").WithDescription(description).Build(), text: $"<@{user.Id}>");
-                            WarningCommands.SendWarningList(warnable, 0, possibles.First(), null);
-                        }
-                    }
-                    foreach (ulong chan in config.IncidentChannel)
-                    {
-                        SocketGuildChannel incidentChan = user.Guild.GetChannel(chan);
-                        if (incidentChan != null && incidentChan is ISocketMessageChannel incidentChanText)
-                        {
-                            string warnMessage = $"User <@{ user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command or refer to the private logs channel to see details.";
-                            incidentChanText.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build()).Wait();
-                            if (warnable.IsMuted)
+                            SocketRole role = user.Guild.GetRole(config.MuteRole.Value);
+                            if (role != null)
                             {
-                                incidentChanText.SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription("You have been automatically muted by the system due to being muted and then rejoining the Discord."
-                                    + " You may discuss the situation in this channel only, until a moderator unmutes you.").Build()).Wait();
+                                user.AddRoleAsync(role).Wait();
+                                Task.Delay(6000).Wait(); // Backup in case another bot conflicts with this bot (due to the weird way AddRole works inside)
+                                user.AddRoleAsync(role).Wait();
                             }
-                            return Task.CompletedTask;
                         }
                     }
+                    foreach (string specialRoleName in warnable.SpecialRoles)
+                    {
+                        if (config.SpecialRoles.TryGetValue(specialRoleName, out GuildConfig.SpecialRole specialRole))
+                        {
+                            SocketRole role = user.Guild.GetRole(specialRole.RoleID);
+                            if (role != null)
+                            {
+                                user.AddRoleAsync(role).Wait();
+                                Task.Delay(6000).Wait(); // Backup in case another bot conflicts with this bot (due to the weird way AddRole works inside)
+                                user.AddRoleAsync(role).Wait();
+                            }
+                        }
+                    }
+                    if (!warnable.Warnings.Any())
+                    {
+                        Console.WriteLine($"Pay no mind to user-join: {user.Id} to {user.Guild.Id} ({user.Guild.Name})");
+                        return Task.CompletedTask;
+                    }
+                    if (config.ModLogsChannel.Any() || config.IncidentChannel.Any())
+                    {
+                        IReadOnlyCollection<SocketTextChannel> channels = user.Guild.TextChannels;
+                        foreach (ulong chan in config.ModLogsChannel)
+                        {
+                            IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
+                            if (possibles.Any())
+                            {
+                                string description = $"User <@{user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings.";
+                                SendEmbedToAllFor(user.Guild, config.ModLogsChannel, new EmbedBuilder().WithTitle("Warned User Join").WithDescription(description).Build(), text: $"<@{user.Id}>");
+                                WarningCommands.SendWarningList(warnable, 0, possibles.First(), null);
+                            }
+                        }
+                        foreach (ulong chan in config.IncidentChannel)
+                        {
+                            SocketGuildChannel incidentChan = user.Guild.GetChannel(chan);
+                            if (incidentChan != null && incidentChan is ISocketMessageChannel incidentChanText)
+                            {
+                                string warnMessage = $"User <@{ user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command or refer to the private logs channel to see details.";
+                                incidentChanText.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build()).Wait();
+                                if (warnable.IsMuted)
+                                {
+                                    incidentChanText.SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription("You have been automatically muted by the system due to being muted and then rejoining the Discord."
+                                        + " You may discuss the situation in this channel only, until a moderator unmutes you.").Build()).Wait();
+                                }
+                                return Task.CompletedTask;
+                            }
+                        }
+                    }
+                    Console.WriteLine("Failed to warn of dangerous user-join: " + user.Id + " to " + user.Guild.Id + "(" + user.Guild.Name + ")");
                 }
-                Console.WriteLine("Failed to warn of dangerous user-join: " + user.Id + " to " + user.Guild.Id + "(" + user.Guild.Name + ")");
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error handling user join: {ex}");
+                }
                 return Task.CompletedTask;
             };
             bot.Client.UserLeft += (user) =>
@@ -126,16 +133,23 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                if (user.Id == bot.Client.CurrentUser.Id)
+                try
                 {
-                    return Task.CompletedTask;
+                    if (user.Id == bot.Client.CurrentUser.Id)
+                    {
+                        return Task.CompletedTask;
+                    }
+                    DiscordModBot.TempBanHandler.CheckShouldScan();
+                    GuildConfig config = DiscordModBot.GetConfig(user.Guild.Id);
+                    if (config.JoinNotifChannel.Any())
+                    {
+                        string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) left.";
+                        SendEmbedToAllFor(user.Guild, config.JoinNotifChannel, new EmbedBuilder().WithTitle("User Left").WithColor(64, 64, 0).WithDescription(message).Build());
+                    }
                 }
-                DiscordModBot.TempBanHandler.CheckShouldScan();
-                GuildConfig config = DiscordModBot.GetConfig(user.Guild.Id);
-                if (config.JoinNotifChannel.Any())
+                catch (Exception ex)
                 {
-                    string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) left.";
-                    SendEmbedToAllFor(user.Guild, config.JoinNotifChannel, new EmbedBuilder().WithTitle("User Left").WithColor(64, 64, 0).WithDescription(message).Build());
+                    Console.WriteLine($"Error handling user leave: {ex}");
                 }
                 return Task.CompletedTask;
             };
@@ -309,46 +323,53 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                if (newUser.Id == bot.Client.CurrentUser.Id)
+                try
                 {
-                    return Task.CompletedTask;
-                }
-                GuildConfig config = DiscordModBot.GetConfig(newUser.Guild.Id);
-                if (config.RoleChangeNotifChannel.Any())
-                {
-                    bool lostRoles = oldUser.Roles.Any(r => !newUser.Roles.Contains(r));
-                    bool gainedRoles = newUser.Roles.Any(r => !oldUser.Roles.Contains(r));
-                    if (lostRoles || gainedRoles)
+                    if (newUser.Id == bot.Client.CurrentUser.Id)
                     {
-                        EmbedBuilder roleChangeEmbed = new EmbedBuilder().WithTitle("User Role Change").WithDescription($"User <@{newUser.Id}> had roles updated.");
-                        if (lostRoles)
+                        return Task.CompletedTask;
+                    }
+                    GuildConfig config = DiscordModBot.GetConfig(newUser.Guild.Id);
+                    if (config.RoleChangeNotifChannel.Any())
+                    {
+                        bool lostRoles = oldUser.Roles.Any(r => !newUser.Roles.Contains(r));
+                        bool gainedRoles = newUser.Roles.Any(r => !oldUser.Roles.Contains(r));
+                        if (lostRoles || gainedRoles)
                         {
-                            roleChangeEmbed.AddField("Roles Removed", string.Join(", ", oldUser.Roles.Where(r => !newUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                            EmbedBuilder roleChangeEmbed = new EmbedBuilder().WithTitle("User Role Change").WithDescription($"User <@{newUser.Id}> had roles updated.");
+                            if (lostRoles)
+                            {
+                                roleChangeEmbed.AddField("Roles Removed", string.Join(", ", oldUser.Roles.Where(r => !newUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                            }
+                            if (gainedRoles)
+                            {
+                                roleChangeEmbed.AddField("Roles Added", string.Join(", ", newUser.Roles.Where(r => !oldUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                            }
+                            SendEmbedToAllFor(newUser.Guild, config.RoleChangeNotifChannel, roleChangeEmbed.Build());
                         }
-                        if (gainedRoles)
+                    }
+                    if (config.NameChangeNotifChannel.Any())
+                    {
+                        if (oldUser.Nickname != newUser.Nickname)
                         {
-                            roleChangeEmbed.AddField("Roles Added", string.Join(", ", newUser.Roles.Where(r => !oldUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                            EmbedBuilder embed = new EmbedBuilder().WithTitle("User Nickname Changed").WithColor(0, 255, 255);
+                            if (oldUser.Nickname != null)
+                            {
+                                embed.AddField("Old Nickname", $"`{UserCommands.EscapeUserInput(oldUser.Nickname)}`");
+                            }
+                            if (newUser.Nickname != null)
+                            {
+                                embed.AddField("New Nickname", $"`{UserCommands.EscapeUserInput(newUser.Nickname)}`");
+                            }
+                            string changeType = newUser.Nickname == null ? "removed their" : (oldUser.Nickname == null ? "added a" : "changed their");
+                            embed.Description = $"User <@{newUser.Id}> {changeType} nickname.";
+                            SendEmbedToAllFor(newUser.Guild, config.NameChangeNotifChannel, embed.Build());
                         }
-                        SendEmbedToAllFor(newUser.Guild, config.RoleChangeNotifChannel, roleChangeEmbed.Build());
                     }
                 }
-                if (config.NameChangeNotifChannel.Any())
+                catch (Exception ex)
                 {
-                    if (oldUser.Nickname != newUser.Nickname)
-                    {
-                        EmbedBuilder embed = new EmbedBuilder().WithTitle("User Nickname Changed").WithColor(0, 255, 255);
-                        if (oldUser.Nickname != null)
-                        {
-                            embed.AddField("Old Nickname", $"`{UserCommands.EscapeUserInput(oldUser.Nickname)}`");
-                        }
-                        if (newUser.Nickname != null)
-                        {
-                            embed.AddField("New Nickname", $"`{UserCommands.EscapeUserInput(newUser.Nickname)}`");
-                        }
-                        string changeType = newUser.Nickname == null ? "removed their" : (oldUser.Nickname == null ? "added a" : "changed their");
-                        embed.Description = $"User <@{newUser.Id}> {changeType} nickname.";
-                        SendEmbedToAllFor(newUser.Guild, config.NameChangeNotifChannel, embed.Build());
-                    }
+                    Console.Write($"Error handling guild user update {ex}");
                 }
                 return Task.CompletedTask;
             };
