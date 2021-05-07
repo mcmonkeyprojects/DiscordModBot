@@ -6,54 +6,34 @@ using ModBot.WarningHandlers;
 
 namespace ModBot.Database
 {
-    /// <summary>
-    /// Represents per-guild configuration options.
-    /// </summary>
+    /// <summary>Represents per-guild configuration options.</summary>
     public class GuildConfig
     {
-        /// <summary>
-        /// The ID of a mute role (if any).
-        /// </summary>
+        /// <summary>The ID of a mute role (if any).</summary>
         public ulong? MuteRole { get; set; }
 
-        /// <summary>
-        /// The IDs of roles that are allowed moderator access.
-        /// </summary>
+        /// <summary>The IDs of roles that are allowed moderator access.</summary>
         public List<ulong> ModeratorRoles { get; set; }
 
-        /// <summary>
-        /// What text to use to 'get attention' when a mute is given (eg. an @ mention to an admin).
-        /// </summary>
+        /// <summary>What text to use to 'get attention' when a mute is given (eg. an @ mention to an admin).</summary>
         public string AttentionNotice { get; set; }
 
-        /// <summary>
-        /// The ID of the incident notice channel(s).
-        /// </summary>
+        /// <summary>The ID of the incident notice channel(s).</summary>
         public List<ulong> IncidentChannel { get; set; }
 
-        /// <summary>
-        /// The ID of the join log message channel(s).
-        /// </summary>
+        /// <summary>The ID of the join log message channel(s).</summary>
         public List<ulong> JoinNotifChannel { get; set; }
 
-        /// <summary>
-        /// The ID of the voicechannel join/leave log message channel(s).
-        /// </summary>
+        /// <summary>The ID of the voicechannel join/leave log message channel(s).</summary>
         public List<ulong> VoiceChannelJoinNotifs { get; set; }
 
-        /// <summary>
-        /// The ID of the role-change log message channel(s).
-        /// </summary>
+        /// <summary>The ID of the role-change log message channel(s).</summary>
         public List<ulong> RoleChangeNotifChannel { get; set; }
 
-        /// <summary>
-        /// The ID of the nickname-change log message channel(s).
-        /// </summary>
+        /// <summary>The ID of the nickname-change log message channel(s).</summary>
         public List<ulong> NameChangeNotifChannel { get; set; }
 
-        /// <summary>
-        /// The ID of the moderation activity (warns, bans, etc) log message channel(s).
-        /// </summary>
+        /// <summary>The ID of the moderation activity (warns, bans, etc) log message channel(s).</summary>
         public List<ulong> ModLogsChannel { get; set; }
 
         /// <summary>
@@ -62,94 +42,61 @@ namespace ModBot.Database
         /// </summary>
         public Dictionary<ulong, ulong> LogChannels { get; set; }
 
-        /// <summary>
-        /// Whether the ASCII name rule should be enforced by the bot.
-        /// </summary>
+        /// <summary>Whether the ASCII name rule should be enforced by the bot.</summary>
         public bool EnforceAsciiNameRule { get; set; }
 
-        /// <summary>
-        /// Whether the A-Z first character name rule should be enforced by the bot.
-        /// </summary>
+        /// <summary>Whether the A-Z first character name rule should be enforced by the bot.</summary>
         public bool EnforceNameStartRule { get; set; }
 
-        /// <summary>
-        /// Whether warnings are enabled.
-        /// </summary>
+        /// <summary>If true, the name start rule (when enabled by <see cref="EnforceNameStartRule"/>) is more lenient and allows unicode symbols.</summary>
+        public bool NameStartRuleLenient { get; set; }
+
+        /// <summary>Whether warnings are enabled.</summary>
         public bool WarningsEnabled { get; set; }
 
-        /// <summary>
-        /// Whether (temp)bans are enabled.
-        /// </summary>
+        /// <summary>Whether (temp)bans are enabled.</summary>
         public bool BansEnabled { get; set; }
 
-        /// <summary>
-        /// A map of special roles that persist across rejoins. Keys are names, values are data.
-        /// </summary>
+        /// <summary>A map of special roles that persist across rejoins. Keys are names, values are data.</summary>
         public Dictionary<string, SpecialRole> SpecialRoles { get; set; }
 
-        /// <summary>
-        /// Whether to notify users about warnings received via a DM.
-        /// </summary>
+        /// <summary>Whether to notify users about warnings received via a DM.</summary>
         public bool NotifyWarnsInDM { get; set; }
 
-        /// <summary>
-        /// Represents a special role that a user can be stuck with.
-        /// </summary>
+        /// <summary>Represents a special role that a user can be stuck with.</summary>
         public class SpecialRole
         {
-            /// <summary>
-            /// The (modbot-side) name of the special role (not the same as the Discord role name).
-            /// </summary>
+            /// <summary>The (modbot-side) name of the special role (not the same as the Discord role name).</summary>
             public string Name { get; set; }
 
-            /// <summary>
-            /// The ID of the role.
-            /// </summary>
+            /// <summary>The ID of the role.</summary>
             public ulong RoleID { get; set; }
 
-            /// <summary>
-            /// The explanation text to display when adding the role to a user.
-            /// </summary>
+            /// <summary>The explanation text to display when adding the role to a user.</summary>
             public string AddExplanation { get; set; }
 
-            /// <summary>
-            /// The explanation text to display when removing the role from a user.
-            /// </summary>
+            /// <summary>The explanation text to display when removing the role from a user.</summary>
             public string RemoveExplanation { get; set; }
 
-            /// <summary>
-            /// The warning text to apply when adding the role (if any).
-            /// </summary>
+            /// <summary>The warning text to apply when adding the role (if any).</summary>
             public string AddWarnText { get; set; }
 
-            /// <summary>
-            /// The warning text to apply when removing the role (if any).
-            /// </summary>
+            /// <summary>The warning text to apply when removing the role (if any).</summary>
             public string RemoveWarnText { get; set; }
 
-            /// <summary>
-            /// The level of warning to apply when adding the role (if any).
-            /// </summary>
+            /// <summary>The level of warning to apply when adding the role (if any).</summary>
             public WarningLevel AddLevel { get; set; }
 
-            /// <summary>
-            /// The level of warning to apply when removing the role (if any).
-            /// </summary>
+            /// <summary>The level of warning to apply when removing the role (if any).</summary>
             public WarningLevel RemoveLevel { get; set; }
 
-            /// <summary>
-            /// A list of moderator commands that add this role to a user.
-            /// </summary>
+            /// <summary>A list of moderator commands that add this role to a user.</summary>
             public List<string> AddCommands { get; set; }
 
-            /// <summary>
-            /// A list of moderator commands that remove this role from a user.
-            /// </summary>
+            /// <summary>A list of moderator commands that remove this role from a user.</summary>
             public List<string> RemoveCommands { get; set; }
 
-            /// <summary>
-            /// Returns a duplicate of this SpecialRole.
-            /// </summary>
+            /// <summary>Returns a duplicate of this SpecialRole.</summary>
             public SpecialRole Duplicate()
             {
                 return new SpecialRole()
@@ -168,9 +115,7 @@ namespace ModBot.Database
             }
         }
 
-        /// <summary>
-        /// Ensure all configuration options are either set properly, or are default.
-        /// </summary>
+        /// <summary>Ensure all configuration options are either set properly, or are default.</summary>
         public void Ensure()
         {
             if (ModeratorRoles == null)
@@ -211,9 +156,7 @@ namespace ModBot.Database
             }
         }
 
-        /// <summary>
-        /// Returns a duplicate copy of this config.
-        /// </summary>
+        /// <summary>Returns a duplicate copy of this config.</summary>
         public GuildConfig Duplicate()
         {
             return new GuildConfig()
@@ -230,6 +173,7 @@ namespace ModBot.Database
                 LogChannels = new Dictionary<ulong, ulong>(LogChannels),
                 EnforceAsciiNameRule = EnforceAsciiNameRule,
                 EnforceNameStartRule = EnforceNameStartRule,
+                NameStartRuleLenient = NameStartRuleLenient,
                 WarningsEnabled = WarningsEnabled,
                 BansEnabled = BansEnabled,
                 NotifyWarnsInDM = NotifyWarnsInDM,

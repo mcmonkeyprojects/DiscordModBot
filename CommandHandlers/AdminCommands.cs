@@ -400,6 +400,30 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "name_start_rule_lenient":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("When true, and 'enforce_name_start_rule' is also true, the 'names must start with a letter' rule is extra lenient, and allows numbers or unicode symbols in addition to names.", config.NameStartRuleLenient ? "true" : "false");
+                            return;
+                        }
+                        if (command.RawArguments[1] == "true")
+                        {
+                            config.NameStartRuleLenient = true;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Name-Start-Rule-Leniency is now enabled.");
+                        }
+                        else if (command.RawArguments[1] == "false")
+                        {
+                            config.NameStartRuleLenient = false;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Name-Start-Rule-Leniency is now disabled.");
+                        }
+                        else
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "New value must be `true` or `false` only.");
+                            return;
+                        }
+                        break;
+                    }
                 case "warnings_enabled":
                     {
                         if (command.RawArguments.Length == 1)
@@ -561,7 +585,7 @@ namespace ModBot.CommandHandlers
                             + "\nAny sub-command without further arguments will show more info about current value.\nMost sub-command accept `null` to mean remove/clear any value (except where not possible).";
                         embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
                             + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, "
-                            + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `warnings_enabled`, `bans_enabled`, `notify_warns_in_dm`, `add_special_role`, `remove_special_role`");
+                            + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `notify_warns_in_dm`, `add_special_role`, `remove_special_role`");
                         SendReply(command.Message, embed.Build());
                         return;
                     }
