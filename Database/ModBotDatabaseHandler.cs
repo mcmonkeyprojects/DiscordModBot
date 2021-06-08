@@ -78,7 +78,14 @@ namespace ModBot.Database
         {
             foreach (Guild guild in Guilds.Values)
             {
-                guild.DB.Dispose();
+                try
+                {
+                    guild.DB.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error shutting down database for guild {guild.ID}: {ex}");
+                }
             }
             Guilds.Clear();
         }
