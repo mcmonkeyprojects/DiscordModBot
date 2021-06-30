@@ -103,7 +103,7 @@ namespace ModBot.CommandHandlers
             if (!string.IsNullOrWhiteSpace(reason))
             {
                 embed.AddField("Reason", $"`{reason}`");
-                reason = $" Reason: `{reason}`";
+                reason = $" Reason: {reason}";
             }
             ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, embed.Build());
             IUserMessage banNotice = SendGenericPositiveMessageReply(command.Message, "Temporary Ban Applied", $"<@{command.Message.Author.Id}> has{tempText} banned <@{userID}> {durationFormat}.");
