@@ -99,10 +99,10 @@ namespace ModBot.CommandHandlers
             bool isForever = realDuration.Value.TotalDays > (365 * 50);
             string durationFormat = isForever ? "indefinitely" : $"for {realDuration.Value.SimpleFormat(false)}";
             string tempText = isForever ? "" : " temporarily";
-            EmbedBuilder embed = new EmbedBuilder().WithTitle("User Banned").WithColor(255, 0, 0).WithDescription($"User ban applied and recorded.").AddField("User", $"<@{userID}>").AddField("Duration", durationFormat, true);
+            EmbedBuilder embed = new EmbedBuilder().WithTitle("User Banned").WithColor(255, 0, 0).WithDescription($"User ban applied and recorded.").AddField("User", $"<@{userID}>", true).AddField("Duration", durationFormat, true);
             if (!string.IsNullOrWhiteSpace(reason))
             {
-                embed.AddField("Reason", $"`{reason}`", true);
+                embed.AddField("Reason", $"`{reason}`");
                 reason = $" Reason: `{reason}`";
             }
             ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, embed.Build());
