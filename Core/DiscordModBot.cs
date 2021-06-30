@@ -43,11 +43,6 @@ namespace ModBot.Core
         public static ModBotDatabaseHandler DatabaseHandler;
 
         /// <summary>
-        /// The default configuration for new guilds.
-        /// </summary>
-        public static GuildConfig DefaultGuildConfig;
-
-        /// <summary>
         /// List of bot commander user IDs.
         /// </summary>
         public static HashSet<ulong> BotCommanders;
@@ -256,8 +251,6 @@ namespace ModBot.Core
         public static void LoadConfig(FDSSection configFile)
         {
             BotCommanders = new HashSet<ulong>(GetIDList(configFile, "bot_commanders"));
-            DefaultGuildConfig = new GuildConfig();
-            DefaultGuildConfig.Ensure();
         }
 
         /// <summary>

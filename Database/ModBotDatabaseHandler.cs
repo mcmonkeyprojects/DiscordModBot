@@ -108,7 +108,7 @@ namespace ModBot.Database
                 newGuild.Config = newGuild.ConfigCollection.FindById(0);
                 if (newGuild.Config == null)
                 {
-                    newGuild.Config = DiscordModBot.DefaultGuildConfig.Duplicate();
+                    newGuild.Config = new GuildConfig();
                     newGuild.Config.Ensure();
                     newGuild.ConfigCollection.Insert(0, newGuild.Config);
                 }

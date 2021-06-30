@@ -155,30 +155,5 @@ namespace ModBot.Database
                 SpecialRoles = new Dictionary<string, SpecialRole>();
             }
         }
-
-        /// <summary>Returns a duplicate copy of this config.</summary>
-        public GuildConfig Duplicate()
-        {
-            return new GuildConfig()
-            {
-                MuteRole = MuteRole,
-                ModeratorRoles = new List<ulong>(ModeratorRoles),
-                AttentionNotice = AttentionNotice,
-                IncidentChannel = new List<ulong>(IncidentChannel),
-                JoinNotifChannel = new List<ulong>(JoinNotifChannel),
-                VoiceChannelJoinNotifs = new List<ulong>(VoiceChannelJoinNotifs),
-                RoleChangeNotifChannel = new List<ulong>(RoleChangeNotifChannel),
-                NameChangeNotifChannel = new List<ulong>(NameChangeNotifChannel),
-                ModLogsChannel = new List<ulong>(ModLogsChannel),
-                LogChannels = new Dictionary<ulong, ulong>(LogChannels),
-                EnforceAsciiNameRule = EnforceAsciiNameRule,
-                EnforceNameStartRule = EnforceNameStartRule,
-                NameStartRuleLenient = NameStartRuleLenient,
-                WarningsEnabled = WarningsEnabled,
-                BansEnabled = BansEnabled,
-                NotifyWarnsInDM = NotifyWarnsInDM,
-                SpecialRoles = new Dictionary<string, SpecialRole>(SpecialRoles.Select(pair => new KeyValuePair<string, SpecialRole>(pair.Key, pair.Value.Duplicate())))
-            };
-        }
     }
 }
