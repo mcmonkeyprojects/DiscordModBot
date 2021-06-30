@@ -65,9 +65,17 @@ namespace ModBot.WarningHandlers
             }
         }
 
+        /// <summary>Words that mean "permanent" that a user might try.</summary>
+        public static HashSet<string> PermanentWords = new HashSet<string>() { "permanent", "permanently", "indefinite", "indefinitely", "forever" };
+
         /// <summary>Parses duration text into a valid TimeSpan, or null.</summary>
         public static TimeSpan? ParseDuration(string durationText)
         {
+            durationText = durationText.ToLowerFast();
+            if (PermanentWords.Contains(durationText))
+            {
+                return TimeSpan.FromDays(100 * 365);
+            }
             if (durationText.EndsWith("h") && double.TryParse(durationText.Before('h'), out double hours))
             {
                 return TimeSpan.FromHours(hours);
