@@ -107,7 +107,7 @@ namespace ModBot.CommandHandlers
             }
             ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, embed.Build());
             IUserMessage banNotice = SendGenericPositiveMessageReply(command.Message, "Temporary Ban Applied", $"<@{command.Message.Author.Id}> has{tempText} banned <@{userID}> {durationFormat}.");
-            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE, Reason = $"BANNED {durationFormat}.{reason}" };
+            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"BANNED {durationFormat}.{reason}" };
             warning.Link = LinkToMessage(banNotice);
             warnable.AddWarning(warning);
         }
