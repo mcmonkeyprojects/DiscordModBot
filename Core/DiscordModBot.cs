@@ -272,6 +272,7 @@ namespace ModBot.Core
             bot.RegisterCommand(WarningCommandHandler.CMD_Note, "note");
             bot.RegisterCommand(WarningCommandHandler.CMD_Warn, "warn", "warning");
             bot.RegisterCommand(WarningCommandHandler.CMD_Unmute, "unmute");
+            bot.RegisterCommand(WarningCommandHandler.CMD_Unban, "unban");
             bot.RegisterCommand(WarningCommandHandler.CMD_TempBan, "tempban", "tmpban", "ban", "bantmp", "bantemp", "temporaryban", "bantemporary");
             // Admin
             bot.RegisterCommand(adminCommands.CMD_AdminConfigure, "admin-configure");

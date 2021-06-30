@@ -113,6 +113,42 @@ namespace ModBot.CommandHandlers
         }
 
         /// <summary>
+        /// User command to remove a user's ban.
+        /// </summary>
+        public void CMD_Unban(CommandData command)
+        {
+            SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
+            GuildConfig config = DiscordModBot.GetConfig(guild.Id);
+            if (!config.BansEnabled)
+            {
+                return;
+            }
+            if (!DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
+            {
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
+                return;
+            }
+            if (command.RawArguments.Length < 1)
+            {
+                SendErrorMessageReply(command.Message, "Invalid Input", "Usage: unban [user]");
+                return;
+            }
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
+            {
+                return;
+            }
+            if (guild.GetBanAsync(userID).Result == null)
+            {
+                SendErrorMessageReply(command.Message, "Not Banned", "That user isn't banned.");
+                return;
+            }
+            guild.RemoveBanAsync(userID).Wait();
+            DiscordModBot.TempBanHandler.DisableTempBansFor(guild.Id, userID);
+            SendGenericPositiveMessageReply(command.Message, "Unbanned", $"<@{command.Message.Author.Id}> has unbanned <@{userID}>.");
+            ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, config.ModLogsChannel, new EmbedBuilder().WithTitle("User Unbanned").WithColor(0, 255, 0).WithDescription($"User <@{userID}> was unbanned by <@{command.Message.Author.Id}>.").Build());
+        }
+
+        /// <summary>
         /// User command to remove a user's muted status.
         /// </summary>
         public void CMD_Unmute(CommandData command)
