@@ -49,7 +49,7 @@ namespace ModBot.CommandHandlers
         /// Simple output string for ban-related commands.
         /// </summary>
         public static string CmdsBansHelp =
-                "`tempban` to temporarily ban a user - in the format `tempban @User [duration]`\n";
+                "`ban` to temporarily ban a user - in the format `ban @User [duration] (reason)`\n";
 
         /// <summary>
         /// Simple output string for admin commands.

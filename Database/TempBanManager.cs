@@ -159,7 +159,7 @@ namespace ModBot.Database
         /// <summary>
         /// Temporarily bans a user from a guild for a set duration.
         /// </summary>
-        public void TempBan(ulong guildId, ulong userId, TimeSpan duration)
+        public void TempBan(ulong guildId, ulong userId, TimeSpan duration, string reason)
         {
             SocketGuild guild = DiscordBotBaseHelper.CurrentBot.Client.GetGuild(guildId);
             if (guild == null)
@@ -179,6 +179,7 @@ namespace ModBot.Database
                 TempBansFile.Set($"{path}.{count}.guild", guildId);
                 TempBansFile.Set($"{path}.{count}.user", userId);
                 TempBansFile.Set($"{path}.{count}.name", name);
+                TempBansFile.Set($"{path}.{count}.reason", reason);
                 if (!isForever)
                 {
                     TempBansFile.Set($"{path}.{count}.end", StringConversionHelper.DateTimeToString(DateTimeOffset.UtcNow.Add(duration), false));
@@ -192,7 +193,11 @@ namespace ModBot.Database
                 {
                     IDMChannel channel = user.GetOrCreateDMChannelAsync().Result;
                     string durationMessage = isForever ? "This ban lasts until manually removed by staff." : $"This ban expires **{duration.SimpleFormat(true)}**.";
-                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}").Build()).Wait(new TimeSpan(0, 1, 0));
+                    if (!string.IsNullOrWhiteSpace(reason))
+                    {
+                        reason = $" Reason: `{reason}`";
+                    }
+                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}{reason}").Build()).Wait(new TimeSpan(0, 1, 0));
                 }
                 catch (Exception ex)
                 {

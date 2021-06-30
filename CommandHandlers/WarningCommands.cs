@@ -54,7 +54,7 @@ namespace ModBot.CommandHandlers
             }
             if (command.RawArguments.Length < 2)
             {
-                SendErrorMessageReply(command.Message, "Invalid Input", "Usage: tempban [user] [duration] ... Duration can be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
+                SendErrorMessageReply(command.Message, "Invalid Input", "Usage: tempban [user] [duration] (reason) ... Duration can be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
                 return;
             }
             if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
@@ -85,18 +85,29 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be a positive value greater than one minute.");
                 return;
             }
+            string reason = "";
+            if (command.RawArguments.Length > 2)
+            {
+                reason = EscapeUserInput(string.Join(" ", command.RawArguments.Skip(2)));
+            }
             if (!string.IsNullOrWhiteSpace(config.MaxBanDuration) && realDuration.Value.TotalMinutes > (WarningUtilities.ParseDuration(config.MaxBanDuration) ?? new TimeSpan(0, 0, 0)).TotalMinutes)
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", $"Duration must be less than limit of `{config.MaxBanDuration}`.");
                 return;
             }
-            DiscordModBot.TempBanHandler.TempBan(guild.Id, userID, realDuration.Value);
+            DiscordModBot.TempBanHandler.TempBan(guild.Id, userID, realDuration.Value, reason);
             bool isForever = realDuration.Value.TotalDays > (365 * 50);
             string durationFormat = isForever ? "indefinitely" : $"for {realDuration.Value.SimpleFormat(false)}";
             string tempText = isForever ? "" : " temporarily";
-            ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, new EmbedBuilder().WithTitle("User Temporarily Banned").WithColor(255, 0, 0).WithDescription($"User <@{userID}> was temporarily banned {durationFormat}.").Build());
+            EmbedBuilder embed = new EmbedBuilder().WithTitle("User Banned").WithColor(255, 0, 0).WithDescription($"User ban applied and recorded.").AddField("User", $"<@{userID}>").AddField("Duration", durationFormat, true);
+            if (!string.IsNullOrWhiteSpace(reason))
+            {
+                embed.AddField("Reason", $"`{reason}`", true);
+                reason = $" Reason: `{reason}`";
+            }
+            ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, embed.Build());
             IUserMessage banNotice = SendGenericPositiveMessageReply(command.Message, "Temporary Ban Applied", $"<@{command.Message.Author.Id}> has{tempText} banned <@{userID}> {durationFormat}.");
-            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE, Reason = $"BANNED {durationFormat}." };
+            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE, Reason = $"BANNED {durationFormat}.{reason}" };
             warning.Link = LinkToMessage(banNotice);
             warnable.AddWarning(warning);
         }
