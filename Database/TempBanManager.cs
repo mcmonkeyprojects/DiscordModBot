@@ -197,7 +197,7 @@ namespace ModBot.Database
                     {
                         reason = $" Reason: `{reason}`";
                     }
-                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}{reason}").Build()).Wait(new TimeSpan(0, 1, 0));
+                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}{reason}").WithThumbnailUrl(guild.IconUrl).Build()).Wait(new TimeSpan(0, 1, 0));
                 }
                 catch (Exception ex)
                 {
