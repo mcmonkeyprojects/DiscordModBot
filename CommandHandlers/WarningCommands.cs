@@ -95,7 +95,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", $"Duration must be less than limit of `{config.MaxBanDuration}`.");
                 return;
             }
-            DiscordModBot.TempBanHandler.TempBan(guild.Id, userID, realDuration.Value, reason);
+            DiscordModBot.TempBanHandler.TempBan(guild.Id, userID, realDuration.Value, command.Message.Author.Id, reason);
             bool isForever = realDuration.Value.TotalDays > (365 * 50);
             string durationFormat = isForever ? "indefinitely" : $"for {realDuration.Value.SimpleFormat(false)}";
             string tempText = isForever ? "" : " temporarily";
