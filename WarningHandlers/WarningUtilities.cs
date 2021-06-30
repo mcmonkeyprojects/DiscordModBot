@@ -7,6 +7,7 @@ using Discord;
 using Discord.WebSocket;
 using ModBot.Database;
 using ModBot.Core;
+using FreneticUtilities.FreneticExtensions;
 
 namespace ModBot.WarningHandlers
 {
@@ -62,6 +63,32 @@ namespace ModBot.WarningHandlers
                 }
                 return user;
             }
+        }
+
+        /// <summary>Parses duration text into a valid TimeSpan, or null.</summary>
+        public static TimeSpan? ParseDuration(string durationText)
+        {
+            if (durationText.EndsWith("h") && double.TryParse(durationText.Before('h'), out double hours))
+            {
+                return TimeSpan.FromHours(hours);
+            }
+            else if (durationText.EndsWith("d") && double.TryParse(durationText.Before('d'), out double days))
+            {
+                return TimeSpan.FromDays(days);
+            }
+            else if (durationText.EndsWith("w") && double.TryParse(durationText.Before('w'), out double weeks))
+            {
+                return TimeSpan.FromDays(weeks * 7);
+            }
+            else if (durationText.EndsWith("m") && double.TryParse(durationText.Before('m'), out double months))
+            {
+                return TimeSpan.FromDays(months * 31);
+            }
+            else if (durationText.EndsWith("y") && double.TryParse(durationText.Before('y'), out double years))
+            {
+                return TimeSpan.FromDays(years * 365);
+            }
+            return null;
         }
     }
 }

@@ -74,47 +74,29 @@ namespace ModBot.CommandHandlers
                 return;
             }
             string durationText = command.RawArguments[1];
-            TimeSpan realDuration;
-            if (durationText.EndsWith("h") && double.TryParse(durationText.Before('h'), out double hours))
-            {
-                realDuration = TimeSpan.FromHours(hours);
-            }
-            else if (durationText.EndsWith("d") && double.TryParse(durationText.Before('d'), out double days))
-            {
-                realDuration = TimeSpan.FromDays(days);
-            }
-            else if (durationText.EndsWith("w") && double.TryParse(durationText.Before('w'), out double weeks))
-            {
-                realDuration = TimeSpan.FromDays(weeks * 7);
-            }
-            else if (durationText.EndsWith("m") && double.TryParse(durationText.Before('m'), out double months))
-            {
-                realDuration = TimeSpan.FromDays(months * 31);
-            }
-            else if (durationText.EndsWith("y") && double.TryParse(durationText.Before('y'), out double years))
-            {
-                realDuration = TimeSpan.FromDays(years * 365);
-            }
-            else
+            TimeSpan? realDuration = WarningUtilities.ParseDuration(durationText);
+            if (!realDuration.HasValue)
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
                 return;
             }
-            if (realDuration.TotalMinutes < 1)
+            if (realDuration.Value.TotalMinutes < 1)
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be a positive value greater than one minute.");
                 return;
             }
-            if (realDuration.TotalDays > 365 * 2)
+            if (!string.IsNullOrWhiteSpace(config.MaxBanDuration) && realDuration.Value.TotalMinutes > (WarningUtilities.ParseDuration(config.MaxBanDuration) ?? new TimeSpan(0, 0, 0)).TotalMinutes)
             {
-                SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be less than 2 years.");
+                SendErrorMessageReply(command.Message, "Invalid Input", $"Duration must be less than limit of `{config.MaxBanDuration}`.");
                 return;
             }
-            DiscordModBot.TempBanHandler.TempBan(guild.Id, userID, realDuration);
-            string durationFormat = realDuration.SimpleFormat(false);
-            ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, new EmbedBuilder().WithTitle("User Temporarily Banned").WithColor(255, 0, 0).WithDescription($"User <@{userID}> was temporarily banned for {durationFormat}.").Build());
-            IUserMessage banNotice = SendGenericPositiveMessageReply(command.Message, "Temporary Ban Applied", $"<@{command.Message.Author.Id}> has temporarily banned <@{userID}> for {durationFormat}.");
-            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE, Reason = $"BANNED for {durationFormat}." };
+            DiscordModBot.TempBanHandler.TempBan(guild.Id, userID, realDuration.Value);
+            bool isForever = realDuration.Value.TotalDays > (365 * 50);
+            string durationFormat = isForever ? "indefinitely" : $"for {realDuration.Value.SimpleFormat(false)}";
+            string tempText = isForever ? "" : " temporarily";
+            ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, new EmbedBuilder().WithTitle("User Temporarily Banned").WithColor(255, 0, 0).WithDescription($"User <@{userID}> was temporarily banned {durationFormat}.").Build());
+            IUserMessage banNotice = SendGenericPositiveMessageReply(command.Message, "Temporary Ban Applied", $"<@{command.Message.Author.Id}> has{tempText} banned <@{userID}> {durationFormat}.");
+            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE, Reason = $"BANNED {durationFormat}." };
             warning.Link = LinkToMessage(banNotice);
             warnable.AddWarning(warning);
         }

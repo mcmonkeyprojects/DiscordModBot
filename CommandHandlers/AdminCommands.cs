@@ -472,6 +472,28 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "max_ban_duration":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("The maximum tempban duration allowed (if any).", config.MaxBanDuration ?? "(unset)");
+                            return;
+                        }
+                        if (command.RawArguments[1].ToLowerFast() == "none")
+                        {
+                            config.MaxBanDuration = null;
+                            break;
+                        }
+                        TimeSpan? duration = WarningUtilities.ParseDuration(command.RawArguments[1]);
+                        if (duration == null)
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "Can be 'none', or a duration. A duration must be formatted like '1d' (for 1 day). Allowed type: 'h' for hours, 'd' for days, 'w' for weeks, 'm' for months, 'y' for years.");
+                            return;
+                        }
+                        config.MaxBanDuration = command.RawArguments[1];
+                        SendGenericPositiveMessageReply(command.Message, "Applied", $"Max ban duration set to ${duration.Value.SimpleFormat(false)}.");
+                        break;
+                    }
                 case "notify_warns_in_dm":
                     {
                         if (command.RawArguments.Length == 1)
@@ -585,7 +607,7 @@ namespace ModBot.CommandHandlers
                             + "\nAny sub-command without further arguments will show more info about current value.\nMost sub-command accept `null` to mean remove/clear any value (except where not possible).";
                         embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
                             + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, "
-                            + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `notify_warns_in_dm`, `add_special_role`, `remove_special_role`");
+                            + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, `notify_warns_in_dm`, `add_special_role`, `remove_special_role`");
                         SendReply(command.Message, embed.Build());
                         return;
                     }

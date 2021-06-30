@@ -57,6 +57,9 @@ namespace ModBot.Database
         /// <summary>Whether (temp)bans are enabled.</summary>
         public bool BansEnabled { get; set; }
 
+        /// <summary>The maximum ban duration allowed (if any).</summary>
+        public string MaxBanDuration { get; set; }
+
         /// <summary>A map of special roles that persist across rejoins. Keys are names, values are data.</summary>
         public Dictionary<string, SpecialRole> SpecialRoles { get; set; }
 

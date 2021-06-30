@@ -164,29 +164,35 @@ namespace ModBot.Database
             SocketGuild guild = DiscordBotBaseHelper.CurrentBot.Client.GetGuild(guildId);
             if (guild == null)
             {
-                Console.WriteLine($"Temp ban failed: invalid guild ID {guildId}!");
+                Console.WriteLine($"Ban failed: invalid guild ID {guildId}!");
                 return;
             }
             SocketGuildUser user = guild.GetUser(userId);
             string name = user == null ? "(unknown)" :  $"{user.Username}#{user.Discriminator}";
+            bool isForever = duration.TotalDays > (365 * 50);
+            string path = isForever ? "permanent_bans" : "temp_ban";
             lock (this)
             {
                 DisableTempBansFor(guildId, userId);
                 int count = TempBansFile.GetInt("count").Value + 1;
                 TempBansFile.Set("count", count);
-                TempBansFile.Set($"temp_ban.{count}.guild", guildId);
-                TempBansFile.Set($"temp_ban.{count}.user", userId);
-                TempBansFile.Set($"temp_ban.{count}.name", name);
-                TempBansFile.Set($"temp_ban.{count}.end", StringConversionHelper.DateTimeToString(DateTimeOffset.UtcNow.Add(duration), false));
+                TempBansFile.Set($"{path}.{count}.guild", guildId);
+                TempBansFile.Set($"{path}.{count}.user", userId);
+                TempBansFile.Set($"{path}.{count}.name", name);
+                if (!isForever)
+                {
+                    TempBansFile.Set($"{path}.{count}.end", StringConversionHelper.DateTimeToString(DateTimeOffset.UtcNow.Add(duration), false));
+                }
                 Save();
             }
-            string banReason = $"Temporary ban for {duration.SimpleFormat(false)}";
+            string banReason = isForever ? "Indefinite ban" : $"Temporary ban for {duration.SimpleFormat(false)}";
             if (user != null)
             {
                 try
                 {
                     IDMChannel channel = user.GetOrCreateDMChannelAsync().Result;
-                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. This ban expires **{duration.SimpleFormat(true)}**.").Build()).Wait();
+                    string durationMessage = isForever ? "This ban lasts until manually removed by staff." : $"This ban expires **{duration.SimpleFormat(true)}**.";
+                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}").Build()).Wait(new TimeSpan(0, 1, 0));
                 }
                 catch (Exception ex)
                 {
