@@ -509,9 +509,12 @@ namespace ModBot.CommandHandlers
                 return;
             }
             ulong userID = command.Message.Author.Id;
-            if (DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
+            if (DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser) && command.RawArguments.Length > 0)
             {
-                DiscordModBot.WarningCommandHandler.GetTargetUser(command, false, true, out userID);
+                if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, false, true, out userID))
+                {
+                    return;
+                }
             }
             int pageArg = command.RawArguments.Length - 1;
             if (pageArg < 0 || !int.TryParse(command.RawArguments[pageArg], out int min))
