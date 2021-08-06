@@ -199,6 +199,11 @@ namespace ModBot.CommandHandlers
             }
             else
             {
+                if (warnable.SeenNames.IsEmpty())
+                {
+                    SendErrorMessageReply(command.Message, "Invalid Input", "Cannot unmute that user: user has never been seen before.");
+                    return;
+                }
                 SendGenericNegativeMessageReply(command.Message, "Cannot Unmute", $"User {EscapeUserInput(warnable.LastKnownUsername)} is already not muted.");
             }
         }
@@ -528,6 +533,11 @@ namespace ModBot.CommandHandlers
                 return;
             }
             WarnableUser user = WarningUtilities.GetWarnableUser(guild.Id, userID);
+            if (user.SeenNames.IsEmpty())
+            {
+                SendErrorMessageReply(command.Message, "Invalid Input", "Cannot listwarn on that user: user has never been seen before.");
+                return;
+            }
             SendWarningList(user, min, command.Message.Channel, command.Message);
         }
 
