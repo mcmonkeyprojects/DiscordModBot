@@ -477,17 +477,17 @@ namespace ModBot.CommandHandlers
             if (startId == 0 && user.SpecialRoles.Any())
             {
                 string rolesText = string.Join(", ", user.SpecialRoles.Select(s => $"`{s}`"));
-                SendGenericPositiveMessageReply(message, "Special Roles", $"User `{EscapeUserInput(user.LastKnownUsername)}` has the following special roles applied:\n{rolesText}");
+                SendGenericPositiveMessageReply(message, "Special Roles", $"User `{EscapeUserInput(user.LastKnownUsername)}` has the following special roles applied:\n{rolesText}", channel);
             }
             if (warnID == 0)
             {
                 if (startId > 0)
                 {
-                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User `{EscapeUserInput(user.LastKnownUsername)}` does not have that page of warnings.");
+                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User `{EscapeUserInput(user.LastKnownUsername)}` does not have that page of warnings.", channel);
                 }
                 else
                 {
-                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User `{EscapeUserInput(user.LastKnownUsername)}` does not have any warnings logged.");
+                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User `{EscapeUserInput(user.LastKnownUsername)}` does not have any warnings logged.", channel);
                 }
             }
             else
