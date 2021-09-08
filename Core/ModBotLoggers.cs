@@ -109,7 +109,7 @@ namespace ModBot.Core
                             if (incidentChan != null && incidentChan is ISocketMessageChannel incidentChanText)
                             {
                                 string warnMessage = $"User <@{ user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command or refer to the private logs channel to see details.";
-                                incidentChanText.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build()).Wait();
+                                incidentChanText.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build(), allowedMentions: AllowedMentions.None).Wait();
                                 if (warnable.IsMuted)
                                 {
                                     incidentChanText.SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription("You have been automatically muted by the system due to being muted and then rejoining the Discord."
@@ -390,7 +390,7 @@ namespace ModBot.Core
                 IEnumerable<SocketTextChannel> possibles = channels.Where(schan => schan.Id == chan);
                 if (possibles.Any())
                 {
-                    possibles.First().SendMessageAsync(text: text, embed: embed).Wait();
+                    possibles.First().SendMessageAsync(text: text, embed: embed, allowedMentions: AllowedMentions.None).Wait();
                 }
             }
         }
@@ -480,7 +480,7 @@ namespace ModBot.Core
                 Console.WriteLine($"Bad channel log output ID: {logChannel}");
                 return;
             }
-            textChannel.SendMessageAsync(message).Wait();
+            textChannel.SendMessageAsync(message, allowedMentions: AllowedMentions.None).Wait();
         }
     }
 }
