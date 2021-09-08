@@ -273,6 +273,10 @@ namespace ModBot.Core
                         {
                             author = $"(unknown)";
                         }
+                        if (originalText.Length > 1850)
+                        {
+                            originalText = originalText[..1800] + "...";
+                        }
                         LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`");
                     }
                 }
