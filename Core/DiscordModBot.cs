@@ -205,14 +205,6 @@ namespace ModBot.Core
                             Environment.Exit(0);
                         }
                         break;
-                    case "count_legacy":
-                        {
-                            foreach (ModBotDatabaseHandler.Guild guild in DatabaseHandler.Guilds.Values)
-                            {
-                                Console.WriteLine($"Guild {guild.ID} has {guild.Users.Count()} valid users and {guild.Users_Outdated.Count()} legacy users");
-                            }
-                        }
-                        break;
                     default:
                         Console.WriteLine("Unknown command.");
                         break;
