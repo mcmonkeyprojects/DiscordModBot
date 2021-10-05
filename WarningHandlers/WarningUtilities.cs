@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using ModBot.Database;
 using ModBot.Core;
 using FreneticUtilities.FreneticExtensions;
+using System.Collections.Concurrent;
 
 namespace ModBot.WarningHandlers
 {
@@ -25,12 +26,58 @@ namespace ModBot.WarningHandlers
             return (user as SocketGuildUser).Roles.Any((role) => role.Id == config.MuteRole.Value);
         }
 
+        /// <summary>Helper for caching <see cref="WarnableUser"/> instances.</summary>
+        public class WarnableCache
+        {
+            /// <summary>The actual user instance.</summary>
+            public WarnableUser User;
+
+            /// <summary>When this instance was last used.</summary>
+            public long LastUpdated;
+
+            /// <summary>The cache itself.</summary>
+            public static ConcurrentDictionary<(ulong, ulong), WarnableCache> WarnablesCache = new ConcurrentDictionary<(ulong, ulong), WarnableCache>();
+
+            private static readonly List<(ulong, ulong)> ToClear = new List<(ulong, ulong)>();
+            private static long LastCleared;
+
+            public static void Clean()
+            {
+                lock (ToClear)
+                {
+                    long now = Environment.TickCount64;
+                    if (now - LastCleared < 2500)
+                    {
+                        return;
+                    }
+                    LastCleared = now;
+                    ToClear.Clear();
+                    foreach (KeyValuePair<(ulong, ulong), WarnableCache> pair in WarnablesCache)
+                    {
+                        if ((now - pair.Value.LastUpdated) > 5000)
+                        {
+                            ToClear.Add(pair.Key);
+                        }
+                    }
+                    foreach ((ulong, ulong) id in ToClear)
+                    {
+                        WarnablesCache.Remove(id, out _);
+                    }
+                }
+            }
+        }
+
         /// <summary>Gets the <see cref="WarnableUser"/> object for a Discord user (by Discord ID).</summary>
         public static WarnableUser GetWarnableUser(ulong guildId, ulong id)
         {
             ModBotDatabaseHandler.Guild guildData = DiscordModBot.DatabaseHandler.GetDatabase(guildId);
             lock (guildData)
             {
+                if (WarnableCache.WarnablesCache.TryGetValue((guildId, id), out WarnableCache cached))
+                {
+                    cached.LastUpdated = Environment.TickCount64;
+                    return cached.User;
+                }
                 WarnableUser user = guildData.Users.FindById(unchecked((long)id));
                 if (user == null)
                 {
@@ -38,6 +85,8 @@ namespace ModBot.WarningHandlers
                     user.Ensure();
                     Console.WriteLine($"New user data generated for {id}");
                 }
+                WarnableCache cache = new WarnableCache() { User = user, LastUpdated = Environment.TickCount64 };
+                WarnableCache.WarnablesCache.TryAdd((guildId, id), cache);
                 return user;
             }
         }
