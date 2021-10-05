@@ -66,6 +66,12 @@ namespace ModBot.Database
         /// <summary>Whether to notify users about warnings received via a DM.</summary>
         public bool NotifyWarnsInDM { get; set; }
 
+        /// <summary>Whether to automatically mute known spambots.</summary>
+        public bool AutomuteSpambots { get; set; }
+
+        /// <summary>Roles that definitely aren't spambots.</summary>
+        public List<ulong> NonSpambotRoles { get; set; }
+
         /// <summary>Represents a special role that a user can be stuck with.</summary>
         public class SpecialRole
         {
@@ -138,6 +144,10 @@ namespace ModBot.Database
             if (SpecialRoles == null)
             {
                 SpecialRoles = new Dictionary<string, SpecialRole>();
+            }
+            if (NonSpambotRoles == null)
+            {
+                NonSpambotRoles = new List<ulong>();
             }
         }
     }

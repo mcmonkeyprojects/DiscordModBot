@@ -526,6 +526,59 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "spambot_automute":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("Whether known automatically detectable spambot behaviors should automatically result in a mute when detected.", config.AutomuteSpambots ? "true" : "false");
+                            return;
+                        }
+                        if (command.RawArguments[1] == "true")
+                        {
+                            config.AutomuteSpambots = true;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Spambot-automute is now enabled.");
+                        }
+                        else if (command.RawArguments[1] == "false")
+                        {
+                            config.AutomuteSpambots = false;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Spambot-automute is now disabled.");
+                        }
+                        else
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "New value must be `true` or `false` only.");
+                            return;
+                        }
+                        break;
+                    }
+                case "nonspambot_roles":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("The IDs of the roles that indicate a user is definitely not a spam bot. Users with these roles are protected from spambot automute.", config.NonSpambotRoles.IsEmpty() ? "None" : string.Join(",", config.NonSpambotRoles));
+                            return;
+                        }
+                        string roleText = command.RawArguments[1];
+                        if (roleText == "none" || roleText == "null")
+                        {
+                            config.NonSpambotRoles.Clear();
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Non-spambot role list emptied.");
+                        }
+                        else
+                        {
+                            try
+                            {
+                                config.NonSpambotRoles = roleText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Invalid nonspambot_roles input, had exception: {ex}");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of Role IDs, or 'none'.");
+                                return;
+                            }
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Non-spambot role list updated.");
+                        }
+                        break;
+                    }
                 case "add_special_role":
                     {
                         if (command.RawArguments.Length < 5)
@@ -615,7 +668,8 @@ namespace ModBot.CommandHandlers
                             + "\nAny sub-command without further arguments will show more info about current value.\nMost sub-command accept `null` to mean remove/clear any value (except where not possible).";
                         embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
                             + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, "
-                            + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, `notify_warns_in_dm`, `add_special_role`, `remove_special_role`");
+                            + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, "
+                            + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_special_role`, `remove_special_role`");
                         SendReply(command.Message, embed.Build());
                         return;
                     }

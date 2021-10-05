@@ -155,9 +155,35 @@ namespace ModBot.Core
                         // -> and nobody else has posted in that channel since their first post) reaction,
                         // -> and if not in a help lobby redirect to help lobby (in same response)
                         SocketGuild guild = (message.Channel as SocketGuildChannel).Guild;
-                        TrackUsernameFor(message.Author, guild);
-                        // TODO: Spam detection
-                        NameUtilities.AsciiNameRuleCheck(message, message.Author as SocketGuildUser);
+                        GuildConfig config = GetConfig(guild.Id);
+                        SocketGuildUser author = message.Author as SocketGuildUser;
+                        TrackUsernameFor(author, guild);
+                        // TODO: General post-spam detection
+                        NameUtilities.AsciiNameRuleCheck(message, author);
+                        if (config.AutomuteSpambots && config.MuteRole.HasValue && LooksSpambotty(message.Content) && !author.IsBot && !author.IsWebhook && !author.Roles.Any(r => config.NonSpambotRoles.Contains(r.Id)))
+                        {
+                            WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, author.Id);
+                            if (!warnable.IsMuted)
+                            {
+                                warnable.IsMuted = true;
+                                warnable.Save();
+                                IRole role = guild.GetRole(config.MuteRole.Value);
+                                if (role == null)
+                                {
+                                    Console.WriteLine($"Failed To Auto-Mute in {guild.Id}: no muted role found.");
+                                    return;
+                                }
+                                author.AddRoleAsync(role).Wait();
+                                IUserMessage automutenotice = message.Channel.SendMessageAsync($"User <@{author.Id}> has been muted automatically by spambot-detection.\n{config.AttentionNotice}", embed: new EmbedBuilder().WithTitle("Spambot Auto-Mute Notice").WithColor(255, 128, 0)
+                                    .WithDescription("This mute was applied as the last message sent resembles a spambot message. If this is in error, contact a moderator in the incident handling channel.").Build()).Result;
+                                ModBotLoggers.SendEmbedToAllFor(guild, config.IncidentChannel, new EmbedBuilder().WithTitle("SpamBot Auto-Mute Notice").WithColor(255, 128, 0)
+                                    .WithDescription("You are muted as your last message resembles a spambot message. If this is in error, ask a moderator to unmute you.").Build(), $"<@{author.Id}>");
+                                Warning warning = new Warning() { GivenTo = author.Id, GivenBy = guild.CurrentUser.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"Auto-muted by spambot detection." };
+                                warning.Link = UserCommands.LinkToMessage(automutenotice);
+                                warnable.AddWarning(warning);
+                                warnable.Save();
+                            }
+                        }
 
                     }
                     catch (Exception ex)
@@ -296,6 +322,19 @@ namespace ModBot.Core
         public static bool IsBotCommander(IUser user)
         {
             return BotCommanders.Contains(user.Id);
+        }
+
+        /// <summary>
+        /// Returns whether this message text looks like it might be a spam-bot message.
+        /// </summary>
+        public static bool LooksSpambotty(string message)
+        {
+            message = message.ToLowerFast();
+            if (!message.Contains("http://") && !message.Contains("https://"))
+            {
+                return false;
+            }
+            return message.Contains("nitro") || message.Contains("trade offer");
         }
     }
 }
