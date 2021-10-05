@@ -125,8 +125,9 @@ namespace ModBot.CommandHandlers
                             {
                                 config.ModeratorRoles = roleText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
                             }
-                            catch (FormatException)
+                            catch (Exception ex)
                             {
+                                Console.WriteLine($"Invalid moderator_roles input, had exception: {ex}");
                                 SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of Role IDs, or 'none'.");
                                 return;
                             }
@@ -173,8 +174,9 @@ namespace ModBot.CommandHandlers
                             {
                                 config.IncidentChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
                             }
-                            catch (FormatException)
+                            catch (Exception ex)
                             {
+                                Console.WriteLine($"Invalid incident_channel input, had exception: {ex}");
                                 SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
                                 return;
                             }
@@ -201,8 +203,9 @@ namespace ModBot.CommandHandlers
                             {
                                 config.JoinNotifChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
                             }
-                            catch (FormatException)
+                            catch (Exception ex)
                             {
+                                Console.WriteLine($"Invalid join_notif_channel input, had exception: {ex}");
                                 SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
                                 return;
                             }
@@ -229,8 +232,9 @@ namespace ModBot.CommandHandlers
                             {
                                 config.VoiceChannelJoinNotifs = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
                             }
-                            catch (FormatException)
+                            catch (Exception ex)
                             {
+                                Console.WriteLine($"Invalid voice_channel_join_notif_channel input, had exception: {ex}");
                                 SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
                                 return;
                             }
@@ -257,8 +261,9 @@ namespace ModBot.CommandHandlers
                             {
                                 config.RoleChangeNotifChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
                             }
-                            catch (FormatException)
+                            catch (Exception ex)
                             {
+                                Console.WriteLine($"Invalid role_change_notif_channel input, had exception: {ex}");
                                 SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
                                 return;
                             }
@@ -285,8 +290,9 @@ namespace ModBot.CommandHandlers
                             {
                                 config.NameChangeNotifChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
                             }
-                            catch (FormatException)
+                            catch (Exception ex)
                             {
+                                Console.WriteLine($"Invalid name_change_notif_channel input, had exception: {ex}");
                                 SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
                                 return;
                             }
@@ -313,8 +319,9 @@ namespace ModBot.CommandHandlers
                             {
                                 config.ModLogsChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
                             }
-                            catch (FormatException)
+                            catch (Exception ex)
                             {
+                                Console.WriteLine($"Invalid mod_logs_channel input, had exception: {ex}");
                                 SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
                                 return;
                             }
@@ -343,8 +350,9 @@ namespace ModBot.CommandHandlers
                             {
                                 config.LogChannels = channelText.SplitFast(',').Select(s => new KeyValuePair<ulong, ulong>(ulong.Parse(s.BeforeAndAfter(':', out string after)), ulong.Parse(after))).ToDictionary(p => p.Key, p => p.Value);
                             }
-                            catch (FormatException)
+                            catch (Exception ex)
                             {
+                                Console.WriteLine($"Invalid log_channels input, had exception: {ex}");
                                 SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of colon-separated ID:ID pairs, or 'none'.");
                                 return;
                             }

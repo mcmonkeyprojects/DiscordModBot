@@ -98,24 +98,6 @@ namespace ModBot.Database
 
             /// <summary>A list of moderator commands that remove this role from a user.</summary>
             public List<string> RemoveCommands { get; set; }
-
-            /// <summary>Returns a duplicate of this SpecialRole.</summary>
-            public SpecialRole Duplicate()
-            {
-                return new SpecialRole()
-                {
-                    Name = Name,
-                    RoleID = RoleID,
-                    AddExplanation = AddExplanation,
-                    RemoveExplanation = RemoveExplanation,
-                    AddWarnText = AddWarnText,
-                    RemoveWarnText = RemoveWarnText,
-                    AddLevel = AddLevel,
-                    RemoveLevel = RemoveLevel,
-                    AddCommands = new List<string>(AddCommands),
-                    RemoveCommands = new List<string>(RemoveCommands)
-                };
-            }
         }
 
         /// <summary>Ensure all configuration options are either set properly, or are default.</summary>

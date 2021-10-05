@@ -429,16 +429,8 @@ namespace ModBot.CommandHandlers
                     + " This mute lasts until an administrator removes it, which may in some cases take a while."
                     + "\nAny user may review warnings against them at any time by typing `@ModBot listwarnings`.";
                 message.Channel.SendMessageAsync($"User <@{user.Id}> has been muted automatically by the warning system.\n{config.AttentionNotice}", embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0).WithDescription(muteMessage).Build());
-                foreach (ulong id in config.IncidentChannel)
-                {
-                    SocketGuildChannel incidentChan = (user.Guild as SocketGuild).GetChannel(id);
-                    if (incidentChan != null && incidentChan is ISocketMessageChannel incidentChanText)
-                    {
-                        incidentChanText.SendMessageAsync("<@" + user.Id + ">", embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0)
-                            .WithDescription("You have been automatically muted by the system due to warnings received. You may discuss the situation in this channel only, until a moderator unmutes you.").Build());
-                        break;
-                    }
-                }
+                ModBotLoggers.SendEmbedToAllFor(guild, config.IncidentChannel, embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0)
+                            .WithDescription("You have been automatically muted by the system due to warnings received. You may discuss the situation in this channel only, until a moderator unmutes you.").Build(), text: $"<@{user.Id}>");
                 ModBotLoggers.SendEmbedToAllFor(user.Guild as SocketGuild, config.ModLogsChannel, new EmbedBuilder().WithTitle("User Muted").WithColor(255, 0, 0).WithDescription($"User <@{user.Id}> was muted.").Build());
             }
         }

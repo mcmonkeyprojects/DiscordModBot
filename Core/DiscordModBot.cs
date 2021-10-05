@@ -146,6 +146,10 @@ namespace ModBot.Core
                 {
                     try
                     {
+                        if (message.Channel is not SocketGuildChannel)
+                        {
+                            return;
+                        }
                         // TODO: helper ping on first post (never posted on the discord guild prior to 10 minutes ago,
                         // -> never posted in any other channel, pings a helper/dev/bot,
                         // -> and nobody else has posted in that channel since their first post) reaction,
