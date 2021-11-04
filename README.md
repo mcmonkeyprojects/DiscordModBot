@@ -47,7 +47,7 @@ DiscordModBot has the following core features:
         - That means, characters A-Z upper/lower and 0-9.
         - This is checked as having at least 4 such characters in a row (or a name of 3 characters exclusively having this. 2/1 character names are not allowed).
         - If a user does not have a valid name, the bot will automatically alter their nickname.
-            - Removes then nickname if the nickname is invalid but username is fine.
+            - Removes the nickname if the nickname is invalid but username is fine.
             - Otherwises, adds a generated nickname containing a randomly altered sentence telling the user to fix their name (and also alerts them in the text channel).
         - The reasoning for this is to discourage names that a normal English speaker on an English keyboard will be neither able to read nor write, and enforces as a bare minimum 4 symbols as that should suffice to be able to type an `@` followed by the letters and select the user from the mentionable users list (note that this is the bare minimum, not the ideal).
 

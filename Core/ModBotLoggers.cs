@@ -257,6 +257,7 @@ namespace ModBot.Core
                         {
                             author = $"`{NameUtilities.Username(user)}` (`{user.Id}`)";
                         }
+                        string replyNote = "";
                         if (hasCache)
                         {
                             WarnableUser warnUser = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, message.SenderID);
@@ -268,6 +269,25 @@ namespace ModBot.Core
                             {
                                 author = $"(broken/unknown user: `{message.SenderID}`)";
                             }
+                            if (message.RepliedTo != 0)
+                            {
+                                if (bot.Cache.TryGetCache(channel.Id, message.RepliedTo, out DiscordMessageCache.CachedMessage repliedMessage))
+                                {
+                                    WarnableUser repliedAuthor = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, repliedMessage.SenderID);
+                                    if (warnUser != null && !string.IsNullOrWhiteSpace(warnUser.LastKnownUsername))
+                                    {
+                                        replyNote = $" (was in **reply** to message `{message.RepliedTo}` by author `{repliedAuthor.LastKnownUsername}` (`{repliedMessage.SenderID}`))";
+                                    }
+                                    else
+                                    {
+                                        replyNote = $" (was in **reply** to message `{message.RepliedTo}` by unknown author `{repliedMessage.SenderID}`)";
+                                    }
+                                }
+                                else
+                                {
+                                    replyNote = $" (was in **reply** to unknown message {message.RepliedTo})";
+                                }
+                            }
                         }
                         else
                         {
@@ -277,7 +297,7 @@ namespace ModBot.Core
                         {
                             originalText = originalText[..1800] + "...";
                         }
-                        LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in <#{channel.Id}>: `{originalText}`");
+                        LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in <#{channel.Id}>{replyNote}: `{originalText}`");
                     }
                 }
                 catch (Exception ex)
@@ -444,6 +464,7 @@ namespace ModBot.Core
             }
         }
 
+        /// <summary>Tries to get the channel ID that the given channel should log into. Returns false if no such log channel exists.</summary>
         public bool TryGetLogChannel(SocketGuildChannel channel, out ulong logChannel)
         {
             GuildConfig config = DiscordModBot.GetConfig(channel.Guild.Id);
@@ -455,7 +476,7 @@ namespace ModBot.Core
             {
                 return true;
             }
-            ICategoryChannel category = channel.Guild.CategoryChannels.FirstOrDefault(c => (c as SocketCategoryChannel).Channels.Any(chan => chan.Id == channel.Id));
+            ICategoryChannel category = channel.Guild.CategoryChannels.FirstOrDefault(c => c.Channels.Any(chan => chan.Id == channel.Id));
             if (category != null && config.LogChannels.TryGetValue(category.Id, out logChannel))
             {
                 return true;
