@@ -11,9 +11,7 @@ using LiteDB;
 
 namespace ModBot.WarningHandlers
 {
-    /// <summary>
-    /// Represents a Discord user, containing handling for warning them.
-    /// </summary>
+    /// <summary>Represents a Discord user, containing handling for warning them.</summary>
     public class WarnableUser
     {
         /// <summary>
@@ -23,63 +21,41 @@ namespace ModBot.WarningHandlers
         [BsonId]
         public long DB_ID_Signed { get; set; }
 
-        /// <summary>
-        /// Gets the Discord user ID.
-        /// </summary>
+        /// <summary>Gets the Discord user ID.</summary>
         public ulong UserID()
         {
             return unchecked((ulong)DB_ID_Signed);
         }
 
-        /// <summary>
-        /// ID of the relevant Discord guild/server.
-        /// </summary>
+        /// <summary>ID of the relevant Discord guild/server.</summary>
         public ulong GuildID { get; set; }
 
-        /// <summary>
-        /// A list of the user's previous names.
-        /// </summary>
+        /// <summary>A list of the user's previous names.</summary>
         public List<OldName> SeenNames { get; set; }
 
-        /// <summary>
-        /// Helper class that represents a user's previous name.
-        /// </summary>
+        /// <summary>Helper class that represents a user's previous name.</summary>
         public class OldName
         {
-            /// <summary>
-            /// The old name's actual text.
-            /// </summary>
+            /// <summary>The old name's actual text.</summary>
             public string Name { get; set; }
 
-            /// <summary>
-            /// The first time the old name was seen.
-            /// </summary>
+            /// <summary>The first time the old name was seen.</summary>
             public DateTimeOffset FirstSeen { get; set; }
         }
 
-        /// <summary>
-        /// Whether the user is currently muted.
-        /// </summary>
+        /// <summary>Whether the user is currently muted.</summary>
         public bool IsMuted { get; set; }
 
-        /// <summary>
-        /// A list of special roles applied to the user (special role names only, refer to per-server config for details of the role).
-        /// </summary>
+        /// <summary>A list of special roles applied to the user (special role names only, refer to per-server config for details of the role).</summary>
         public List<string> SpecialRoles { get; set; }
 
-        /// <summary>
-        /// A list of warnings and notes for this user.
-        /// </summary>
+        /// <summary>A list of warnings and notes for this user.</summary>
         public List<Warning> Warnings { get; set; }
 
-        /// <summary>
-        /// The last known username for this user.
-        /// </summary>
+        /// <summary>The last known username for this user.</summary>
         public string LastKnownUsername { get; set; }
 
-        /// <summary>
-        /// Ensures the warnable user instance has all fields containing either a real value, or the default.
-        /// </summary>
+        /// <summary>Ensures the warnable user instance has all fields containing either a real value, or the default.</summary>
         public void Ensure()
         {
             if (Warnings == null)
@@ -129,9 +105,7 @@ namespace ModBot.WarningHandlers
             return "";
         }
 
-        /// <summary>
-        /// Adds a new warning to this user and saves the warning file.
-        /// </summary>
+        /// <summary>Adds a new warning to this user and saves the warning file.</summary>
         public void AddWarning(Warning warn)
         {
             Warnings.Insert(0, warn);
@@ -167,9 +141,7 @@ namespace ModBot.WarningHandlers
             return lastName != null;
         }
 
-        /// <summary>
-        /// Saves the warnable user back to database.
-        /// </summary>
+        /// <summary>Saves the warnable user back to database.</summary>
         public void Save()
         {
             DiscordModBot.DatabaseHandler.GetDatabase(GuildID).Users.Upsert(DB_ID_Signed, this);

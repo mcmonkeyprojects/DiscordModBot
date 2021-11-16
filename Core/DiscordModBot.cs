@@ -22,47 +22,31 @@ using System.Runtime.Loader;
 
 namespace ModBot.Core
 {
-    /// <summary>
-    /// General program entry and handler.
-    /// </summary>
+    /// <summary>General program entry and handler.</summary>
     public class DiscordModBot
     {
-        /// <summary>
-        /// The relevant WarningCommands instance.
-        /// </summary>
+        /// <summary>The relevant WarningCommands instance.</summary>
         public static WarningCommands WarningCommandHandler;
 
-        /// <summary>
-        /// The relevant TempBanManager instance.
-        /// </summary>
+        /// <summary>The relevant TempBanManager instance.</summary>
         public static TempBanManager TempBanHandler;
 
-        /// <summary>
-        /// The internal database handler.
-        /// </summary>
+        /// <summary>The internal database handler.</summary>
         public static ModBotDatabaseHandler DatabaseHandler;
 
-        /// <summary>
-        /// List of bot commander user IDs.
-        /// </summary>
+        /// <summary>List of bot commander user IDs.</summary>
         public static HashSet<ulong> BotCommanders;
 
-        /// <summary>
-        /// The special-roles command handler.
-        /// </summary>
+        /// <summary>The special-roles command handler.</summary>
         public static SpecialRoleCommands SpecialRoleCommandHandler = new();
 
-        /// <summary>
-        /// Gets the config for a specified guild.
-        /// </summary>
+        /// <summary>Gets the config for a specified guild.</summary>
         public static GuildConfig GetConfig(ulong guildId)
         {
             return DatabaseHandler.GetDatabase(guildId).Config;
         }
 
-        /// <summary>
-        /// Software entry point - starts the bot.
-        /// </summary>
+        /// <summary>Software entry point - starts the bot.</summary>
         static void Main(string[] args)
         {
             AssemblyLoadContext.Default.Unloading += (context) =>
@@ -246,9 +230,7 @@ namespace ModBot.Core
             }
         }
 
-        /// <summary>
-        /// Tracks a username change for a user, when a message is sent or when they join.
-        /// </summary>
+        /// <summary>Tracks a username change for a user, when a message is sent or when they join.</summary>
         public static void TrackUsernameFor(IUser user, SocketGuild guild)
         {
             GuildConfig config = GetConfig(guild.Id);
@@ -271,17 +253,13 @@ namespace ModBot.Core
             return section.GetDataList(key)?.Select(d => d.AsULong.Value)?.ToList() ?? new List<ulong>();
         }
 
-        /// <summary>
-        /// Load the config file to static field.
-        /// </summary>
+        /// <summary>Load the config file to static field.</summary>
         public static void LoadConfig(FDSSection configFile)
         {
             BotCommanders = new HashSet<ulong>(GetIDList(configFile, "bot_commanders"));
         }
 
-        /// <summary>
-        /// initialize all user commands on a Discord bot.
-        /// </summary>
+        /// <summary>initialize all user commands on a Discord bot.</summary>
         public static void InitCommands(DiscordBot bot)
         {
             WarningCommandHandler = new WarningCommands() { Bot = bot };
@@ -307,9 +285,7 @@ namespace ModBot.Core
             bot.RegisterCommand(coreCommands.CMD_Restart, "restart");
         }
 
-        /// <summary>
-        /// Returns whether a Discord user is a moderator (via role check with role set in config).
-        /// </summary>
+        /// <summary>Returns whether a Discord user is a moderator (via role check with role set in config).</summary>
         public static bool IsModerator(SocketGuildUser user)
         {
             GuildConfig config = GetConfig(user.Guild.Id);
@@ -320,17 +296,13 @@ namespace ModBot.Core
             return user.Roles.Any((role) => config.ModeratorRoles.Contains(role.Id));
         }
 
-        /// <summary>
-        /// Returns whether a Discord user is a bot commander (via config check).
-        /// </summary>
+        /// <summary>Returns whether a Discord user is a bot commander (via config check).</summary>
         public static bool IsBotCommander(IUser user)
         {
             return BotCommanders.Contains(user.Id);
         }
 
-        /// <summary>
-        /// Returns whether this message text looks like it might be a spam-bot message.
-        /// </summary>
+        /// <summary>Returns whether this message text looks like it might be a spam-bot message.</summary>
         public static bool LooksSpambotty(string message)
         {
             message = message.ToLowerFast();

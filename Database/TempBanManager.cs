@@ -13,24 +13,16 @@ using ModBot.Core;
 
 namespace ModBot.Database
 {
-    /// <summary>
-    /// Utility class to manage the temporary ban system.
-    /// </summary>
+    /// <summary>Utility class to manage the temporary ban system.</summary>
     public class TempBanManager
     {
-        /// <summary>
-        /// The path to the temp-bans config file.
-        /// </summary>
+        /// <summary>The path to the temp-bans config file.</summary>
         public static string TEMPBAN_FILE_PATH = "config/tempbans.fds"; // TODO: Should be moved to database?
 
-        /// <summary>
-        /// The FDS file containing the list of temporary bans.
-        /// </summary>
+        /// <summary>The FDS file containing the list of temporary bans.</summary>
         public FDSSection TempBansFile;
 
-        /// <summary>
-        /// Initialize the temp-ban manager.
-        /// </summary>
+        /// <summary>Initialize the temp-ban manager.</summary>
         public TempBanManager()
         {
             try
@@ -45,14 +37,10 @@ namespace ModBot.Database
             }
         }
 
-        /// <summary>
-        /// The time the last auto-scan was ran.
-        /// </summary>
+        /// <summary>The time the last auto-scan was ran.</summary>
         public DateTimeOffset LastScan = DateTimeOffset.UtcNow;
 
-        /// <summary>
-        /// Automatically scans temp-bans on a timer.
-        /// </summary>
+        /// <summary>Automatically scans temp-bans on a timer.</summary>
         public void CheckShouldScan()
         {
             if (DateTimeOffset.UtcNow.Subtract(LastScan).TotalMinutes > 30)
@@ -69,9 +57,7 @@ namespace ModBot.Database
             }
         }
 
-        /// <summary>
-        /// Disables any existing temp bans for an ID (to add a new one).
-        /// </summary>
+        /// <summary>Disables any existing temp bans for an ID (to add a new one).</summary>
         public void DisableTempBansFor(ulong guildId, ulong userId)
         {
             lock (this)
@@ -97,9 +83,7 @@ namespace ModBot.Database
             }
         }
 
-        /// <summary>
-        /// Scan for temp-bans to remove.
-        /// </summary>
+        /// <summary>Scan for temp-bans to remove.</summary>
         public void Scan()
         {
             lock (this)
@@ -145,9 +129,7 @@ namespace ModBot.Database
             }
         }
 
-        /// <summary>
-        /// Save the temp-bans file.
-        /// </summary>
+        /// <summary>Save the temp-bans file.</summary>
         public void Save()
         {
             lock (this)
@@ -156,9 +138,7 @@ namespace ModBot.Database
             }
         }
 
-        /// <summary>
-        /// Temporarily bans a user from a guild for a set duration.
-        /// </summary>
+        /// <summary>Temporarily bans a user from a guild for a set duration.</summary>
         public void TempBan(ulong guildId, ulong userId, TimeSpan duration, ulong sourceId, string reason)
         {
             SocketGuild guild = DiscordBotBaseHelper.CurrentBot.Client.GetGuild(guildId);

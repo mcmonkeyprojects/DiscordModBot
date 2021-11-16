@@ -13,57 +13,41 @@ using ModBot.Database;
 
 namespace ModBot.CommandHandlers
 {
-    /// <summary>
-    /// Handlers for information commands like 'help'.
-    /// </summary>
+    /// <summary>Handlers for information commands like 'help'.</summary>
     public class InfoCommands : UserCommands
     {
-        /// <summary>
-        /// Simple output string for general public commands.
-        /// </summary>
+        /// <summary>Simple output string for general public commands.</summary>
         public static string CmdsHelp =
                 "`help` shows help output, `hello` shows a source code link\n"
                 + "`listnames` views known past names of a user - in format `listnames @User`\n";
 
-        /// <summary>
-        /// Simple output string for general user-facing warning commands.
-        /// </summary>
+        /// <summary>Simple output string for general user-facing warning commands.</summary>
         public static string CmdsWarningsUserHelp =
                 "`listnotes [page]` views your own notes and warnings (if any)\n";
 
-        /// <summary>
-        /// Simple output string for warning-related commands.
-        /// </summary>
+        /// <summary>Simple output string for warning-related commands.</summary>
         public static string CmdsWarningsHelp =
                 "`note` leaves a note about a user - in format `note @User [message...]`\n"
                 + "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed\n"
                 + "`listnotes` lists notes and warnings for any user - in format `listnotes @User [page]`\n";
 
-        /// <summary>
-        /// Simple output string for mute-related commands.
-        /// </summary>
+        /// <summary>Simple output string for mute-related commands.</summary>
         public static string CmdsMuteHelp =
                 "`unmute` removes the Muted role from a user - in format `unmute @User`\n";
 
-        /// <summary>
-        /// Simple output string for ban-related commands.
-        /// </summary>
+        /// <summary>Simple output string for ban-related commands.</summary>
         public static string CmdsBansHelp =
                 "`ban` to temporarily ban a user - in the format `ban @User [duration] (reason)`\n"
                 + "`unban` to remove a ban - in the format `unban @User`\n";
 
-        /// <summary>
-        /// Simple output string for admin commands.
-        /// </summary>
+        /// <summary>Simple output string for admin commands.</summary>
         public static string CmdsAdminHelp =
                 "`restart` restarts the bot\n"
                 + "`testname` shows a test name\n"
                 + "`sweep` sweeps current usernames on the Discord and applies corrections as needed\n"
                 + "`admin-configure` configures per-guild admin settings\n";
 
-        /// <summary>
-        /// User command to get help (shows a list of valid bot commands).
-        /// </summary>
+        /// <summary>User command to get help (shows a list of valid bot commands).</summary>
         public void CMD_Help(CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
@@ -106,17 +90,13 @@ namespace ModBot.CommandHandlers
             SendReply(command.Message, embed.Build());
         }
 
-        /// <summary>
-        /// User command to say 'hello' and get a source link.
-        /// </summary>
+        /// <summary>User command to say 'hello' and get a source link.</summary>
         public void CMD_Hello(CommandData command)
         {
             SendGenericPositiveMessageReply(command.Message, "Discord Mod Bot", "Hi! I'm a bot! Find my source code at <https://github.com/mcmonkeyprojects/DiscordModBot>.");
         }
 
-        /// <summary>
-        /// User command to list user old names.
-        /// </summary>
+        /// <summary>User command to list user old names.</summary>
         public void CMD_ListNames(CommandData command)
         {
             if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))

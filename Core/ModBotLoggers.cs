@@ -21,14 +21,10 @@ using ModBot.CommandHandlers;
 
 namespace ModBot.Core
 {
-    /// <summary>
-    /// Helper class for logging channels.
-    /// </summary>
+    /// <summary>Helper class for logging channels.</summary>
     public class ModBotLoggers
     {
-        /// <summary>
-        /// initialize all logger events on a Discord bot.
-        /// </summary>
+        /// <summary>initialize all logger events on a Discord bot.</summary>
         public void InitLoggers(DiscordBot bot)
         {
             bot.Client.UserJoined += (user) =>
@@ -399,9 +395,7 @@ namespace ModBot.Core
             };
         }
 
-        /// <summary>
-        /// Utility to send an embed to all channels in a list of IDs for a specific guild.
-        /// </summary>
+        /// <summary>Utility to send an embed to all channels in a list of IDs for a specific guild.</summary>
         public static void SendEmbedToAllFor(SocketGuild guild, List<ulong> notifChannels, Embed embed, string text = null)
         {
             IReadOnlyCollection<SocketTextChannel> channels = guild.TextChannels;
@@ -415,9 +409,7 @@ namespace ModBot.Core
             }
         }
 
-        /// <summary>
-        /// Utility for edit notification processing.
-        /// </summary>
+        /// <summary>Utility for edit notification processing.</summary>
         public string TrimForDifferencing(string text, int cap, int firstDiff, int lastDiff, int longerLength)
         {
             if (lastDiff == firstDiff)
@@ -484,9 +476,7 @@ namespace ModBot.Core
             return false;
         }
 
-        /// <summary>
-        /// Sends a log message to a log channel (if applicable).
-        /// </summary>
+        /// <summary>Sends a log message to a log channel (if applicable).</summary>
         /// <param name="channel">The channel where a loggable action happened.</param>
         /// <param name="message">A message to log.</param>
         public void LogChannelActivity(SocketGuildChannel channel, string message)

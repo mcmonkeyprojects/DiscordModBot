@@ -13,14 +13,10 @@ using FreneticUtilities.FreneticExtensions;
 
 namespace ModBot.CommandHandlers
 {
-    /// <summary>
-    /// Command handler for special role commands.
-    /// </summary>
+    /// <summary>Command handler for special role commands.</summary>
     public class SpecialRoleCommands : UserCommands
     {
-        /// <summary>
-        /// User command to add a special role to a user.
-        /// </summary>
+        /// <summary>User command to add a special role to a user.</summary>
         public void CMD_AddSpecialRole(GuildConfig.SpecialRole role, CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
@@ -72,9 +68,7 @@ namespace ModBot.CommandHandlers
             }
         }
 
-        /// <summary>
-        /// User command to remove a special role from a user.
-        /// </summary>
+        /// <summary>User command to remove a special role from a user.</summary>
         public void CMD_RemoveSpecialRole(GuildConfig.SpecialRole role, CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;

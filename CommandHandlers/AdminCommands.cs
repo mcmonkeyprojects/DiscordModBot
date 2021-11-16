@@ -14,14 +14,10 @@ using ModBot.WarningHandlers;
 
 namespace ModBot.CommandHandlers
 {
-    /// <summary>
-    /// Commands for admin usage only.
-    /// </summary>
+    /// <summary>Commands for admin usage only.</summary>
     public class AdminCommands : UserCommands
     {
-        /// <summary>
-        /// Outputs an ASCII name rule test name.
-        /// </summary>
+        /// <summary>Outputs an ASCII name rule test name.</summary>
         public void CMD_TestName(CommandData command)
         {
             if (!DiscordModBot.IsBotCommander(command.Message.Author as SocketGuildUser))
@@ -33,9 +29,7 @@ namespace ModBot.CommandHandlers
             SendGenericPositiveMessageReply(command.Message, "Test Name", $"Test of ASCII-Name-Rule name generator: {name}");
         }
 
-        /// <summary>
-        /// User command to sweep through all current names.
-        /// </summary>
+        /// <summary>User command to sweep through all current names.</summary>
         public void CMD_Sweep(CommandData command)
         {
             if (!DiscordModBot.IsBotCommander(command.Message.Author as SocketGuildUser))
@@ -54,9 +48,7 @@ namespace ModBot.CommandHandlers
             }
         }
 
-        /// <summary>
-        /// Admin command to configure guild settings.
-        /// </summary>
+        /// <summary>Admin command to configure guild settings.</summary>
         public void CMD_AdminConfigure(CommandData command)
         {
             SocketGuildUser user = command.Message.Author as SocketGuildUser;

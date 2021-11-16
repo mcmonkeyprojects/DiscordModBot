@@ -15,14 +15,10 @@ using ModBot.Core;
 
 namespace ModBot.CommandHandlers
 {
-    /// <summary>
-    /// Commands related to handling warnings and notes.
-    /// </summary>
+    /// <summary>Commands related to handling warnings and notes.</summary>
     public class WarningCommands : UserCommands
     {
-        /// <summary>
-        /// A mapping of typable names to warning level enumeration values.
-        /// </summary>
+        /// <summary>A mapping of typable names to warning level enumeration values.</summary>
         public static Dictionary<string, WarningLevel> LevelsTypable = new()
         {
             { "note", WarningLevel.NOTE },
@@ -36,9 +32,7 @@ namespace ModBot.CommandHandlers
             { "mute", WarningLevel.INSTANT_MUTE }
         };
 
-        /// <summary>
-        /// User command to temporarily ban a user.
-        /// </summary>
+        /// <summary>User command to temporarily ban a user.</summary>
         public void CMD_TempBan(CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
@@ -112,9 +106,7 @@ namespace ModBot.CommandHandlers
             warnable.AddWarning(warning);
         }
 
-        /// <summary>
-        /// User command to remove a user's ban.
-        /// </summary>
+        /// <summary>User command to remove a user's ban.</summary>
         public void CMD_Unban(CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
@@ -148,9 +140,7 @@ namespace ModBot.CommandHandlers
             ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, config.ModLogsChannel, new EmbedBuilder().WithTitle("User Unbanned").WithColor(0, 255, 0).WithDescription($"User <@{userID}> was unbanned by <@{command.Message.Author.Id}>.").Build());
         }
 
-        /// <summary>
-        /// User command to remove a user's muted status.
-        /// </summary>
+        /// <summary>User command to remove a user's muted status.</summary>
         public void CMD_Unmute(CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
@@ -208,9 +198,7 @@ namespace ModBot.CommandHandlers
             }
         }
 
-        /// <summary>
-        /// User command to add a note to a user.
-        /// </summary>
+        /// <summary>User command to add a note to a user.</summary>
         public void CMD_Note(CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
@@ -255,9 +243,7 @@ namespace ModBot.CommandHandlers
             }
         }
 
-        /// <summary>
-        /// User command to give a warning to a user.
-        /// </summary>
+        /// <summary>User command to give a warning to a user.</summary>
         public void CMD_Warn(CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
@@ -435,9 +421,7 @@ namespace ModBot.CommandHandlers
             }
         }
 
-        /// <summary>
-        /// Helper for the ListWarn command to dump warnings information about a user to a channel.
-        /// </summary>
+        /// <summary>Helper for the ListWarn command to dump warnings information about a user to a channel.</summary>
         public static void SendWarningList(WarnableUser user, int startId, IMessageChannel channel, IUserMessage message)
         {
             bool hasMore = false;
@@ -494,9 +478,7 @@ namespace ModBot.CommandHandlers
             }
         }
 
-        /// <summary>
-        /// User command to list user warnings.
-        /// </summary>
+        /// <summary>User command to list user warnings.</summary>
         public void CMD_ListWarnings(CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
@@ -533,9 +515,7 @@ namespace ModBot.CommandHandlers
             SendWarningList(user, min, command.Message.Channel, command.Message);
         }
 
-        /// <summary>
-        /// Utility method to get the target of a command that allows targeting commands at others instead of self.
-        /// </summary>
+        /// <summary>Utility method to get the target of a command that allows targeting commands at others instead of self.</summary>
         public bool GetTargetUser(CommandData command, bool errorIfNone, bool errorIfInvalid, out ulong userId)
         {
             userId = command.Message.Author.Id;
