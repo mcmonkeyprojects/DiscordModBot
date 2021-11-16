@@ -227,6 +227,10 @@ namespace ModBot.Core
                     return;
                 }
                 string[] split = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (split.IsEmpty())
+                {
+                    continue;
+                }
                 switch (split[0])
                 {
                     case "stop":
