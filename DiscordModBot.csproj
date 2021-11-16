@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>ModBot</RootNamespace>
     <AssemblyName>DiscordModBot</AssemblyName>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
     <Product>DiscordModBot</Product>
     <PackageId>DiscordModBot</PackageId>

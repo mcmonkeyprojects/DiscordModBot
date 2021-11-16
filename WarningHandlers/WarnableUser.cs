@@ -138,7 +138,7 @@ namespace ModBot.WarningHandlers
             Save();
             SocketGuild guild = DiscordBotBaseHelper.CurrentBot.Client.GetGuild(GuildID);
             string warnPostfix = warn.Level == WarningLevel.NOTE ? "" : " warning";
-            string reason = (warn.Reason.Length > 250) ? (warn.Reason.Substring(0, 250) + "(... trimmed ...)") : warn.Reason;
+            string reason = (warn.Reason.Length > 250) ? (warn.Reason[..250] + "(... trimmed ...)") : warn.Reason;
             reason = UserCommands.EscapeUserInput(reason);
             string message = $"User <@{UserID()}> received a {warn.Level}{warnPostfix} from moderator <@{warn.GivenBy}>.\n\nReason: `{reason}`\n\n[Click For Details]({warn.Link})";
             Color color = warn.Level == WarningLevel.NOTE ? new Color(255, 255, 0) : new Color(255, 0, 0);

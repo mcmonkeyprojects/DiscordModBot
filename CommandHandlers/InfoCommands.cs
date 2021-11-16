@@ -124,8 +124,8 @@ namespace ModBot.CommandHandlers
                 return;
             }
             WarnableUser user = WarningUtilities.GetWarnableUser((command.Message.Channel as SocketGuildChannel).Guild.Id, userID);
-            List<StringBuilder> builders = new List<StringBuilder>();
-            StringBuilder nameStringOutput = new StringBuilder();
+            List<StringBuilder> builders = new();
+            StringBuilder nameStringOutput = new();
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
             foreach (WarnableUser.OldName old_name in user.SeenNames.OrderBy((n) => n.FirstSeen.ToUnixTimeSeconds()))
             {

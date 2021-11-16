@@ -50,7 +50,7 @@ namespace ModBot.Core
         /// <summary>
         /// The special-roles command handler.
         /// </summary>
-        public static SpecialRoleCommands SpecialRoleCommandHandler = new SpecialRoleCommands();
+        public static SpecialRoleCommands SpecialRoleCommandHandler = new();
 
         /// <summary>
         /// Gets the config for a specified guild.
@@ -73,7 +73,7 @@ namespace ModBot.Core
             {
                 DatabaseHandler.Shutdown();
             };
-            CancellationTokenSource cancel = new CancellationTokenSource();
+            CancellationTokenSource cancel = new();
             Task consoleThread = Task.Run(RunConsole, cancel.Token);
             DiscordBotBaseHelper.StartBotHandler(args, new DiscordBotConfig()
             {
@@ -178,7 +178,7 @@ namespace ModBot.Core
                                     .WithDescription("This mute was applied as the last message sent resembles a spambot message. If this is in error, contact a moderator in the incident handling channel.").Build()).Result;
                                 ModBotLoggers.SendEmbedToAllFor(guild, config.IncidentChannel, new EmbedBuilder().WithTitle("SpamBot Auto-Mute Notice").WithColor(255, 128, 0)
                                     .WithDescription("You are muted as your last message resembles a spambot message. If this is in error, ask a moderator to unmute you.").Build(), $"<@{author.Id}>");
-                                Warning warning = new Warning() { GivenTo = author.Id, GivenBy = guild.CurrentUser.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"Auto-muted by spambot detection." };
+                                Warning warning = new() { GivenTo = author.Id, GivenBy = guild.CurrentUser.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"Auto-muted by spambot detection." };
                                 warning.Link = UserCommands.LinkToMessage(automutenotice);
                                 warnable.AddWarning(warning);
                                 warnable.Save();
@@ -281,9 +281,9 @@ namespace ModBot.Core
         public static void InitCommands(DiscordBot bot)
         {
             WarningCommandHandler = new WarningCommands() { Bot = bot };
-            InfoCommands infoCommands = new InfoCommands() { Bot = bot };
-            AdminCommands adminCommands = new AdminCommands() { Bot = bot };
-            CoreCommands coreCommands = new CoreCommands(IsBotCommander) { Bot = bot };
+            InfoCommands infoCommands = new() { Bot = bot };
+            AdminCommands adminCommands = new() { Bot = bot };
+            CoreCommands coreCommands = new(IsBotCommander) { Bot = bot };
             // User
             bot.RegisterCommand(infoCommands.CMD_Help, "help", "halp", "helps", "halps", "hel", "hal", "h");
             bot.RegisterCommand(infoCommands.CMD_Hello, "hello", "hi", "hey", "source", "src", "github", "git", "hub");

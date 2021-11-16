@@ -35,12 +35,12 @@ namespace ModBot.Core
             ASCII_NAME_PART5 = new string[] { "Name", "Username", "Nickname", "Nick" };
 
         /// <summary>Reusable random number generator.</summary>
-        public static Random random = new Random();
+        public static Random random = new();
 
         /// <summary>Generates an ASCII placeholder name for users that don't have a usable name.</summary>
         public static string GenerateAsciiName(string currentName)
         {
-            StringBuilder preLetters = new StringBuilder();
+            StringBuilder preLetters = new();
             for (int i = 0; i < currentName.Length; i++)
             {
                 if (IsAsciiSymbol(currentName[i]))
@@ -61,7 +61,7 @@ namespace ModBot.Core
                 + random.Next(1000, 9999);
             if (result.Length > 30)
             {
-                result = result.Substring(0, 30);
+                result = result[..30];
             }
             return result;
         }
@@ -72,13 +72,13 @@ namespace ModBot.Core
         public const string ANTI_LIST_TOP_SYMBOL = "·";
 
         /// <summary>Matches letters only, for ASCII-Name-Rule.</summary>
-        public static AsciiMatcher LettersOnlyMatcher = new AsciiMatcher(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
+        public static AsciiMatcher LettersOnlyMatcher = new(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
 
         /// <summary>Matches letters and numbers, for ASCII-Name-Rule.</summary>
-        public static AsciiMatcher AcceptableSymbolMatcher = new AsciiMatcher(c => LettersOnlyMatcher.IsMatch(c) || (c >= '0' && c <= '9'));
+        public static AsciiMatcher AcceptableSymbolMatcher = new(c => LettersOnlyMatcher.IsMatch(c) || (c >= '0' && c <= '9'));
 
         /// <summary>Matches any ASCII-range symbol other than A-Z and numbers, for "lenient" first symbol checker.</summary>
-        public static AsciiMatcher ForbiddenFirstNameSymbolMatcher = new AsciiMatcher(c => !AcceptableSymbolMatcher.IsMatch(c) && c < 127);
+        public static AsciiMatcher ForbiddenFirstNameSymbolMatcher = new(c => !AcceptableSymbolMatcher.IsMatch(c) && c < 127);
 
         /// <summary>Returns true if the character is an acceptable typable ASCII English symbol, A-Z or 0-9.</summary>
         public static bool IsAsciiSymbol(char c)
@@ -183,7 +183,7 @@ namespace ModBot.Core
                 {
                     if (nick.Length > 30)
                     {
-                        nick = nick.Substring(0, 30);
+                        nick = nick[..30];
                     }
                     user.ModifyAsync(u => u.Nickname = ANTI_LIST_TOP_SYMBOL + nick).Wait();
                     UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Name patch: <@{user.Id}> had a nickname that started with a symbol or number..."
@@ -203,7 +203,7 @@ namespace ModBot.Core
                 {
                     if (username.Length > 30)
                     {
-                        username = username.Substring(0, 30);
+                        username = username[..30];
                     }
                     user.ModifyAsync(u => u.Nickname = ANTI_LIST_TOP_SYMBOL + username).Wait();
                     UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Name patch: <@{user.Id}> had a nickname that started with a symbol or number..."

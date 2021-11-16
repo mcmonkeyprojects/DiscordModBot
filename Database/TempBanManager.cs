@@ -21,7 +21,7 @@ namespace ModBot.Database
         /// <summary>
         /// The path to the temp-bans config file.
         /// </summary>
-        public static string TEMPBAN_FILE_PATH = "config/tempbans.fds";
+        public static string TEMPBAN_FILE_PATH = "config/tempbans.fds"; // TODO: Should be moved to database?
 
         /// <summary>
         /// The FDS file containing the list of temporary bans.

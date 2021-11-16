@@ -594,7 +594,7 @@ namespace ModBot.CommandHandlers
                             SendErrorMessageReply(command.Message, "Duplicate Role", "That special role already exists.");
                             return;
                         }
-                        GuildConfig.SpecialRole role = new GuildConfig.SpecialRole() { Name = name };
+                        GuildConfig.SpecialRole role = new() { Name = name };
                         string roleIdText = command.RawArguments[2];
                         if (!ulong.TryParse(roleIdText, out ulong roleId))
                         {

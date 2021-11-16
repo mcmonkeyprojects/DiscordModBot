@@ -23,7 +23,7 @@ namespace ModBot.CommandHandlers
         /// <summary>
         /// A mapping of typable names to warning level enumeration values.
         /// </summary>
-        public static Dictionary<string, WarningLevel> LevelsTypable = new Dictionary<string, WarningLevel>()
+        public static Dictionary<string, WarningLevel> LevelsTypable = new()
         {
             { "note", WarningLevel.NOTE },
             { "minor", WarningLevel.MINOR },
@@ -107,7 +107,7 @@ namespace ModBot.CommandHandlers
             }
             ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, embed.Build());
             IUserMessage banNotice = SendGenericPositiveMessageReply(command.Message, "Temporary Ban Applied", $"<@{command.Message.Author.Id}> has{tempText} banned <@{userID}> {durationFormat}.");
-            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"BANNED {durationFormat}.{reason}" };
+            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"BANNED {durationFormat}.{reason}" };
             warning.Link = LinkToMessage(banNotice);
             warnable.AddWarning(warning);
         }
@@ -240,7 +240,7 @@ namespace ModBot.CommandHandlers
                 return;
             }
             IEnumerable<string> cmdsToSave = command.RawArguments.Skip(1);
-            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
+            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
             warning.Reason = EscapeUserInput(string.Join(" ", cmdsToSave));
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Note Recorded").WithDescription($"Note from <@{command.Message.Author.Id}> to <@{userID}> recorded.").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
@@ -297,7 +297,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", "Cannot warn on that user: user has never been seen before.");
                 return;
             }
-            Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
+            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
             warning.Reason = EscapeUserInput(string.Join(" ", command.RawArguments.Skip(argsSkip)));
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warning Recorded").WithDescription($"Warning from <@{command.Message.Author.Id}> to <@{userID}> recorded.\nReason: {warning.Reason}\n{warnUser.GetPastWarningsText()}").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
@@ -441,7 +441,7 @@ namespace ModBot.CommandHandlers
         public static void SendWarningList(WarnableUser user, int startId, IMessageChannel channel, IUserMessage message)
         {
             bool hasMore = false;
-            StringBuilder warnStringOutput = new StringBuilder();
+            StringBuilder warnStringOutput = new();
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
             int warnID = 0;
             foreach (Warning warned in user.Warnings.OrderByDescending(w => (int)w.Level).Skip(startId * 5))
@@ -462,7 +462,7 @@ namespace ModBot.CommandHandlers
                 warnID++;
                 SocketUser giver = DiscordBotBaseHelper.CurrentBot.Client.GetUser(warned.GivenBy);
                 string giverLabel = (giver == null) ? ("DiscordID:" + warned.GivenBy) : (giver.Username + "#" + giver.Discriminator);
-                string reason = (warned.Reason.Length > 250) ? (warned.Reason.Substring(0, 250) + "(... trimmed ...)") : warned.Reason;
+                string reason = (warned.Reason.Length > 250) ? (warned.Reason[..250] + "(... trimmed ...)") : warned.Reason;
                 reason = EscapeUserInput(reason);
                 warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at `{StringConversionHelper.DateTimeToString(warned.TimeGiven, false)}` by {giverLabel} with reason: `{reason}`. [Click For Detail]({warned.Link})\n");
             }

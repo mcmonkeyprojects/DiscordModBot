@@ -47,7 +47,7 @@ namespace ModBot.Database
         /// A map of all tracked guilds by ID to their database.
         /// Generally, use <see cref="GetDatabase(SocketGuild)"/> instead of this.
         /// </summary>
-        public ConcurrentDictionary<ulong, Guild> Guilds = new ConcurrentDictionary<ulong, Guild>();
+        public ConcurrentDictionary<ulong, Guild> Guilds = new();
 
         /// <summary>Shuts down the database handler cleanly.</summary>
         public void Shutdown()
@@ -71,7 +71,7 @@ namespace ModBot.Database
         {
             return Guilds.GetOrAdd(guildId, (id) =>
             {
-                Guild newGuild = new Guild
+                Guild newGuild = new()
                 {
                     ID = id,
                     DB = new LiteDatabase($"./saves/server_{id}.ldb", null)

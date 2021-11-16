@@ -66,7 +66,7 @@ namespace ModBot.CommandHandlers
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(text: $"<@{userID}>", embed: new EmbedBuilder().WithTitle("Special Role Applied").WithDescription($"<@{command.Message.Author.Id}> has given <@{userID}> special role `{role.Name}`.\n{role.AddExplanation}\n{warnable.GetPastWarningsText()}{hadSameRoleBefore}").Build()).Result;
             if (!string.IsNullOrWhiteSpace(role.AddWarnText))
             {
-                Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText };
+                Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText };
                 warning.Link = LinkToMessage(sentMessage);
                 warnable.AddWarning(warning);
             }
@@ -115,7 +115,7 @@ namespace ModBot.CommandHandlers
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Special Role Removed").WithDescription($"<@{command.Message.Author.Id}> has removed the special role `{role.Name}` from <@{userID}>.\n{role.RemoveExplanation}").Build()).Result;
             if (!string.IsNullOrWhiteSpace(role.RemoveWarnText))
             {
-                Warning warning = new Warning() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.RemoveLevel, Reason = role.RemoveWarnText };
+                Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.RemoveLevel, Reason = role.RemoveWarnText };
                 warning.Link = LinkToMessage(sentMessage);
                 warnable.AddWarning(warning);
             }

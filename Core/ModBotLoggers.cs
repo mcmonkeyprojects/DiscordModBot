@@ -440,13 +440,13 @@ namespace ModBot.Core
                 }
                 if (text.Length > cap)
                 {
-                    text = text.Substring(0, Math.Min(lastDiff + 50, (cap - 50))) + "...";
+                    text = text[..Math.Min(lastDiff + 50, (cap - 50))] + "...";
                     lastDiff = Math.Min(lastDiff, (cap - 50));
                 }
             }
             if (initialFirstDiff > 10 || initialLastDiff < longerLength - 10)
             {
-                string preText = firstDiff == 0 ? "" : $"`{text.Substring(0, firstDiff)}`";
+                string preText = firstDiff == 0 ? "" : $"`{text[..firstDiff]}`";
                 string lastText = lastDiff >= text.Length ? "" : $"`{text[lastDiff..]}`";
                 string middleText = text[firstDiff..Math.Min(lastDiff, text.Length)];
                 if (!string.IsNullOrWhiteSpace(middleText))

@@ -36,9 +36,9 @@ namespace ModBot.WarningHandlers
             public long LastUpdated;
 
             /// <summary>The cache itself.</summary>
-            public static ConcurrentDictionary<(ulong, ulong), WarnableCache> WarnablesCache = new ConcurrentDictionary<(ulong, ulong), WarnableCache>();
+            public static ConcurrentDictionary<(ulong, ulong), WarnableCache> WarnablesCache = new();
 
-            private static readonly List<(ulong, ulong)> ToClear = new List<(ulong, ulong)>();
+            private static readonly List<(ulong, ulong)> ToClear = new();
             private static long LastCleared;
 
             public static void Clean()
@@ -85,14 +85,14 @@ namespace ModBot.WarningHandlers
                     user.Ensure();
                     Console.WriteLine($"New user data generated for {id}");
                 }
-                WarnableCache cache = new WarnableCache() { User = user, LastUpdated = Environment.TickCount64 };
+                WarnableCache cache = new() { User = user, LastUpdated = Environment.TickCount64 };
                 WarnableCache.WarnablesCache.TryAdd((guildId, id), cache);
                 return user;
             }
         }
 
         /// <summary>Words that mean "permanent" that a user might try.</summary>
-        public static HashSet<string> PermanentWords = new HashSet<string>() { "permanent", "permanently", "indefinite", "indefinitely", "forever" };
+        public static HashSet<string> PermanentWords = new() { "permanent", "permanently", "indefinite", "indefinitely", "forever" };
 
         /// <summary>Parses duration text into a valid TimeSpan, or null.</summary>
         public static TimeSpan? ParseDuration(string durationText)
