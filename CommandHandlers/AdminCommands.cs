@@ -590,7 +590,7 @@ namespace ModBot.CommandHandlers
                                     }
                                 }
                             }
-                            SendHelpInfo("This command can be used to add a post-react role, with the format `add_react_role (post_id) (role_id) (reaction emote name)", roles.ToString());
+                            SendHelpInfo("This command can be used to add a post-react role, with the format `add_react_role (post_id) (role_id) (reaction emote name)`", roles.ToString());
                             return;
                         }
                         if (!ulong.TryParse(command.RawArguments[1], out ulong postId))
@@ -628,7 +628,7 @@ namespace ModBot.CommandHandlers
                                     }
                                 }
                             }
-                            SendHelpInfo("This command can be used to remove a post-react role, with the format `remove_react_role (post_id) (reaction emote name)", roles.ToString());
+                            SendHelpInfo("This command can be used to remove a post-react role, with the format `remove_react_role (post_id) (reaction emote name)`", roles.ToString());
                             return;
                         }
                         if (!ulong.TryParse(command.RawArguments[1], out ulong postId))
@@ -641,7 +641,7 @@ namespace ModBot.CommandHandlers
                             SendErrorMessageReply(command.Message, "Invalid Value", "That post ID doesn't correspond to any tracked react-roles.");
                             return;
                         }
-                        string emote = command.RawArguments[3].ToLowerFast();
+                        string emote = command.RawArguments[2].ToLowerFast();
                         if (!data.ReactToRole.Remove(emote))
                         {
                             SendErrorMessageReply(command.Message, "Invalid Value", "That emote name doesn't correspond to any tracked react-roles.");
