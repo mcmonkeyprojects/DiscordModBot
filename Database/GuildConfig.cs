@@ -151,6 +151,10 @@ namespace ModBot.Database
             {
                 LogChannels = new Dictionary<ulong, ulong>();
             }
+            if (ReactRoles == null)
+            {
+                ReactRoles = new Dictionary<ulong, ReactRoleData>();
+            }
             if (SpecialRoles == null)
             {
                 SpecialRoles = new Dictionary<string, SpecialRole>();
