@@ -60,9 +60,6 @@ namespace ModBot.Database
         /// <summary>The maximum ban duration allowed (if any).</summary>
         public string MaxBanDuration { get; set; }
 
-        /// <summary>A map of special roles that persist across rejoins. Keys are names, values are data.</summary>
-        public Dictionary<string, SpecialRole> SpecialRoles { get; set; }
-
         /// <summary>Whether to notify users about warnings received via a DM.</summary>
         public bool NotifyWarnsInDM { get; set; }
 
@@ -71,6 +68,19 @@ namespace ModBot.Database
 
         /// <summary>Roles that definitely aren't spambots.</summary>
         public List<ulong> NonSpambotRoles { get; set; }
+
+        /// <summary>Map of post IDs to react role data for automatic free roles from a react.</summary>
+        public Dictionary<ulong, ReactRoleData> ReactRoles { get; set; }
+
+        /// <summary>A map of special roles that persist across rejoins. Keys are names, values are data.</summary>
+        public Dictionary<string, SpecialRole> SpecialRoles { get; set; }
+
+        /// <summary>Data related to <see cref="ReactRoles"/>.</summary>
+        public class ReactRoleData
+        {
+            /// <summary>A map from reaction ID to the role ID to be added.</summary>
+            public Dictionary<string, ulong> ReactToRole { get; set; }
+        }
 
         /// <summary>Represents a special role that a user can be stuck with.</summary>
         public class SpecialRole

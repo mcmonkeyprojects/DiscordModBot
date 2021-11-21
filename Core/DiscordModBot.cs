@@ -116,6 +116,60 @@ namespace ModBot.Core
                             Console.WriteLine($"Ban-handler scan error {ex}");
                         }
                     };
+                    bot.Client.ReactionAdded += (message, channel, reaction) =>
+                    {
+                        if (channel is not SocketGuildChannel guildChannel)
+                        {
+                            return Task.CompletedTask;
+                        }
+                        try
+                        {
+                            GuildConfig config = GetConfig(guildChannel.Guild.Id);
+                            if (config.ReactRoles.TryGetValue(message.Id, out GuildConfig.ReactRoleData reactData))
+                            {
+                                if (reactData.ReactToRole.TryGetValue(reaction.Emote.Name.ToLowerFast(), out ulong role))
+                                {
+                                    SocketGuildUser user = guildChannel.GetUser(reaction.UserId);
+                                    if (user != null)
+                                    {
+                                        user.AddRoleAsync(role).Wait();
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Reaction adding error {ex}");
+                        }
+                        return Task.CompletedTask;
+                    };
+                    bot.Client.ReactionRemoved += (message, channel, reaction) =>
+                    {
+                        if (channel is not SocketGuildChannel guildChannel)
+                        {
+                            return Task.CompletedTask;
+                        }
+                        try
+                        {
+                            GuildConfig config = GetConfig(guildChannel.Guild.Id);
+                            if (config.ReactRoles.TryGetValue(message.Id, out GuildConfig.ReactRoleData reactData))
+                            {
+                                if (reactData.ReactToRole.TryGetValue(reaction.Emote.Name.ToLowerFast(), out ulong role))
+                                {
+                                    SocketGuildUser user = guildChannel.GetUser(reaction.UserId);
+                                    if (user != null)
+                                    {
+                                        user.RemoveRoleAsync(role).Wait();
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Reaction adding error {ex}");
+                        }
+                        return Task.CompletedTask;
+                    };
                     new ModBotLoggers().InitLoggers(bot);
                 },
                 OnShutdown = () =>

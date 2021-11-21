@@ -60,11 +60,11 @@ namespace ModBot.CommandHandlers
                 hadSameRoleBefore = $"\n\nUser has previously had the special role `{role.Name}` applied.";
             }
             string addedRef = string.Join(" ", command.RawArguments.Skip(1)).Trim();
-            string addedText = string.IsNullOrWhiteSpace(addedRef) ? "" : $" with reference input: {addedRef}";
+            string addedText = string.IsNullOrWhiteSpace(addedRef) ? "" : $" with reference input: {addedRef}\n";
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(text: $"<@{userID}>", embed: new EmbedBuilder().WithTitle("Special Role Applied").WithDescription($"<@{command.Message.Author.Id}> has given <@{userID}> special role `{role.Name}`{addedText}.\n{role.AddExplanation}\n{warnable.GetPastWarningsText()}{hadSameRoleBefore}").Build()).Result;
             if (!string.IsNullOrWhiteSpace(role.AddWarnText))
             {
-                Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText + addedRef };
+                Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText + addedText };
                 warning.Link = LinkToMessage(sentMessage);
                 warnable.AddWarning(warning);
             }

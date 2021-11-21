@@ -571,6 +571,85 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "add_react_role":
+                    {
+                        if (command.RawArguments.Length < 4)
+                        {
+                            StringBuilder roles = new();
+                            if (config.ReactRoles.IsEmpty())
+                            {
+                                roles.Append("None");
+                            }
+                            else
+                            {
+                                foreach (KeyValuePair<ulong, GuildConfig.ReactRoleData> pair in config.ReactRoles)
+                                {
+                                    foreach (KeyValuePair<string, ulong> subPair in pair.Value.ReactToRole)
+                                    {
+                                        roles.Append($"(post={pair.Key}, role={subPair.Value}, reaction={subPair.Key})");
+                                    }
+                                }
+                            }
+                            SendHelpInfo("This command can be used to add a post-react role, with the format `add_react_role (post_id) (role_id) (reaction emote name)", roles.ToString());
+                            return;
+                        }
+                        if (!ulong.TryParse(command.RawArguments[1], out ulong postId))
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "That post ID input is not a valid number.");
+                            return;
+                        }
+                        if (!ulong.TryParse(command.RawArguments[2], out ulong roleId))
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "That Role ID input is not a valid number.");
+                            return;
+                        }
+                        string emote = command.RawArguments[3].ToLowerFast();
+                        GuildConfig.ReactRoleData data = config.ReactRoles.GetOrCreate(postId, () => new GuildConfig.ReactRoleData() { ReactToRole = new Dictionary<string, ulong>() });
+                        data.ReactToRole.Add(emote, roleId);
+                        SendGenericPositiveMessageReply(command.Message, "Applied", $"Post `{postId}` now applies role `{roleId}` when emote `{emote}` is used.");
+                        break;
+                    }
+                case "remove_react_role":
+                    {
+                        if (command.RawArguments.Length < 3)
+                        {
+                            StringBuilder roles = new();
+                            if (config.ReactRoles.IsEmpty())
+                            {
+                                roles.Append("None");
+                            }
+                            else
+                            {
+                                foreach (KeyValuePair<ulong, GuildConfig.ReactRoleData> pair in config.ReactRoles)
+                                {
+                                    foreach (KeyValuePair<string, ulong> subPair in pair.Value.ReactToRole)
+                                    {
+                                        roles.Append($"(post={pair.Key}, role={subPair.Value}, reaction={subPair.Key})");
+                                    }
+                                }
+                            }
+                            SendHelpInfo("This command can be used to remove a post-react role, with the format `remove_react_role (post_id) (reaction emote name)", roles.ToString());
+                            return;
+                        }
+                        if (!ulong.TryParse(command.RawArguments[1], out ulong postId))
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "That post ID input is not a valid number.");
+                            return;
+                        }
+                        if (!config.ReactRoles.TryGetValue(postId, out GuildConfig.ReactRoleData data))
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "That post ID doesn't correspond to any tracked react-roles.");
+                            return;
+                        }
+                        string emote = command.RawArguments[3].ToLowerFast();
+                        if (!data.ReactToRole.Remove(emote))
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "That emote name doesn't correspond to any tracked react-roles.");
+                            return;
+                        }
+                        SendGenericPositiveMessageReply(command.Message, "Applied", $"Post `{postId}` no longer applies a role when emote `{emote}` is used.");
+                        break;
+                    }
                 case "add_special_role":
                     {
                         if (command.RawArguments.Length < 5)
@@ -661,7 +740,7 @@ namespace ModBot.CommandHandlers
                         embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
                             + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, "
                             + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, "
-                            + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_special_role`, `remove_special_role`");
+                            + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_react_role`, `remove_react_role`, `add_special_role`, `remove_special_role`");
                         SendReply(command.Message, embed.Build());
                         return;
                     }
