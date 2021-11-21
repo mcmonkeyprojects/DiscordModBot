@@ -647,6 +647,10 @@ namespace ModBot.CommandHandlers
                             SendErrorMessageReply(command.Message, "Invalid Value", "That emote name doesn't correspond to any tracked react-roles.");
                             return;
                         }
+                        if (data.ReactToRole.IsEmpty())
+                        {
+                            config.ReactRoles.Remove(postId);
+                        }
                         SendGenericPositiveMessageReply(command.Message, "Applied", $"Post `{postId}` no longer applies a role when emote `{emote}` is used.");
                         break;
                     }
