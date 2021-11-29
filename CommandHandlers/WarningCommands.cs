@@ -446,9 +446,10 @@ namespace ModBot.CommandHandlers
                 warnID++;
                 SocketUser giver = DiscordBotBaseHelper.CurrentBot.Client.GetUser(warned.GivenBy);
                 string giverLabel = (giver == null) ? ("DiscordID:" + warned.GivenBy) : (giver.Username + "#" + giver.Discriminator);
-                string reason = (warned.Reason.Length > 250) ? (warned.Reason[..250] + "(... trimmed ...)") : warned.Reason;
+                string reason = (warned.Reason.Length > 350) ? (warned.Reason[..340] + "(... trimmed ...)") : warned.Reason;
                 reason = EscapeUserInput(reason);
-                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at `{StringConversionHelper.DateTimeToString(warned.TimeGiven, false)}` by {giverLabel} with reason: `{reason}`. [Click For Detail]({warned.Link})\n");
+                string reftext = string.IsNullOrWhiteSpace(warned.RefLink) ? "" : $" [Manual Reference Link]({warned.RefLink})";
+                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at `{StringConversionHelper.DateTimeToString(warned.TimeGiven, false)}` by {giverLabel} with reason: `{reason}`{reftext}. [Click For Detail]({warned.Link})\n");
             }
             if (startId == 0 && user.SpecialRoles.Any())
             {

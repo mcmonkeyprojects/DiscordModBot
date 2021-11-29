@@ -20,6 +20,9 @@ namespace ModBot.WarningHandlers
         /// <summary>The warning reason (as input by a helper).</summary>
         public string Reason { get; set; }
 
+        /// <summary>Optional additional reference link.</summary>
+        public string RefLink { get; set; }
+
         /// <summary>The warning level (as input by a helper).</summary>
         public WarningLevel Level { get; set; }
 

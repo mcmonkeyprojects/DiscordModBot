@@ -586,7 +586,7 @@ namespace ModBot.CommandHandlers
                                 {
                                     foreach (KeyValuePair<string, ulong> subPair in pair.Value.ReactToRole)
                                     {
-                                        roles.Append($"(post={pair.Key}, role={subPair.Value}, reaction={subPair.Key})");
+                                        roles.Append($"(post={pair.Key}, role={subPair.Value}, reaction={subPair.Key}) ");
                                     }
                                 }
                             }
@@ -624,7 +624,7 @@ namespace ModBot.CommandHandlers
                                 {
                                     foreach (KeyValuePair<string, ulong> subPair in pair.Value.ReactToRole)
                                     {
-                                        roles.Append($"(post={pair.Key}, role={subPair.Value}, reaction={subPair.Key})");
+                                        roles.Append($"(post={pair.Key}, role={subPair.Value}, reaction={subPair.Key}) ");
                                     }
                                 }
                             }

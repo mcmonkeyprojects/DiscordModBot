@@ -10,6 +10,7 @@ using ModBot.Database;
 using ModBot.WarningHandlers;
 using ModBot.Core;
 using FreneticUtilities.FreneticExtensions;
+using FreneticUtilities.FreneticToolkit;
 
 namespace ModBot.CommandHandlers
 {
@@ -60,15 +61,24 @@ namespace ModBot.CommandHandlers
                 hadSameRoleBefore = $"\n\nUser has previously had the special role `{role.Name}` applied.";
             }
             string addedRef = string.Join(" ", command.RawArguments.Skip(1)).Trim();
+            string refLink = null;
+            if (addedRef.StartsWith("https://discord.com/channels/") && REF_LINK_AFTER_BASE_MATCHER.IsOnlyMatches(addedRef["https://discord.com/channels/".Length..]))
+            {
+                refLink = addedRef;
+                addedRef = "";
+            }
             string addedText = string.IsNullOrWhiteSpace(addedRef) ? "" : $" with reference input: {addedRef}\n";
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(text: $"<@{userID}>", embed: new EmbedBuilder().WithTitle("Special Role Applied").WithDescription($"<@{command.Message.Author.Id}> has given <@{userID}> special role `{role.Name}`{addedText}.\n{role.AddExplanation}\n{warnable.GetPastWarningsText()}{hadSameRoleBefore}").Build()).Result;
             if (!string.IsNullOrWhiteSpace(role.AddWarnText))
             {
-                Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText + addedText };
+                Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText + addedText, RefLink = refLink };
                 warning.Link = LinkToMessage(sentMessage);
                 warnable.AddWarning(warning);
             }
         }
+
+        /// <summary>Matcher for characters after the base of a Discord message link.</summary>
+        public static AsciiMatcher REF_LINK_AFTER_BASE_MATCHER = new("0123456789/");
 
         /// <summary>User command to remove a special role from a user.</summary>
         public void CMD_RemoveSpecialRole(GuildConfig.SpecialRole role, CommandData command)
