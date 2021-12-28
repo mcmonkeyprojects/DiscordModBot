@@ -421,7 +421,7 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                LogThreadActivity(user.Thread, $"**User joined thread:** `{NameUtilities.Username(user)}` (`{user.Id}`");
+                LogThreadActivity(user.Thread, $"**User joined thread:** `{NameUtilities.Username(user)}` (`{user.Id}`)");
                 return Task.CompletedTask;
             };
             bot.Client.ThreadMemberLeft += (user) =>
@@ -430,7 +430,30 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                LogThreadActivity(user.Thread, $"**User left thread:** `{NameUtilities.Username(user)}` (`{user.Id}`");
+                LogThreadActivity(user.Thread, $"**User left thread:** `{NameUtilities.Username(user)}` (`{user.Id}`)");
+                return Task.CompletedTask;
+            };
+            bot.Client.ThreadUpdated += (oldThread, newThread) =>
+            {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (oldThread.HasValue)
+                {
+                    if (newThread.Name != oldThread.Value.Name)
+                    {
+                        LogThreadActivity(newThread, $"**Thread name changed:** was `{UserCommands.EscapeUserInput(oldThread.Value.Name)}`, is now `{UserCommands.EscapeUserInput(newThread.Name)}`");
+                    }
+                    if (newThread.IsArchived && !oldThread.Value.IsArchived)
+                    {
+                        LogThreadActivity(newThread, $"**Thread archived**");
+                    }
+                    if (!newThread.IsArchived && oldThread.Value.IsArchived)
+                    {
+                        LogThreadActivity(newThread, $"**Thread pulled out from archive**");
+                    }
+                }
                 return Task.CompletedTask;
             };
             bot.Client.MessageReceived += (socketMessage) =>
