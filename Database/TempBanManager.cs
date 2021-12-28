@@ -176,7 +176,7 @@ namespace ModBot.Database
             {
                 try
                 {
-                    IDMChannel channel = user.GetOrCreateDMChannelAsync().Result;
+                    IDMChannel channel = user.CreateDMChannelAsync().Result;
                     string durationMessage = isForever ? "This ban lasts until manually removed by staff." : $"This ban expires **{duration.SimpleFormat(true)}**.";
                     channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}{reason}").WithThumbnailUrl(guild.IconUrl).Build()).Wait(new TimeSpan(0, 1, 0));
                 }

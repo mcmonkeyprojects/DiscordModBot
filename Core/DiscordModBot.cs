@@ -66,6 +66,7 @@ namespace ModBot.Core
                 EnsureCaching = true,
                 AllowDMs = false,
                 UnknownCommandMessage = null,
+                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMessages | GatewayIntents.GuildMembers | GatewayIntents.GuildMessageReactions,
                 Initialize = (bot) =>
                 {
                     LoadConfig(bot.ConfigFile);
@@ -118,7 +119,7 @@ namespace ModBot.Core
                     };
                     bot.Client.ReactionAdded += (message, channel, reaction) =>
                     {
-                        if (channel is not SocketGuildChannel guildChannel)
+                        if (channel.GetOrDownloadAsync().Result is not SocketGuildChannel guildChannel)
                         {
                             return Task.CompletedTask;
                         }
@@ -145,7 +146,7 @@ namespace ModBot.Core
                     };
                     bot.Client.ReactionRemoved += (message, channel, reaction) =>
                     {
-                        if (channel is not SocketGuildChannel guildChannel)
+                        if (channel.GetOrDownloadAsync().Result is not SocketGuildChannel guildChannel)
                         {
                             return Task.CompletedTask;
                         }

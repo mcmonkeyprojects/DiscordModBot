@@ -123,7 +123,7 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
-            bot.Client.UserLeft += (user) =>
+            bot.Client.UserLeft += (guild, user) =>
             {
                 if (bot.BotMonitor.ShouldStopAllLogic())
                 {
@@ -136,11 +136,11 @@ namespace ModBot.Core
                         return Task.CompletedTask;
                     }
                     DiscordModBot.TempBanHandler.CheckShouldScan();
-                    GuildConfig config = DiscordModBot.GetConfig(user.Guild.Id);
+                    GuildConfig config = DiscordModBot.GetConfig(guild.Id);
                     if (config.JoinNotifChannel.Any())
                     {
                         string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) left.";
-                        SendEmbedToAllFor(user.Guild, config.JoinNotifChannel, new EmbedBuilder().WithTitle("User Left").WithColor(64, 64, 0).WithDescription(message).Build());
+                        SendEmbedToAllFor(guild, config.JoinNotifChannel, new EmbedBuilder().WithTitle("User Left").WithColor(64, 64, 0).WithDescription(message).Build());
                     }
                 }
                 catch (Exception ex)
@@ -226,7 +226,7 @@ namespace ModBot.Core
                 try
                 {
                     Console.WriteLine($"Parsing deletion of message id {cache.Id} in channel {channel.Id}");
-                    if (channel is not SocketGuildChannel socketChannel)
+                    if (channel.GetOrDownloadAsync().Result is not SocketGuildChannel socketChannel)
                     {
                         return Task.CompletedTask;
                     }
@@ -350,38 +350,38 @@ namespace ModBot.Core
                         return Task.CompletedTask;
                     }
                     GuildConfig config = DiscordModBot.GetConfig(newUser.Guild.Id);
-                    if (config.RoleChangeNotifChannel.Any())
+                    if (config.RoleChangeNotifChannel.Any() && oldUser.HasValue)
                     {
-                        bool lostRoles = oldUser.Roles.Any(r => !newUser.Roles.Contains(r));
-                        bool gainedRoles = newUser.Roles.Any(r => !oldUser.Roles.Contains(r));
+                        bool lostRoles = oldUser.Value.Roles.Any(r => !newUser.Roles.Contains(r));
+                        bool gainedRoles = newUser.Roles.Any(r => !oldUser.Value.Roles.Contains(r));
                         if (lostRoles || gainedRoles)
                         {
                             EmbedBuilder roleChangeEmbed = new EmbedBuilder().WithTitle("User Role Change").WithDescription($"User <@{newUser.Id}> had roles updated.");
                             if (lostRoles)
                             {
-                                roleChangeEmbed.AddField("Roles Removed", string.Join(", ", oldUser.Roles.Where(r => !newUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                                roleChangeEmbed.AddField("Roles Removed", string.Join(", ", oldUser.Value.Roles.Where(r => !newUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
                             }
                             if (gainedRoles)
                             {
-                                roleChangeEmbed.AddField("Roles Added", string.Join(", ", newUser.Roles.Where(r => !oldUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                                roleChangeEmbed.AddField("Roles Added", string.Join(", ", newUser.Roles.Where(r => !oldUser.Value.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
                             }
                             SendEmbedToAllFor(newUser.Guild, config.RoleChangeNotifChannel, roleChangeEmbed.Build());
                         }
                     }
-                    if (config.NameChangeNotifChannel.Any())
+                    if (config.NameChangeNotifChannel.Any() && oldUser.HasValue)
                     {
-                        if (oldUser.Nickname != newUser.Nickname)
+                        if (oldUser.Value.Nickname != newUser.Nickname)
                         {
                             EmbedBuilder embed = new EmbedBuilder().WithTitle("User Nickname Changed").WithColor(0, 255, 255);
-                            if (oldUser.Nickname != null)
+                            if (oldUser.Value.Nickname != null)
                             {
-                                embed.AddField("Old Nickname", $"`{UserCommands.EscapeUserInput(oldUser.Nickname)}`");
+                                embed.AddField("Old Nickname", $"`{UserCommands.EscapeUserInput(oldUser.Value.Nickname)}`");
                             }
                             if (newUser.Nickname != null)
                             {
                                 embed.AddField("New Nickname", $"`{UserCommands.EscapeUserInput(newUser.Nickname)}`");
                             }
-                            string changeType = newUser.Nickname == null ? "removed their" : (oldUser.Nickname == null ? "added a" : "changed their");
+                            string changeType = newUser.Nickname == null ? "removed their" : (oldUser.Value.Nickname == null ? "added a" : "changed their");
                             embed.Description = $"User <@{newUser.Id}> {changeType} nickname.";
                             SendEmbedToAllFor(newUser.Guild, config.NameChangeNotifChannel, embed.Build());
                         }
