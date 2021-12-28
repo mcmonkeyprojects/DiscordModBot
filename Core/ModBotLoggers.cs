@@ -393,6 +393,46 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
+            bot.Client.ThreadCreated += (thread) =>
+            {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                LogThreadActivity(thread, $"**New thread created:** `{UserCommands.EscapeUserInput(thread.Name)}` by user `{NameUtilities.Username(thread.Owner)}` (`{thread.Owner.Id}`)");
+                return Task.CompletedTask;
+            };
+            bot.Client.ThreadDeleted += (thread) =>
+            {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (!thread.HasValue)
+                {
+                    return Task.CompletedTask;
+                }
+                LogThreadActivity(thread.Value, $"**Thread deleted:** `{UserCommands.EscapeUserInput(thread.Value.Name)}`");
+                return Task.CompletedTask;
+            };
+            bot.Client.ThreadMemberJoined += (user) =>
+            {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                LogThreadActivity(user.Thread, $"**User joined thread:** `{NameUtilities.Username(user)}` (`{user.Id}`");
+                return Task.CompletedTask;
+            };
+            bot.Client.ThreadMemberLeft += (user) =>
+            {
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                LogThreadActivity(user.Thread, $"**User left thread:** `{NameUtilities.Username(user)}` (`{user.Id}`");
+                return Task.CompletedTask;
+            };
             bot.Client.MessageReceived += (socketMessage) =>
             {
                 if (socketMessage is not IUserMessage message)
@@ -403,7 +443,7 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                if (message.Channel is not SocketGuildChannel guildChannel || message.Channel is not SocketThreadChannel threadChannel)
+                if (message.Channel is not SocketThreadChannel threadChannel)
                 {
                     return Task.CompletedTask;
                 }
@@ -411,50 +451,55 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                GuildConfig config = DiscordModBot.GetConfig(guildChannel.Guild.Id);
-                if (config.ThreadLogChannels.IsEmpty())
+                string messageText = socketMessage.Content;
+                if (messageText.Length > 1000)
                 {
-                    return Task.CompletedTask;
+                    messageText = messageText[0..900] + "...";
                 }
-                ulong targetChannelId = 0;
-                if (config.ThreadLogChannels.TryGetValue(threadChannel.ParentChannel.Id, out ulong directLogChannelId))
+                if (string.IsNullOrWhiteSpace(messageText))
                 {
-                    targetChannelId = directLogChannelId;
+                    messageText = "(Empty message)";
                 }
-                else if (config.ThreadLogChannels.TryGetValue(0, out ulong defaultLogChannelId))
-                {
-                    targetChannelId = defaultLogChannelId;
-                }
-                if (targetChannelId == 0)
-                {
-                    return Task.CompletedTask;
-                }
-                SocketTextChannel target = guildChannel.Guild.GetTextChannel(targetChannelId);
-                if (target is null)
-                {
-                    return Task.CompletedTask;
-                }
-                try
-                {
-                    string messageText = socketMessage.Content;
-                    if (messageText.Length > 1000)
-                    {
-                        messageText = messageText[0..900] + "...";
-                    }
-                    if (string.IsNullOrWhiteSpace(messageText))
-                    {
-                        messageText = "(Empty message)";
-                    }
-                    messageText = UserCommands.EscapeUserInput(messageText);
-                    string output = $"[**Thread Log**] User `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) said in thread <#{threadChannel.Id}> (in channel <#{threadChannel.ParentChannel.Id}>): `{messageText}`";
-                    target.SendMessageAsync(output, allowedMentions: AllowedMentions.None).Wait();
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to output thread logs to channel {targetChannelId}: {ex}");
-                }
+                messageText = UserCommands.EscapeUserInput(messageText);
+                string output = $"User `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) said in thread <#{threadChannel.Id}> (in channel <#{threadChannel.ParentChannel.Id}>): `{messageText}`";
+                LogThreadActivity(threadChannel, output);
                 return Task.CompletedTask;
             };
+        }
+
+        public static void LogThreadActivity(SocketThreadChannel threadChannel, string activity)
+        {
+            GuildConfig config = DiscordModBot.GetConfig(threadChannel.Guild.Id);
+            if (config.ThreadLogChannels.IsEmpty())
+            {
+                return;
+            }
+            ulong targetChannelId = 0;
+            if (config.ThreadLogChannels.TryGetValue(threadChannel.ParentChannel.Id, out ulong directLogChannelId))
+            {
+                targetChannelId = directLogChannelId;
+            }
+            else if (config.ThreadLogChannels.TryGetValue(0, out ulong defaultLogChannelId))
+            {
+                targetChannelId = defaultLogChannelId;
+            }
+            if (targetChannelId == 0)
+            {
+                return;
+            }
+            SocketTextChannel target = threadChannel.Guild.GetTextChannel(targetChannelId);
+            if (target is null)
+            {
+                return;
+            }
+            try
+            {
+                target.SendMessageAsync($"[**Thread Log**] {activity}", allowedMentions: AllowedMentions.None).Wait();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to output thread logs to channel {targetChannelId}: {ex}");
+            }
         }
 
         /// <summary>Utility to send an embed to all channels in a list of IDs for a specific guild.</summary>
