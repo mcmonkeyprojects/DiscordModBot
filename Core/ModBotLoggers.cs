@@ -193,6 +193,10 @@ namespace ModBot.Core
                         // Its a reaction/embed-load/similar, ignore it.
                         return Task.CompletedTask;
                     }
+                    if (message.Author.Id == 0) // inexplicably possible in relation to threads
+                    {
+                        return Task.CompletedTask;
+                    }
                     GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
                     if (config.LogChannels.Any())
                     {
