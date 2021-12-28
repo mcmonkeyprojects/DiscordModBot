@@ -352,6 +352,37 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "thread_log_channels":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("The mapping of channels, where keys are normal text channels (or categories), and values are a logs channel where all thread messages in the first channel get logged to."
+                                + " Format is a comma-separated list of colon-separated ID:ID pairs (like `123:456,789:012`). Set key `0` as a catch-all.",
+                                config.ThreadLogChannels.IsEmpty() ? "None" : string.Join(",", config.ThreadLogChannels.Select(pair => $"{pair.Key}:{pair.Value}")));
+                            return;
+                        }
+                        string channelText = command.RawArguments[1];
+                        if (channelText == "none" || channelText == "null")
+                        {
+                            config.ThreadLogChannels.Clear();
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Thread log channel map emptied.");
+                        }
+                        else
+                        {
+                            try
+                            {
+                                config.ThreadLogChannels = channelText.SplitFast(',').Select(s => new KeyValuePair<ulong, ulong>(ulong.Parse(s.BeforeAndAfter(':', out string after)), ulong.Parse(after))).ToDictionary(p => p.Key, p => p.Value);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Invalid thread_log_channels input, had exception: {ex}");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of colon-separated ID:ID pairs, or 'none'.");
+                                return;
+                            }
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Thread log channel map updated.");
+                        }
+                        break;
+                    }
                 case "enforce_ascii_name_rule":
                     {
                         if (command.RawArguments.Length == 1)
@@ -742,7 +773,7 @@ namespace ModBot.CommandHandlers
                         embed.Description = "ModBot's admin-configure command exists as a temporary trick pending plans to build a web interface to control ModBot more easily."
                             + "\nAny sub-command without further arguments will show more info about current value.\nMost sub-command accept `null` to mean remove/clear any value (except where not possible).";
                         embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
-                            + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, "
+                            + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, `thread_log_channels`, "
                             + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, "
                             + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_react_role`, `remove_react_role`, `add_special_role`, `remove_special_role`");
                         SendReply(command.Message, embed.Build());

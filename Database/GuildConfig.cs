@@ -42,6 +42,12 @@ namespace ModBot.Database
         /// </summary>
         public Dictionary<ulong, ulong> LogChannels { get; set; }
 
+        /// <summary>
+        /// Channels to log thread activity into, mapping from (channel being logged) to (channel that shows the logs).
+        /// Key value 0 means log all unspecified to there.
+        /// </summary>
+        public Dictionary<ulong, ulong> ThreadLogChannels { get; set; }
+
         /// <summary>Whether the ASCII name rule should be enforced by the bot.</summary>
         public bool EnforceAsciiNameRule { get; set; }
 
@@ -119,47 +125,51 @@ namespace ModBot.Database
         /// <summary>Ensure all configuration options are either set properly, or are default.</summary>
         public void Ensure()
         {
-            if (ModeratorRoles == null)
+            if (ModeratorRoles is null)
             {
                 ModeratorRoles = new List<ulong>();
             }
-            if (IncidentChannel == null)
+            if (IncidentChannel is null)
             {
                 IncidentChannel = new List<ulong>();
             }
-            if (JoinNotifChannel == null)
+            if (JoinNotifChannel is null)
             {
                 JoinNotifChannel = new List<ulong>();
             }
-            if (VoiceChannelJoinNotifs == null)
+            if (VoiceChannelJoinNotifs is null)
             {
                 VoiceChannelJoinNotifs = new List<ulong>();
             }
-            if (RoleChangeNotifChannel == null)
+            if (RoleChangeNotifChannel is null)
             {
                 RoleChangeNotifChannel = new List<ulong>();
             }
-            if (NameChangeNotifChannel == null)
+            if (NameChangeNotifChannel is null)
             {
                 NameChangeNotifChannel = new List<ulong>();
             }
-            if (ModLogsChannel == null)
+            if (ModLogsChannel is null)
             {
                 ModLogsChannel = new List<ulong>();
             }
-            if (LogChannels == null)
+            if (LogChannels is null)
             {
                 LogChannels = new Dictionary<ulong, ulong>();
             }
-            if (ReactRoles == null)
+            if (ThreadLogChannels is null)
+            {
+                ThreadLogChannels = new Dictionary<ulong, ulong>();
+            }
+            if (ReactRoles is null)
             {
                 ReactRoles = new Dictionary<ulong, ReactRoleData>();
             }
-            if (SpecialRoles == null)
+            if (SpecialRoles is null)
             {
                 SpecialRoles = new Dictionary<string, SpecialRole>();
             }
-            if (NonSpambotRoles == null)
+            if (NonSpambotRoles is null)
             {
                 NonSpambotRoles = new List<ulong>();
             }

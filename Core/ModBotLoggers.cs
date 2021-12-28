@@ -393,6 +393,68 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
+            bot.Client.MessageReceived += (socketMessage) =>
+            {
+                if (socketMessage is not IUserMessage message)
+                {
+                    return Task.CompletedTask;
+                }
+                if (bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (message.Channel is not SocketGuildChannel guildChannel || message.Channel is not SocketThreadChannel threadChannel)
+                {
+                    return Task.CompletedTask;
+                }
+                if (message.Author.IsBot || message.Author.IsWebhook || message.Author.Id == bot.Client.CurrentUser.Id)
+                {
+                    return Task.CompletedTask;
+                }
+                GuildConfig config = DiscordModBot.GetConfig(guildChannel.Guild.Id);
+                if (config.ThreadLogChannels.IsEmpty())
+                {
+                    return Task.CompletedTask;
+                }
+                ulong targetChannelId = 0;
+                if (config.ThreadLogChannels.TryGetValue(threadChannel.ParentChannel.Id, out ulong directLogChannelId))
+                {
+                    targetChannelId = directLogChannelId;
+                }
+                else if (config.ThreadLogChannels.TryGetValue(0, out ulong defaultLogChannelId))
+                {
+                    targetChannelId = defaultLogChannelId;
+                }
+                if (targetChannelId == 0)
+                {
+                    return Task.CompletedTask;
+                }
+                SocketTextChannel target = guildChannel.Guild.GetTextChannel(targetChannelId);
+                if (target is null)
+                {
+                    return Task.CompletedTask;
+                }
+                try
+                {
+                    string messageText = socketMessage.Content;
+                    if (messageText.Length > 1000)
+                    {
+                        messageText = messageText[0..900] + "...";
+                    }
+                    if (string.IsNullOrWhiteSpace(messageText))
+                    {
+                        messageText = "(Empty message)";
+                    }
+                    messageText = UserCommands.EscapeUserInput(messageText);
+                    string output = $"[**Thread Log**] User `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) said in thread <#{threadChannel.Id}> (in channel <#{threadChannel.ParentChannel.Id}>): `{messageText}`";
+                    target.SendMessageAsync(output, allowedMentions: AllowedMentions.None).Wait();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to output thread logs to channel {targetChannelId}: {ex}");
+                }
+                return Task.CompletedTask;
+            };
         }
 
         /// <summary>Utility to send an embed to all channels in a list of IDs for a specific guild.</summary>
