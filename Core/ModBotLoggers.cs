@@ -484,7 +484,7 @@ namespace ModBot.Core
                     messageText = "(Empty message)";
                 }
                 messageText = UserCommands.EscapeUserInput(messageText);
-                string output = $"User `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) said in thread <#{threadChannel.Id}> (in channel <#{threadChannel.ParentChannel.Id}>): `{messageText}`";
+                string output = $"User `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) said: `{messageText}`";
                 LogThreadActivity(threadChannel, output);
                 return Task.CompletedTask;
             };
@@ -517,7 +517,7 @@ namespace ModBot.Core
             }
             try
             {
-                target.SendMessageAsync($"[**Thread Log**] {activity}", allowedMentions: AllowedMentions.None).Wait();
+                target.SendMessageAsync($"[**Thread Log**] <#{threadChannel.Id}> (in channel <#{threadChannel.ParentChannel.Id}>): {activity}", allowedMentions: AllowedMentions.None).Wait();
             }
             catch (Exception ex)
             {
