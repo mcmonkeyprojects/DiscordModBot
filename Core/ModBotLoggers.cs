@@ -399,7 +399,7 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                LogThreadActivity(thread, $"**New thread created:** `{UserCommands.EscapeUserInput(thread.Name)}` by user `{NameUtilities.Username(thread.Owner)}` (`{thread.Owner.Id}`)");
+                LogThreadActivity(thread, $"**New thread created:** `{UserCommands.EscapeUserInput(thread.Name)}` by user `{NameUtilities.Username(thread.Owner)}` (`{thread.Owner?.Id}`)");
                 return Task.CompletedTask;
             };
             bot.Client.ThreadDeleted += (thread) =>

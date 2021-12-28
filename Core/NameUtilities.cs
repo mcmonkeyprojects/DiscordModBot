@@ -15,7 +15,7 @@ namespace ModBot.Core
         /// <summary>Gets the full proper username#disc for a user.</summary>
         public static string Username(IUser user)
         {
-            if (user == null || user.Username == null)
+            if (user is null || user.Username is null)
             {
                 return null;
             }
