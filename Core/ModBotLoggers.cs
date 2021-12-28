@@ -208,7 +208,7 @@ namespace ModBot.Core
                         }
                         originalText = TrimForDifferencing(originalText, 700, firstDifference, lastDifference, longerLength);
                         newText = TrimForDifferencing(newText, 900, firstDifference, lastDifference, longerLength);
-                        LogChannelActivity(socketChannel, $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in <#{channel.Id}>:\n{originalText} Became:\n{newText}");
+                        LogChannelActivity(socketChannel, $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in {ReferenceChannelSource(socketChannel)}:\n{originalText} Became:\n{newText}");
                     }
                 }
                 catch (Exception ex)
@@ -293,7 +293,7 @@ namespace ModBot.Core
                         {
                             originalText = originalText[..1800] + "...";
                         }
-                        LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in <#{channel.Id}>{replyNote}: `{originalText}`");
+                        LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in {ReferenceChannelSource(socketChannel)}{replyNote}: `{originalText}`");
                     }
                 }
                 catch (Exception ex)
@@ -476,11 +476,25 @@ namespace ModBot.Core
             return false;
         }
 
+        /// <summary>Creates a reference string to a text channel, or a thread channel.</summary>
+        public static string ReferenceChannelSource(SocketGuildChannel channel)
+        {
+            if (channel is SocketThreadChannel threadChannel)
+            {
+                return $"<#{channel.Id}> in <#{threadChannel.ParentChannel.Id}>";
+            }
+            return $"<#{channel.Id}>";
+        }
+
         /// <summary>Sends a log message to a log channel (if applicable).</summary>
         /// <param name="channel">The channel where a loggable action happened.</param>
         /// <param name="message">A message to log.</param>
         public void LogChannelActivity(SocketGuildChannel channel, string message)
         {
+            if (channel is SocketThreadChannel threadChannel)
+            {
+                channel = threadChannel.ParentChannel;
+            }
             if (!TryGetLogChannel(channel, out ulong logChannel))
             {
                 return;
