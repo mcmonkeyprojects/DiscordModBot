@@ -104,7 +104,7 @@ namespace ModBot.Core
                             SocketGuildChannel incidentChan = user.Guild.GetChannel(chan);
                             if (incidentChan != null && incidentChan is ISocketMessageChannel incidentChanText)
                             {
-                                string warnMessage = $"User <@{ user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command or refer to the private logs channel to see details.";
+                                string warnMessage = $"User <@{user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command or refer to the private logs channel to see details.";
                                 incidentChanText.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build(), allowedMentions: AllowedMentions.None).Wait();
                                 if (warnable.IsMuted)
                                 {
@@ -326,15 +326,15 @@ namespace ModBot.Core
                     if (oldState.VoiceChannel?.Id != newState.VoiceChannel?.Id)
                     {
                         EmbedBuilder embed = new EmbedBuilder().WithTitle("User Move In Voice Channels").WithColor(0, 64, 255);
-                        if (oldState.VoiceChannel != null)
+                        if (oldState.VoiceChannel is not null)
                         {
-                            embed.AddField("Old Channel", $"`{UserCommands.EscapeUserInput(oldState.VoiceChannel.Name)}`");
+                            embed.AddField("Old Channel", $"<#{oldState.VoiceChannel.Id}>");
                         }
-                        if (newState.VoiceChannel != null)
+                        if (newState.VoiceChannel is not null)
                         {
-                            embed.AddField("New Channel", $"`{UserCommands.EscapeUserInput(newState.VoiceChannel.Name)}`");
+                            embed.AddField("New Channel", $"<#{UserCommands.EscapeUserInput(newState.VoiceChannel.Name)}>");
                         }
-                        string changeType = newState.VoiceChannel == null ? "left a" : (oldState.VoiceChannel == null ? "entered a" : "moved to a different");
+                        string changeType = newState.VoiceChannel is null ? "left a" : (oldState.VoiceChannel is null ? "entered a" : "moved to a different");
                         embed.Description = $"User <@{user.Id}> {changeType} voice channel.";
                         SendEmbedToAllFor((newState.VoiceChannel ?? oldState.VoiceChannel).Guild, config.VoiceChannelJoinNotifs, embed.Build());
                     }
@@ -363,11 +363,11 @@ namespace ModBot.Core
                             EmbedBuilder roleChangeEmbed = new EmbedBuilder().WithTitle("User Role Change").WithDescription($"User <@{newUser.Id}> had roles updated.");
                             if (lostRoles)
                             {
-                                roleChangeEmbed.AddField("Roles Removed", string.Join(", ", oldUser.Value.Roles.Where(r => !newUser.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                                roleChangeEmbed.AddField("Roles Removed", string.Join(", ", oldUser.Value.Roles.Where(r => !newUser.Roles.Contains(r)).Select(r => $"<@&{r.Id}>")));
                             }
                             if (gainedRoles)
                             {
-                                roleChangeEmbed.AddField("Roles Added", string.Join(", ", newUser.Roles.Where(r => !oldUser.Value.Roles.Contains(r)).Select(r => $"`{r.Name}`")));
+                                roleChangeEmbed.AddField("Roles Added", string.Join(", ", newUser.Roles.Where(r => !oldUser.Value.Roles.Contains(r)).Select(r => $"<@&{r.Id}>")));
                             }
                             SendEmbedToAllFor(newUser.Guild, config.RoleChangeNotifChannel, roleChangeEmbed.Build());
                         }

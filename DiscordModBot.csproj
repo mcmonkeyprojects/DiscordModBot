@@ -8,7 +8,7 @@
     <LangVersion>Latest</LangVersion>
     <Product>DiscordModBot</Product>
     <PackageId>DiscordModBot</PackageId>
-    <Copyright>Copyright (C) Alex "mcmonkey" Goodwin 2018-2021</Copyright>
+    <Copyright>Copyright (C) Alex "mcmonkey" Goodwin 2018-2022</Copyright>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="3.1.0" />
