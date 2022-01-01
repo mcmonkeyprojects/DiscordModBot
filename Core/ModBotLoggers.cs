@@ -332,7 +332,7 @@ namespace ModBot.Core
                         }
                         if (newState.VoiceChannel is not null)
                         {
-                            embed.AddField("New Channel", $"<#{UserCommands.EscapeUserInput(newState.VoiceChannel.Id)}>");
+                            embed.AddField("New Channel", $"<#{newState.VoiceChannel.Id}>");
                         }
                         string changeType = newState.VoiceChannel is null ? "left a" : (oldState.VoiceChannel is null ? "entered a" : "moved to a different");
                         embed.Description = $"User <@{user.Id}> {changeType} voice channel.";
