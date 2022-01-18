@@ -502,7 +502,7 @@ namespace ModBot.Core
             };
         }
 
-        public static void LogThreadActivity(SocketThreadChannel threadChannel, string activity)
+        public void LogThreadActivity(SocketThreadChannel threadChannel, string activity)
         {
             GuildConfig config = DiscordModBot.GetConfig(threadChannel.Guild.Id);
             if (config.ThreadLogChannels.IsEmpty())
@@ -529,7 +529,7 @@ namespace ModBot.Core
             }
             try
             {
-                target.SendMessageAsync($"[**Thread Log**] <#{threadChannel.Id}> (in channel <#{threadChannel.ParentChannel.Id}>): {activity}", allowedMentions: AllowedMentions.None).Wait();
+                Bot.GetBulker(target).Send($"[**Thread Log**] <#{threadChannel.Id}> (in channel <#{threadChannel.ParentChannel.Id}>): {activity}");
             }
             catch (Exception ex)
             {
