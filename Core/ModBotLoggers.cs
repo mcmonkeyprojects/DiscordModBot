@@ -24,18 +24,22 @@ namespace ModBot.Core
     /// <summary>Helper class for logging channels.</summary>
     public class ModBotLoggers
     {
+        /// <summary>The relevant bot instance.</summary>
+        public DiscordBot Bot;
+
         /// <summary>initialize all logger events on a Discord bot.</summary>
-        public void InitLoggers(DiscordBot bot)
+        public void InitLoggers(DiscordBot _bot)
         {
-            bot.Client.UserJoined += (user) =>
+            Bot = _bot;
+            Bot.Client.UserJoined += (user) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
                 try
                 {
-                    if (user.Id == bot.Client.CurrentUser.Id)
+                    if (user.Id == Bot.Client.CurrentUser.Id)
                     {
                         return Task.CompletedTask;
                     }
@@ -123,15 +127,15 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
-            bot.Client.UserLeft += (guild, user) =>
+            Bot.Client.UserLeft += (guild, user) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
                 try
                 {
-                    if (user.Id == bot.Client.CurrentUser.Id)
+                    if (user.Id == Bot.Client.CurrentUser.Id)
                     {
                         return Task.CompletedTask;
                     }
@@ -149,13 +153,13 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
-            bot.Client.UserBanned += (user, guild) =>
+            Bot.Client.UserBanned += (user, guild) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
-                if (user.Id == bot.Client.CurrentUser.Id)
+                if (user.Id == Bot.Client.CurrentUser.Id)
                 {
                     return Task.CompletedTask;
                 }
@@ -167,15 +171,15 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
-            bot.Client.MessageUpdated += (cache, message, channel) =>
+            Bot.Client.MessageUpdated += (cache, message, channel) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
                 try
                 {
-                    if (message.Author.Id == bot.Client.CurrentUser.Id)
+                    if (message.Author.Id == Bot.Client.CurrentUser.Id)
                     {
                         return Task.CompletedTask;
                     }
@@ -187,7 +191,7 @@ namespace ModBot.Core
                     {
                         return Task.CompletedTask;
                     }
-                    bool hasCache = bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage oldMessage);
+                    bool hasCache = Bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage oldMessage);
                     if (hasCache && oldMessage.Text == message.Content)
                     {
                         // Its a reaction/embed-load/similar, ignore it.
@@ -221,9 +225,9 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
-            bot.Client.MessageDeleted += (cache, channel) =>
+            Bot.Client.MessageDeleted += (cache, channel) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
@@ -234,14 +238,14 @@ namespace ModBot.Core
                     {
                         return Task.CompletedTask;
                     }
-                    bool hasCache = bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage message);
+                    bool hasCache = Bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage message);
                     if (hasCache)
                     {
-                        if (message.SenderID == bot.Client.CurrentUser.Id)
+                        if (message.SenderID == Bot.Client.CurrentUser.Id)
                         {
                             return Task.CompletedTask;
                         }
-                        SocketUser author = bot.Client.GetUser(message.SenderID);
+                        SocketUser author = Bot.Client.GetUser(message.SenderID);
                         if (author != null && (author.IsBot || author.IsWebhook))
                         {
                             return Task.CompletedTask;
@@ -250,7 +254,7 @@ namespace ModBot.Core
                     GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
                     if (config.LogChannels.Any())
                     {
-                        SocketUser user = hasCache ? bot.Client.GetUser(message.SenderID) : null;
+                        SocketUser user = hasCache ? Bot.Client.GetUser(message.SenderID) : null;
                         string originalText = hasCache ? UserCommands.EscapeUserInput(message.Text + message.Attachments.Replace("\n", ", ")) : $"(not cached post ID {cache.Id})";
                         string author;
                         if (user != null)
@@ -271,7 +275,7 @@ namespace ModBot.Core
                             }
                             if (message.RepliedTo != 0)
                             {
-                                if (bot.Cache.TryGetCache(channel.Id, message.RepliedTo, out DiscordMessageCache.CachedMessage repliedMessage))
+                                if (Bot.Cache.TryGetCache(channel.Id, message.RepliedTo, out DiscordMessageCache.CachedMessage repliedMessage))
                                 {
                                     WarnableUser repliedAuthor = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, repliedMessage.SenderID);
                                     if (warnUser != null && !string.IsNullOrWhiteSpace(warnUser.LastKnownUsername))
@@ -306,13 +310,13 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
-            bot.Client.UserVoiceStateUpdated += (user, oldState, newState) =>
+            Bot.Client.UserVoiceStateUpdated += (user, oldState, newState) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
-                if (user.Id == bot.Client.CurrentUser.Id)
+                if (user.Id == Bot.Client.CurrentUser.Id)
                 {
                     return Task.CompletedTask;
                 }
@@ -341,15 +345,15 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
-            bot.Client.GuildMemberUpdated += (oldUser, newUser) =>
+            Bot.Client.GuildMemberUpdated += (oldUser, newUser) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
                 try
                 {
-                    if (newUser.Id == bot.Client.CurrentUser.Id)
+                    if (newUser.Id == Bot.Client.CurrentUser.Id)
                     {
                         return Task.CompletedTask;
                     }
@@ -397,18 +401,18 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
-            bot.Client.ThreadCreated += (thread) =>
+            Bot.Client.ThreadCreated += (thread) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
                 LogThreadActivity(thread, $"**New thread created:** `{UserCommands.EscapeUserInput(thread.Name)}` by user `{NameUtilities.Username(thread.Owner)}` (`{thread.Owner?.Id}`)");
                 return Task.CompletedTask;
             };
-            bot.Client.ThreadDeleted += (thread) =>
+            Bot.Client.ThreadDeleted += (thread) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
@@ -419,27 +423,27 @@ namespace ModBot.Core
                 LogThreadActivity(thread.Value, $"**Thread deleted:** `{UserCommands.EscapeUserInput(thread.Value.Name)}`");
                 return Task.CompletedTask;
             };
-            bot.Client.ThreadMemberJoined += (user) =>
+            Bot.Client.ThreadMemberJoined += (user) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
                 LogThreadActivity(user.Thread, $"**User joined thread:** `{NameUtilities.Username(user)}` (`{user.Id}`)");
                 return Task.CompletedTask;
             };
-            bot.Client.ThreadMemberLeft += (user) =>
+            Bot.Client.ThreadMemberLeft += (user) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
                 LogThreadActivity(user.Thread, $"**User left thread:** `{NameUtilities.Username(user)}` (`{user.Id}`)");
                 return Task.CompletedTask;
             };
-            bot.Client.ThreadUpdated += (oldThread, newThread) =>
+            Bot.Client.ThreadUpdated += (oldThread, newThread) =>
             {
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
@@ -460,13 +464,13 @@ namespace ModBot.Core
                 }
                 return Task.CompletedTask;
             };
-            bot.Client.MessageReceived += (socketMessage) =>
+            Bot.Client.MessageReceived += (socketMessage) =>
             {
                 if (socketMessage is not IUserMessage message)
                 {
                     return Task.CompletedTask;
                 }
-                if (bot.BotMonitor.ShouldStopAllLogic())
+                if (Bot.BotMonitor.ShouldStopAllLogic())
                 {
                     return Task.CompletedTask;
                 }
@@ -474,7 +478,7 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                if (message.Author.IsBot || message.Author.IsWebhook || message.Author.Id == bot.Client.CurrentUser.Id)
+                if (message.Author.IsBot || message.Author.IsWebhook || message.Author.Id == Bot.Client.CurrentUser.Id)
                 {
                     return Task.CompletedTask;
                 }
@@ -643,7 +647,7 @@ namespace ModBot.Core
                 Console.WriteLine($"Bad channel log output ID: {logChannel}");
                 return;
             }
-            textChannel.SendMessageAsync(message, allowedMentions: AllowedMentions.None).Wait();
+            Bot.GetBulker(textChannel).Send(message);
         }
     }
 }
