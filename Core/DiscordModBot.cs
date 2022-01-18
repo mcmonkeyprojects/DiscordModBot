@@ -360,12 +360,17 @@ namespace ModBot.Core
         /// <summary>Returns whether this message text looks like it might be a spam-bot message.</summary>
         public static bool LooksSpambotty(string message)
         {
-            message = message.ToLowerFast();
+            message = message.ToLowerFast().Replace('\r', '\n').Replace("\n", "");
             if (!message.Contains("http://") && !message.Contains("https://"))
             {
                 return false;
             }
-            return message.Contains("nitro") || message.Contains("trade offer");
+            if (message.Contains("nitro") || message.Contains("trade offer") // the obvious ones
+                || message.Contains("who is first? :)")) // seen in the wild from a few bots
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

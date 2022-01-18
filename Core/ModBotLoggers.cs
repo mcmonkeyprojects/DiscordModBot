@@ -483,6 +483,10 @@ namespace ModBot.Core
                 {
                     messageText = messageText[0..900] + "...";
                 }
+                if (socketMessage.Attachments.Any())
+                {
+                    messageText += " " + string.Join(' ', socketMessage.Attachments.Select(s => s.Url));
+                }
                 if (string.IsNullOrWhiteSpace(messageText))
                 {
                     messageText = "(Empty message)";
