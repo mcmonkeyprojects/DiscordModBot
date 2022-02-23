@@ -19,6 +19,8 @@ namespace ModBot.WarningHandlers
         /// <summary>More significant than normal warning. Counted extra towardsd automatic muting.</summary>
         SERIOUS = 3,
         /// <summary>Extremely significant warning. Induces an immediate automatic muting.</summary>
-        INSTANT_MUTE = 4
+        INSTANT_MUTE = 4,
+        /// <summary>Generated warning level when a user is banned.</summary>
+        BAN = 5
     }
 }

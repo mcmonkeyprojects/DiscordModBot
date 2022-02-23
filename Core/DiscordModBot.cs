@@ -197,7 +197,7 @@ namespace ModBot.Core
                         GuildConfig config = GetConfig(guild.Id);
                         SocketGuildUser author = message.Author as SocketGuildUser;
                         TrackUsernameFor(author, guild);
-                        // TODO: General post-spam detection
+                        // TODO: General post-spam detection (rapid posts, many pings, etc)
                         NameUtilities.AsciiNameRuleCheck(message, author);
                         if (config.AutomuteSpambots && config.MuteRole.HasValue && LooksSpambotty(message.Content) && !author.IsBot && !author.IsWebhook && !author.Roles.Any(r => config.NonSpambotRoles.Contains(r.Id)))
                         {
