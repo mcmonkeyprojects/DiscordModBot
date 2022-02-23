@@ -407,7 +407,7 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                LogThreadActivity(thread, $"**New thread created:** `{UserCommands.EscapeUserInput(thread.Name)}`"); //  by user `{NameUtilities.Username(thread.Owner)}` (`{thread.Owner?.Id}`)
+                LogThreadActivity(thread, $"**New thread created**"); //  by user `{NameUtilities.Username(thread.Owner)}` (`{thread.Owner?.Id}`)
                 return Task.CompletedTask;
             };
             Bot.Client.ThreadDeleted += (thread) =>
@@ -420,7 +420,7 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                LogThreadActivity(thread.Value, $"**Thread deleted:** `{UserCommands.EscapeUserInput(thread.Value.Name)}`");
+                LogThreadActivity(thread.Value, $"**Thread deleted**");
                 return Task.CompletedTask;
             };
             Bot.Client.ThreadMemberJoined += (user) =>
@@ -451,7 +451,7 @@ namespace ModBot.Core
                 {
                     if (newThread.Name != oldThread.Value.Name)
                     {
-                        LogThreadActivity(newThread, $"**Thread name changed:** was `{UserCommands.EscapeUserInput(oldThread.Value.Name)}`, is now `{UserCommands.EscapeUserInput(newThread.Name)}`");
+                        LogThreadActivity(newThread, $"**Thread name changed:** was `{UserCommands.EscapeUserInput(oldThread.Value.Name)}`");
                     }
                     if (newThread.IsArchived && !oldThread.Value.IsArchived)
                     {
@@ -529,7 +529,7 @@ namespace ModBot.Core
             }
             try
             {
-                Bot.GetBulker(target).Send($"[**Thread Log**] <#{threadChannel.Id}> (in channel <#{threadChannel.ParentChannel.Id}>): {activity}");
+                Bot.GetBulker(target).Send($"[**Thread Log**] <#{threadChannel.Id}> (`{threadChannel.Id}: {UserCommands.EscapeUserInput(threadChannel.Name)}` in channel <#{threadChannel.ParentChannel.Id}>): {activity}");
             }
             catch (Exception ex)
             {
