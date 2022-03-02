@@ -95,6 +95,25 @@ namespace ModBot.WarningHandlers
         public static HashSet<string> PermanentWords = new() { "permanent", "permanently", "indefinite", "indefinitely", "forever" };
 
         /// <summary>Parses duration text into a valid TimeSpan, or null.</summary>
+        public static TimeSpan? ParseShortDuration(string durationText)
+        {
+            durationText = durationText.ToLowerFast();
+            if (durationText.EndsWith('m') && double.TryParse(durationText.Before('m'), out double minutes))
+            {
+                return TimeSpan.FromMinutes(minutes);
+            }
+            else if (durationText.EndsWith('h') && double.TryParse(durationText.Before('h'), out double hours))
+            {
+                return TimeSpan.FromHours(hours);
+            }
+            else if (durationText.EndsWith('d') && double.TryParse(durationText.Before('d'), out double days))
+            {
+                return TimeSpan.FromDays(days);
+            }
+            return null;
+        }
+
+        /// <summary>Parses duration text into a valid TimeSpan, or null.</summary>
         public static TimeSpan? ParseDuration(string durationText)
         {
             durationText = durationText.ToLowerFast();
@@ -102,23 +121,23 @@ namespace ModBot.WarningHandlers
             {
                 return TimeSpan.FromDays(100 * 365);
             }
-            if (durationText.EndsWith("h") && double.TryParse(durationText.Before('h'), out double hours))
+            if (durationText.EndsWith('h') && double.TryParse(durationText.Before('h'), out double hours))
             {
                 return TimeSpan.FromHours(hours);
             }
-            else if (durationText.EndsWith("d") && double.TryParse(durationText.Before('d'), out double days))
+            else if (durationText.EndsWith('d') && double.TryParse(durationText.Before('d'), out double days))
             {
                 return TimeSpan.FromDays(days);
             }
-            else if (durationText.EndsWith("w") && double.TryParse(durationText.Before('w'), out double weeks))
+            else if (durationText.EndsWith('w') && double.TryParse(durationText.Before('w'), out double weeks))
             {
                 return TimeSpan.FromDays(weeks * 7);
             }
-            else if (durationText.EndsWith("m") && double.TryParse(durationText.Before('m'), out double months))
+            else if (durationText.EndsWith('m') && double.TryParse(durationText.Before('m'), out double months))
             {
                 return TimeSpan.FromDays(months * 31);
             }
-            else if (durationText.EndsWith("y") && double.TryParse(durationText.Before('y'), out double years))
+            else if (durationText.EndsWith('y') && double.TryParse(durationText.Before('y'), out double years))
             {
                 return TimeSpan.FromDays(years * 365);
             }

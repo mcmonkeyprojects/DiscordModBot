@@ -18,9 +18,11 @@ namespace ModBot.WarningHandlers
         NORMAL = 2,
         /// <summary>More significant than normal warning. Counted extra towardsd automatic muting.</summary>
         SERIOUS = 3,
+        /// <summary>Generated warning level when a Discord Timeout is applied to a user.</summary>
+        TIMEOUT = 30,
         /// <summary>Extremely significant warning. Induces an immediate automatic muting.</summary>
-        INSTANT_MUTE = 4,
+        INSTANT_MUTE = 50,
         /// <summary>Generated warning level when a user is banned.</summary>
-        BAN = 5
+        BAN = 100
     }
 }

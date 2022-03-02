@@ -106,6 +106,84 @@ namespace ModBot.CommandHandlers
             warnable.AddWarning(warning);
         }
 
+        /// <summary>User command to temporarily timeout a user.</summary>
+        public void CMD_Timeout(CommandData command)
+        {
+            SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
+            GuildConfig config = DiscordModBot.GetConfig(guild.Id);
+            if (!config.WarningsEnabled)
+            {
+                return;
+            }
+            if (!DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
+            {
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
+                return;
+            }
+            if (command.RawArguments.Length < 2)
+            {
+                SendErrorMessageReply(command.Message, "Invalid Input", "Usage: timeout [user] [duration] (reason) ... Duration must be formatted like '5m' (for 5 minutes). Allowed type: 'm' for minutes, 'h' for hours, 'd' for days. Or '0' to remove a timeout.");
+                return;
+            }
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
+            {
+                return;
+            }
+            SocketGuildUser guildUser = guild.GetUser(userID);
+            if (guildUser is null)
+            {
+                SendErrorMessageReply(command.Message, "Unknown Target", "That user isn't in here.");
+                return;
+            }
+            WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, userID);
+            string durationText = command.RawArguments[1];
+            TimeSpan? realDuration = WarningUtilities.ParseShortDuration(durationText);
+            if (!realDuration.HasValue)
+            {
+                SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be formatted like '5m' (for 5 minutes). Allowed type: 'm' for minutes, 'h' for hours, 'd' for days. Or '0' to remove a timeout.");
+                return;
+            }
+            if (realDuration.Value.TotalSeconds == 0)
+            {
+                if (!guildUser.TimedOutUntil.HasValue)
+                {
+                    SendGenericNegativeMessageReply(command.Message, "Invalid Target", "That user isn't timed out, and so timeout cannot be removed.");
+                    return;
+                }
+                guildUser.RemoveTimeOutAsync().Wait();
+                SendGenericPositiveMessageReply(command.Message, "Timeout Removed", $"<@{command.Message.Author.Id}> has removed time out from <@{userID}>.");
+                return;
+            }
+            if (realDuration.Value.TotalSeconds < 10)
+            {
+                SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be a positive value greater than ten seconds (or 0 to remove).");
+                return;
+            }
+            if (realDuration.Value.TotalDays > 365)
+            {
+                SendErrorMessageReply(command.Message, "Invalid Input", "Duration is unreasonably long. Timeouts are meant to be temporary.");
+                return;
+            }
+            string reason = "";
+            if (command.RawArguments.Length > 2)
+            {
+                reason = EscapeUserInput(string.Join(" ", command.RawArguments.Skip(2)));
+            }
+            guildUser.SetTimeOutAsync(realDuration.Value).Wait();
+            string durationFormatted = realDuration.Value.SimpleFormat(false);
+            EmbedBuilder embed = new EmbedBuilder().WithTitle("User Timed Out").WithColor(255, 128, 0).WithDescription($"User timed out.").AddField("User", $"<@{userID}>", true).AddField("By", $"<@{command.Message.Author.Id}>", true).AddField("Duration", durationFormatted, true);
+            if (!string.IsNullOrWhiteSpace(reason))
+            {
+                embed.AddField("Reason", $"`{reason}`");
+                reason = $" Reason: {reason}";
+            }
+            ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, embed.Build());
+            IUserMessage timeoutNotice = SendGenericPositiveMessageReply(command.Message, "Timeout Applied", $"<@{command.Message.Author.Id}> has timed out <@{userID}> for {durationFormatted}.");
+            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.TIMEOUT, Reason = $"TIMED OUT for {durationFormatted}.{reason}" };
+            warning.Link = LinkToMessage(timeoutNotice);
+            warnable.AddWarning(warning);
+        }
+
         /// <summary>User command to remove a user's ban.</summary>
         public void CMD_Unban(CommandData command)
         {

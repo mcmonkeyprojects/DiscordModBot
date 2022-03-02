@@ -522,7 +522,7 @@ namespace ModBot.CommandHandlers
                             return;
                         }
                         config.MaxBanDuration = command.RawArguments[1];
-                        SendGenericPositiveMessageReply(command.Message, "Applied", $"Max ban duration set to ${duration.Value.SimpleFormat(false)}.");
+                        SendGenericPositiveMessageReply(command.Message, "Applied", $"Max ban duration set to {duration.Value.SimpleFormat(false)}.");
                         break;
                     }
                 case "notify_warns_in_dm":
