@@ -98,6 +98,10 @@ namespace ModBot.WarningHandlers
         public static TimeSpan? ParseShortDuration(string durationText)
         {
             durationText = durationText.ToLowerFast();
+            if (durationText == "0")
+            {
+                return TimeSpan.Zero;
+            }
             if (durationText.EndsWith('m') && double.TryParse(durationText.Before('m'), out double minutes))
             {
                 return TimeSpan.FromMinutes(minutes);
