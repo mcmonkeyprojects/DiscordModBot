@@ -33,6 +33,9 @@ namespace ModBot.Database
             /// <summary>The config collection.</summary>
             public ILiteCollection<GuildConfig> ConfigCollection;
 
+            /// <summary>Mapping of channel IDs to message history collections.</summary>
+            public ConcurrentDictionary<ulong, ILiteCollection<StoredMessage>> MessageHistory = new();
+
             /// <summary>The config for the guild.</summary>
             public GuildConfig Config;
 
@@ -40,6 +43,12 @@ namespace ModBot.Database
             public void SaveConfig()
             {
                 ConfigCollection.Update(0, Config);
+            }
+
+            /// <summary>Gets the message history collection for a given channel.</summary>
+            public ILiteCollection<StoredMessage> GetMessageHistory(ulong channel)
+            {
+                return MessageHistory.GetOrAdd(channel, (id) => DB.GetCollection<StoredMessage>($"channel_history_{id}"));
             }
         }
 

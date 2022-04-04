@@ -18,6 +18,7 @@ using DiscordBotBase.CommandHandlers;
 using ModBot.Database;
 using ModBot.WarningHandlers;
 using ModBot.CommandHandlers;
+using LiteDB;
 
 namespace ModBot.Core
 {
@@ -191,8 +192,8 @@ namespace ModBot.Core
                     {
                         return Task.CompletedTask;
                     }
-                    bool hasCache = Bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage oldMessage);
-                    if (hasCache && oldMessage.Text == message.Content)
+                    bool hasCache = TryGetCached(socketChannel, cache.Id, out StoredMessage oldMessage);
+                    if (hasCache && oldMessage.Content == message.Content)
                     {
                         // Its a reaction/embed-load/similar, ignore it.
                         return Task.CompletedTask;
@@ -201,10 +202,11 @@ namespace ModBot.Core
                     {
                         return Task.CompletedTask;
                     }
+                    LogMessageChange(socketChannel, cache.Id, message, message.Content);
                     GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
                     if (config.LogChannels.Any())
                     {
-                        string originalText = hasCache ? UserCommands.EscapeUserInput(oldMessage.Text + oldMessage.Attachments.Replace("\n", ", ")) : $"(not cached)";
+                        string originalText = hasCache ? UserCommands.EscapeUserInput(oldMessage.Content + (oldMessage.Attachments is null ? "" : string.Join(", ", oldMessage.Attachments))) : $"(not cached)";
                         string newText = UserCommands.EscapeUserInput(message.Content + string.Join(", ", message.Attachments.Select(a => a.Url)));
                         int longerLength = Math.Max(originalText.Length, newText.Length);
                         int firstDifference = StringConversionHelper.FindFirstDifference(originalText, newText);
@@ -238,14 +240,15 @@ namespace ModBot.Core
                     {
                         return Task.CompletedTask;
                     }
-                    bool hasCache = Bot.Cache.TryGetCache(channel.Id, cache.Id, out DiscordMessageCache.CachedMessage message);
+                    LogMessageChange(socketChannel, cache.Id, cache.HasValue ? cache.Value : null, "");
+                    bool hasCache = TryGetCached(socketChannel, cache.Id, out StoredMessage message);
                     if (hasCache)
                     {
-                        if (message.SenderID == Bot.Client.CurrentUser.Id)
+                        if (message.AuthorID == Bot.Client.CurrentUser.Id)
                         {
                             return Task.CompletedTask;
                         }
-                        SocketUser author = Bot.Client.GetUser(message.SenderID);
+                        SocketUser author = Bot.Client.GetUser(message.AuthorID);
                         if (author != null && (author.IsBot || author.IsWebhook))
                         {
                             return Task.CompletedTask;
@@ -254,8 +257,8 @@ namespace ModBot.Core
                     GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
                     if (config.LogChannels.Any())
                     {
-                        SocketUser user = hasCache ? Bot.Client.GetUser(message.SenderID) : null;
-                        string originalText = hasCache ? UserCommands.EscapeUserInput(message.Text + message.Attachments.Replace("\n", ", ")) : $"(not cached post ID {cache.Id})";
+                        SocketUser user = hasCache ? Bot.Client.GetUser(message.AuthorID) : null;
+                        string originalText = hasCache ? UserCommands.EscapeUserInput(message.Content + (message.Attachments is null ? "" : string.Join(", ", message.Attachments))) : $"(not cached post ID {cache.Id})";
                         string author;
                         if (user != null)
                         {
@@ -264,32 +267,32 @@ namespace ModBot.Core
                         string replyNote = "";
                         if (hasCache)
                         {
-                            WarnableUser warnUser = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, message.SenderID);
+                            WarnableUser warnUser = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, message.AuthorID);
                             if (warnUser != null && !string.IsNullOrWhiteSpace(warnUser.LastKnownUsername))
                             {
                                 author = $"`{warnUser.LastKnownUsername}` (`{warnUser.UserID()}`)";
                             }
                             else
                             {
-                                author = $"(broken/unknown user: `{message.SenderID}`)";
+                                author = $"(broken/unknown user: `{message.AuthorID}`)";
                             }
-                            if (message.RepliedTo != 0)
+                            if (message.RepliesToID != 0)
                             {
-                                if (Bot.Cache.TryGetCache(channel.Id, message.RepliedTo, out DiscordMessageCache.CachedMessage repliedMessage))
+                                if (TryGetCached(socketChannel, message.RepliesToID, out StoredMessage repliedMessage))
                                 {
-                                    WarnableUser repliedAuthor = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, repliedMessage.SenderID);
+                                    WarnableUser repliedAuthor = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, repliedMessage.AuthorID);
                                     if (warnUser != null && !string.IsNullOrWhiteSpace(warnUser.LastKnownUsername))
                                     {
-                                        replyNote = $" (was in **reply** to message `{message.RepliedTo}` by author `{repliedAuthor.LastKnownUsername}` (`{repliedMessage.SenderID}`))";
+                                        replyNote = $" (was in **reply** to message `{message.RepliesToID}` by author `{repliedAuthor.LastKnownUsername}` (`{repliedMessage.AuthorID}`))";
                                     }
                                     else
                                     {
-                                        replyNote = $" (was in **reply** to message `{message.RepliedTo}` by unknown author `{repliedMessage.SenderID}`)";
+                                        replyNote = $" (was in **reply** to message `{message.RepliesToID}` by unknown author `{repliedMessage.AuthorID}`)";
                                     }
                                 }
                                 else
                                 {
-                                    replyNote = $" (was in **reply** to unknown message {message.RepliedTo})";
+                                    replyNote = $" (was in **reply** to unknown message {message.RepliesToID})";
                                 }
                             }
                         }
@@ -474,6 +477,7 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
+                LogNewMessage(socketMessage);
                 if (message.Channel is not SocketThreadChannel threadChannel)
                 {
                     return Task.CompletedTask;
@@ -500,6 +504,61 @@ namespace ModBot.Core
                 LogThreadActivity(threadChannel, output);
                 return Task.CompletedTask;
             };
+        }
+
+        public bool TryGetCached(SocketChannel channel, ulong id, out StoredMessage message)
+        {
+            message = GetCachedMessage(channel, id);
+            return message is not null;
+        }
+
+        public StoredMessage GetCachedMessage(SocketChannel channel, ulong id)
+        {
+            if (channel is not SocketGuildChannel guildChannel)
+            {
+                return null;
+            }
+            ulong parentId = channel is SocketThreadChannel threadChannel ? threadChannel.ParentChannel.Id : channel.Id;
+            return DiscordModBot.DatabaseHandler.GetDatabase(guildChannel.Guild.Id).GetMessageHistory(parentId).FindById(unchecked((long)id));
+        }
+
+        public void LogNewMessage(SocketMessage message)
+        {
+            if (message.Channel is not SocketGuildChannel guildChannel)
+            {
+                return;
+            }
+            ulong parentId = message.Channel is SocketThreadChannel threadChannel ? threadChannel.ParentChannel.Id : message.Channel.Id;
+            DiscordModBot.DatabaseHandler.GetDatabase(guildChannel.Guild.Id).GetMessageHistory(parentId).Upsert(new StoredMessage(message));
+        }
+
+        public void LogMessageChange(SocketChannel channel, ulong messageId, IMessage cached, string newContent)
+        {
+            if (channel is not SocketGuildChannel guildChannel)
+            {
+                return;
+            }
+            ulong parentId = channel is SocketThreadChannel threadChannel ? threadChannel.ParentChannel.Id : channel.Id;
+            ILiteCollection<StoredMessage> history = DiscordModBot.DatabaseHandler.GetDatabase(guildChannel.Guild.Id).GetMessageHistory(parentId);
+            StoredMessage stored = history.FindById(unchecked((long)messageId));
+            if (stored is null)
+            {
+                if (cached is null)
+                {
+                    return;
+                }
+                stored = new StoredMessage(cached);
+            }
+            if (stored.MessageEdits is null)
+            {
+                stored.MessageEdits = new List<StoredMessage.MessageAlteration>();
+            }
+            if (stored.MessageEdits.Count > 50) // Some bots will spam message edits, so just stop bothering to log after there's too many to avoid wasting database space.
+            {
+                return;
+            }
+            stored.MessageEdits.Add(new StoredMessage.MessageAlteration() { Time = StringConversionHelper.DateTimeToString(DateTimeOffset.UtcNow, true), Content = newContent, IsDeleted = string.IsNullOrEmpty(newContent) });
+            history.Upsert(stored);
         }
 
         public void LogThreadActivity(SocketThreadChannel threadChannel, string activity)

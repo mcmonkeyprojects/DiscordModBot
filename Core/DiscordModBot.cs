@@ -62,7 +62,7 @@ namespace ModBot.Core
             DiscordBotBaseHelper.StartBotHandler(args, new DiscordBotConfig()
             {
                 CommandPrefix = null,
-                CacheSize = 1024,
+                CacheSize = 50,
                 EnsureCaching = true,
                 AllowDMs = false,
                 UnknownCommandMessage = null,

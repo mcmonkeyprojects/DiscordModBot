@@ -17,6 +17,7 @@ DiscordModBot has the following core features:
 - Automatic special role persisters (to apply static roles that users cannot evade by rejoining or similar, and that get logged forever)
 - Automatic mute system
 - Message edit/delete logs (can be configured on a per-channel, per-category, or per-guild basis)
+- Internal message history log database
 - Role change logs
 - User join/leave logs
 - Voice channel activity logs
@@ -75,14 +76,12 @@ To configure the bot:
     - To create a bot token, refer to official Discord documentation. Alternately, you can follow the bot-user-creation parts of https://discord.foxbot.me/docs/guides/getting_started/intro.html (ignore the coding parts, just follow the first bits about creating a bot user on the Discord application system, and getting the token).
 - Within the `config` directory, create file `config.fds` (a FreneticDataSyntax file) with the following options (See also the file text sample below):
     - `bot_commanders` set to a list of global bot commander user IDs.
-    - `discord_cache_size` set to the number of messages to cache per channel.
 - Specific features are configured on a per-guild basis (use `@Bot admin-configure`, you must be an admin or owner on the Discord to use that command)
 
 `config.fds` sample text content:
 ```
 bot_commanders:
 - 105458332365504512
-discord_cache_size: 1024
 ```
 
 To start the bot up:
