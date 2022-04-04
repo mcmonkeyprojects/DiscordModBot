@@ -11,6 +11,9 @@ using ModBot.Core;
 using FreneticUtilities.FreneticExtensions;
 using ModBot.Database;
 using ModBot.WarningHandlers;
+using FreneticUtilities.FreneticToolkit;
+using System.Threading.Tasks;
+using LiteDB;
 
 namespace ModBot.CommandHandlers
 {
@@ -27,6 +30,88 @@ namespace ModBot.CommandHandlers
             }
             string name = NameUtilities.GenerateAsciiName(string.Join(" ", command.CleanedArguments));
             SendGenericPositiveMessageReply(command.Message, "Test Name", $"Test of ASCII-Name-Rule name generator: {name}");
+        }
+
+        public static AsciiMatcher ChannelIDMatcher = new("<>#" + AsciiMatcher.Digits), DigitsMatcher = new(AsciiMatcher.Digits);
+
+        /// <summary>Fills message history specified channels.</summary>
+        public void CMD_FillHistory(CommandData command)
+        {
+            if (!DiscordModBot.IsBotCommander(command.Message.Author as SocketGuildUser))
+            {
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
+                return;
+            }
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    foreach (string argument in command.RawArguments)
+                    {
+                        if (Bot.BotMonitor.ShouldStopAllLogic())
+                        {
+                            return;
+                        }
+                        if (ChannelIDMatcher.IsOnlyMatches(argument))
+                        {
+                            if (!ulong.TryParse(DigitsMatcher.TrimToMatches(argument), out ulong channelID))
+                            {
+                                SendErrorMessageReply(command.Message, "Error", $"Invalid channel ID `{argument}` - not a number.");
+                                return;
+                            }
+                            SocketGuildChannel channel = (command.Message.Channel as SocketGuildChannel).Guild.GetChannel(channelID);
+                            if (channel is null)
+                            {
+                                SendErrorMessageReply(command.Message, "Error", $"Invalid channel ID `{argument}` - not a known channel.");
+                                return;
+                            }
+                            if (channel is not SocketTextChannel textChannel)
+                            {
+                                SendErrorMessageReply(command.Message, "Error", $"Invalid channel ID `{argument}` - not a text channel.");
+                                return;
+                            }
+                            if (channel is SocketThreadChannel)
+                            {
+                                SendErrorMessageReply(command.Message, "Error", $"Invalid channel ID `{argument}` - is a thread.");
+                                return;
+                            }
+                            ILiteCollection<StoredMessage> history = DiscordModBot.DatabaseHandler.GetDatabase(channel.Guild.Id).GetMessageHistory(channelID);
+                            try
+                            {
+                                SendGenericPositiveMessageReply(command.Message, "History Fill Starting...", $"Starting history fill of <#{channel.Id}>");
+                                List<IMessage> messages = new();
+                                textChannel.GetMessagesAsync(10_000_000).ForEachAwaitAsync(async col =>
+                                {
+                                    messages.AddRange(col);
+                                    await Task.Delay(100);
+                                }).Wait();
+                                foreach (IMessage message in messages.OrderBy(m => m.Timestamp))
+                                {
+                                    history.Upsert(new StoredMessage(message));
+                                }
+                                Task.Delay(100).Wait();
+                                SendGenericPositiveMessageReply(command.Message, "History Filled", $"Completed message history fill for channel <#{channel.Id}> with `{history.Count()}` messages stored");
+                            }
+                            catch (Exception ex)
+                            {
+                                if (ex.Message.Contains("error 50001: Missing Access"))
+                                {
+                                    SendGenericNegativeMessageReply(command.Message, "Channel Failure", $"Cannot read message history of <#{channel.Id}>: Error 50001: Missing Access");
+                                }
+                                else
+                                {
+                                    SendGenericNegativeMessageReply(command.Message, "Channel Failure", $"Cannot fill history for <#{channel.Id}>: internal exception (see console)");
+                                    Console.WriteLine($"Error while reading history in in channel {channel.Id} ({channel.Name}): {ex}");
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.Write($"FillHistory fail: {ex}");
+                }
+            });
         }
 
         /// <summary>User command to sweep through all current names.</summary>

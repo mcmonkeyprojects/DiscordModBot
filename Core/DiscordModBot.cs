@@ -338,6 +338,7 @@ namespace ModBot.Core
             bot.RegisterCommand(adminCommands.CMD_AdminConfigure, "admin-configure");
             bot.RegisterCommand(adminCommands.CMD_Sweep, "sweep");
             bot.RegisterCommand(adminCommands.CMD_TestName, "testname");
+            bot.RegisterCommand(adminCommands.CMD_FillHistory, "fillhistory");
             bot.RegisterCommand(coreCommands.CMD_Restart, "restart");
         }
 
