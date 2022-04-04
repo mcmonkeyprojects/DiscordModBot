@@ -79,17 +79,24 @@ namespace ModBot.CommandHandlers
                             try
                             {
                                 SendGenericPositiveMessageReply(command.Message, "History Fill Starting...", $"Starting history fill of <#{channel.Id}>");
-                                List<IMessage> messages = new();
-                                textChannel.GetMessagesAsync(10_000_000).ForEachAwaitAsync(async col =>
+                                void yoinkAll(SocketTextChannel channel)
                                 {
-                                    messages.AddRange(col);
-                                    await Task.Delay(100);
-                                }).Wait();
-                                foreach (IMessage message in messages.OrderBy(m => m.Timestamp))
-                                {
-                                    history.Upsert(new StoredMessage(message));
+                                    textChannel.GetMessagesAsync(10_000_000).ForEachAwaitAsync(async col =>
+                                    {
+                                        foreach (IMessage message in col)
+                                        {
+                                            history.Upsert(new StoredMessage(message));
+                                        }
+                                        await Task.Delay(100);
+                                    }).Wait();
                                 }
+                                yoinkAll(textChannel);
                                 Task.Delay(100).Wait();
+                                foreach (SocketThreadChannel thread in textChannel.Threads)
+                                {
+                                    yoinkAll(thread);
+                                    Task.Delay(100).Wait();
+                                }
                                 SendGenericPositiveMessageReply(command.Message, "History Filled", $"Completed message history fill for channel <#{channel.Id}> with `{history.Count()}` messages stored");
                             }
                             catch (Exception ex)
