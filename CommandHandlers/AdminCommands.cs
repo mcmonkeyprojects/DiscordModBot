@@ -81,11 +81,16 @@ namespace ModBot.CommandHandlers
                                 SendGenericPositiveMessageReply(command.Message, "History Fill Starting...", $"Starting history fill of <#{channel.Id}>");
                                 void yoinkAll(SocketTextChannel channel)
                                 {
+                                    int thusFar = 0;
                                     textChannel.GetMessagesAsync(10_000_000).ForEachAwaitAsync(async col =>
                                     {
                                         foreach (IMessage message in col)
                                         {
                                             history.Upsert(new StoredMessage(message));
+                                            if (thusFar++ % 10_000 == 0 && thusFar > 0)
+                                            {
+                                                Console.WriteLine($"Have prefilled read {thusFar} messages in {channel.Id} thus far");
+                                            }
                                         }
                                         await Task.Delay(100);
                                     }).Wait();
