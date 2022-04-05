@@ -82,7 +82,7 @@ namespace ModBot.CommandHandlers
                                 void yoinkAll(SocketTextChannel channel)
                                 {
                                     int thusFar = 0;
-                                    textChannel.GetMessagesAsync(10_000_000).ForEachAwaitAsync(async col =>
+                                    channel.GetMessagesAsync(10_000_000).ForEachAwaitAsync(async col =>
                                     {
                                         foreach (IMessage message in col)
                                         {
