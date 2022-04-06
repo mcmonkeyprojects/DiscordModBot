@@ -113,7 +113,7 @@ namespace ModBot.Core
                                 incidentChanText.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build(), allowedMentions: AllowedMentions.None).Wait();
                                 if (warnable.IsMuted)
                                 {
-                                    incidentChanText.SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription(config.MuteNoticeMessage ?? GuildConfig.MUTE_NOTICE_DEFAULT).Build()).Wait();
+                                    incidentChanText.SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription(config.MuteNoticeMessageRejoin ?? GuildConfig.MUTE_NOTICE_DEFAULT_REJOIN).Build()).Wait();
                                 }
                                 return Task.CompletedTask;
                             }
