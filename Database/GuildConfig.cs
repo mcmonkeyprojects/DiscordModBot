@@ -72,6 +72,11 @@ namespace ModBot.Database
         /// <summary>Whether to automatically mute known spambots.</summary>
         public bool AutomuteSpambots { get; set; }
 
+        public const string MUTE_NOTICE_DEFAULT = "You have been automatically muted by the system due to being muted and then rejoining the Discord. You may discuss the situation in this channel only, until a moderator unmutes you.";
+
+        /// <summary>The text of the mute notice to display when a user is muted.</summary>
+        public string MuteNoticeMessage { get; set; }
+
         /// <summary>Roles that definitely aren't spambots.</summary>
         public List<ulong> NonSpambotRoles { get; set; }
 

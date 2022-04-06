@@ -864,12 +864,23 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "mute_notice_message":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("This command can be used to configure a message to ping users with in the incident channel when they're muted.", config.MuteNoticeMessage ?? GuildConfig.MUTE_NOTICE_DEFAULT);
+                            return;
+                        }
+                        config.MuteNoticeMessage = string.Join(' ', command.RawArguments.Skip(1));
+                        SendGenericPositiveMessageReply(command.Message, "Set", $"Mute notice message is now: {config.MuteNoticeMessage}");
+                        return;
+                    }
                 default:
                     {
                         EmbedBuilder embed = new EmbedBuilder().WithTitle("Admin-Configure Usage Help").WithColor(255, 128, 0);
                         embed.Description = "ModBot's admin-configure command exists as a temporary trick pending plans to build a web interface to control ModBot more easily."
                             + "\nAny sub-command without further arguments will show more info about current value.\nMost sub-command accept `null` to mean remove/clear any value (except where not possible).";
-                        embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
+                        embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `mute_notice_message`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
                             + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, `thread_log_channels`, "
                             + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, "
                             + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_react_role`, `remove_react_role`, `add_special_role`, `remove_special_role`");

@@ -113,8 +113,7 @@ namespace ModBot.Core
                                 incidentChanText.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build(), allowedMentions: AllowedMentions.None).Wait();
                                 if (warnable.IsMuted)
                                 {
-                                    incidentChanText.SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription("You have been automatically muted by the system due to being muted and then rejoining the Discord."
-                                        + " You may discuss the situation in this channel only, until a moderator unmutes you.").Build()).Wait();
+                                    incidentChanText.SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription(config.MuteNoticeMessage ?? GuildConfig.MUTE_NOTICE_DEFAULT).Build()).Wait();
                                 }
                                 return Task.CompletedTask;
                             }
