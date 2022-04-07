@@ -109,8 +109,6 @@ namespace ModBot.Core
                             SocketGuildChannel incidentChan = user.Guild.GetChannel(chan);
                             if (incidentChan != null && incidentChan is ISocketMessageChannel incidentChanText)
                             {
-                                string warnMessage = $"User <@{user.Id}> (`{NameUtilities.Username(user)}`) just joined, and has prior warnings. Use the `listwarnings` command or refer to the private logs channel to see details.";
-                                incidentChanText.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warned User Join").WithColor(255, 0, 0).WithDescription(warnMessage).Build(), allowedMentions: AllowedMentions.None).Wait();
                                 if (warnable.IsMuted)
                                 {
                                     SocketThreadChannel thread = WarningCommands.GenerateThreadFor(config, user.Guild, user, warnable);

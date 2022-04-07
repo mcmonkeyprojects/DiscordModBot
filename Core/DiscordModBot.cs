@@ -215,12 +215,21 @@ namespace ModBot.Core
                                 author.AddRoleAsync(role).Wait();
                                 IUserMessage automutenotice = message.Channel.SendMessageAsync($"User <@{author.Id}> has been muted automatically by spambot-detection.\n{config.AttentionNotice}", embed: new EmbedBuilder().WithTitle("Spambot Auto-Mute Notice").WithColor(255, 128, 0)
                                     .WithDescription("This mute was applied as the last message sent resembles a spambot message. If this is in error, contact a moderator in the incident handling channel.").Build()).Result;
-                                ModBotLoggers.SendEmbedToAllFor(guild, config.IncidentChannel, new EmbedBuilder().WithTitle("SpamBot Auto-Mute Notice").WithColor(255, 128, 0)
-                                    .WithDescription("You are muted as your last message resembles a spambot message. If this is in error, ask a moderator to unmute you.").Build(), $"<@{author.Id}>");
                                 Warning warning = new() { GivenTo = author.Id, GivenBy = guild.CurrentUser.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"Auto-muted by spambot detection." };
                                 warning.Link = UserCommands.LinkToMessage(automutenotice);
                                 warnable.AddWarning(warning);
                                 warnable.Save();
+                                SocketThreadChannel thread = WarningCommands.GenerateThreadFor(config, guild, author, warnable);
+                                if (thread is not null)
+                                {
+                                    thread.SendMessageAsync(embed: new EmbedBuilder().WithTitle("SpamBot Auto-Mute Notice").WithColor(255, 128, 0)
+                                        .WithDescription("You are muted as your last message resembles a spambot message. If this is in error, ask a moderator to unmute you.").Build(), text: $"<@{author.Id}>").Wait();
+                                }
+                                else
+                                {
+                                    ModBotLoggers.SendEmbedToAllFor(guild, config.IncidentChannel, new EmbedBuilder().WithTitle("SpamBot Auto-Mute Notice").WithColor(255, 128, 0)
+                                        .WithDescription("You are muted as your last message resembles a spambot message. If this is in error, ask a moderator to unmute you.").Build(), $"<@{author.Id}>");
+                                }
                             }
                         }
 
