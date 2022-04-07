@@ -926,7 +926,7 @@ namespace ModBot.CommandHandlers
                         }
                         config.MuteNoticeMessage = string.Join(' ', command.RawArguments.Skip(1));
                         SendGenericPositiveMessageReply(command.Message, "Mute Notice Message Set", $"Mute notice message is now: {config.MuteNoticeMessage}");
-                        return;
+                        break;
                     }
                 case "mute_rejoin_notice_message":
                     {
@@ -937,7 +937,7 @@ namespace ModBot.CommandHandlers
                         }
                         config.MuteNoticeMessageRejoin = string.Join(' ', command.RawArguments.Skip(1));
                         SendGenericPositiveMessageReply(command.Message, "Mute-then-Rejoin Notice Message Set", $"Mute-then-rejoin notice message is now: {config.MuteNoticeMessageRejoin}");
-                        return;
+                        break;
                     }
                 default:
                     {
