@@ -12,6 +12,7 @@ using DiscordBotBase.Reactables;
 using ModBot.Database;
 using ModBot.WarningHandlers;
 using ModBot.Core;
+using System.Threading.Tasks;
 
 namespace ModBot.CommandHandlers
 {
@@ -493,11 +494,82 @@ namespace ModBot.CommandHandlers
                     + " This mute lasts until an administrator removes it, which may in some cases take a while."
                     + "\nAny user may review warnings against them at any time by typing `@ModBot listwarnings`.";
                 message.Channel.SendMessageAsync($"User <@{user.Id}> has been muted automatically by the warning system.\n{config.AttentionNotice}", embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0).WithDescription(muteMessage).Build());
-                ModBotLoggers.SendEmbedToAllFor(guild, config.IncidentChannel, embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0)
-                            .WithDescription(config.MuteNoticeMessage ?? GuildConfig.MUTE_NOTICE_DEFAULT).Build(), text: $"<@{user.Id}>");
                 ModBotLoggers.SendEmbedToAllFor(user.Guild as SocketGuild, config.ModLogsChannel, new EmbedBuilder().WithTitle("User Muted").WithColor(255, 0, 0).WithDescription($"User <@{user.Id}> was muted.").Build());
+                SocketThreadChannel thread = GenerateThreadFor(config, guild, user, warnable);
+                if (thread is null)
+                {
+                    ModBotLoggers.SendEmbedToAllFor(guild, config.IncidentChannel, embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0).WithDescription(config.MuteNoticeMessage ?? GuildConfig.MUTE_NOTICE_DEFAULT).Build(), text: $"<@{user.Id}>");
+                }
+                else
+                {
+                    thread.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0).WithDescription(config.MuteNoticeMessage ?? GuildConfig.MUTE_NOTICE_DEFAULT).Build(), text: $"<@{user.Id}>").Wait();
+                }
             }
         }
+
+        public static SocketThreadChannel GenerateThreadFor(GuildConfig config, SocketGuild guild, IGuildUser user, WarnableUser warnable)
+        {
+            if (!config.IncidentChannelCreateThreads || !guild.Features.HasPrivateThreads || config.IncidentChannel.Count != 1)
+            {
+                return null;
+            }
+            SocketGuildChannel targetChannel = guild.GetChannel(config.IncidentChannel.First());
+            if (targetChannel is not SocketTextChannel textChannel || targetChannel is SocketThreadChannel)
+            {
+                return null;
+            }
+            SocketThreadChannel thread = null;
+            if (warnable.IncidentThread != 0)
+            {
+                thread = guild.GetThreadChannel(warnable.IncidentThread);
+                if (thread is not null)
+                {
+                    thread.ModifyAsync(t =>
+                    {
+                        t.Locked = false;
+                        t.Archived = false;
+                    }).Wait();
+                }
+            }
+            if (thread is null)
+            {
+                string name = USERNAME_SIMPLIFIER_MATCHER.TrimToMatches(user.Username);
+                if (name.Length > 16)
+                {
+                    name = name[..16];
+                }
+                thread = textChannel.CreateThreadAsync($"[Incident] {name}", ThreadType.PrivateThread, ThreadArchiveDuration.ThreeDays).Result;
+                if (thread is null)
+                {
+                    return null;
+                }
+                warnable.IncidentThread = thread.Id;
+                warnable.Save();
+            }
+            List<Task> addTasks = new();
+            addTasks.Add(thread.AddUserAsync(user));
+            foreach (SocketRole role in config.ModeratorRoles.Select(r => guild.GetRole(r)).Where(r => r is not null))
+            {
+                foreach (SocketGuildUser mod in role.Members)
+                {
+                    addTasks.Add(thread.AddUserAsync(mod));
+                }
+            }
+            try
+            {
+                foreach (Task task in addTasks)
+                {
+                    task.Wait();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to add users to incident thread: {ex}");
+            }
+            return thread;
+        }
+
+        public static AsciiMatcher USERNAME_SIMPLIFIER_MATCHER = new(AsciiMatcher.BothCaseLetters + AsciiMatcher.Digits + "_ ");
 
         /// <summary>Helper for the ListWarn command to dump warnings information about a user to a channel.</summary>
         public static void SendWarningList(WarnableUser user, int startId, IMessageChannel channel, IUserMessage message)

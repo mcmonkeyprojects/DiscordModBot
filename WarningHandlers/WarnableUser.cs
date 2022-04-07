@@ -55,6 +55,9 @@ namespace ModBot.WarningHandlers
         /// <summary>The last known username for this user.</summary>
         public string LastKnownUsername { get; set; }
 
+        /// <summary>An incident thread created by ModBot for this user, if any.</summary>
+        public ulong IncidentThread { get; set; }
+
         /// <summary>Ensures the warnable user instance has all fields containing either a real value, or the default.</summary>
         public void Ensure()
         {

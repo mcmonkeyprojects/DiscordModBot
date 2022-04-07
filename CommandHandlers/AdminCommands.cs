@@ -670,6 +670,30 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "incident_channel_create_threads":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("Whether to automatically create private threads in the incident channel when a user is muted (only works on nitro level 2 servers).", config.IncidentChannelCreateThreads ? "true" : "false");
+                            return;
+                        }
+                        if (command.RawArguments[1] == "true")
+                        {
+                            config.IncidentChannelCreateThreads = true;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Incident-channel-create-private-threads is now enabled.");
+                        }
+                        else if (command.RawArguments[1] == "false")
+                        {
+                            config.IncidentChannelCreateThreads = false;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Incident-channel-create-private-threads is now disabled.");
+                        }
+                        else
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "New value must be `true` or `false` only.");
+                            return;
+                        }
+                        break;
+                    }
                 case "nonspambot_roles":
                     {
                         if (command.RawArguments.Length == 1)
@@ -872,10 +896,10 @@ namespace ModBot.CommandHandlers
                             return;
                         }
                         config.MuteNoticeMessage = string.Join(' ', command.RawArguments.Skip(1));
-                        SendGenericPositiveMessageReply(command.Message, "Set", $"Mute notice message is now: {config.MuteNoticeMessage}");
+                        SendGenericPositiveMessageReply(command.Message, "Mute Notice Message Set", $"Mute notice message is now: {config.MuteNoticeMessage}");
                         return;
                     }
-                case "mute_notice_message_rejoin":
+                case "mute_rejoin_notice_message":
                     {
                         if (command.RawArguments.Length == 1)
                         {
@@ -883,7 +907,7 @@ namespace ModBot.CommandHandlers
                             return;
                         }
                         config.MuteNoticeMessageRejoin = string.Join(' ', command.RawArguments.Skip(1));
-                        SendGenericPositiveMessageReply(command.Message, "Set", $"Mute-then-rejoin notice message is now: {config.MuteNoticeMessageRejoin}");
+                        SendGenericPositiveMessageReply(command.Message, "Mute-then-Rejoin Notice Message Set", $"Mute-then-rejoin notice message is now: {config.MuteNoticeMessageRejoin}");
                         return;
                     }
                 default:
@@ -892,7 +916,7 @@ namespace ModBot.CommandHandlers
                         embed.Description = "ModBot's admin-configure command exists as a temporary trick pending plans to build a web interface to control ModBot more easily."
                             + "\nAny sub-command without further arguments will show more info about current value.\nMost sub-command accept `null` to mean remove/clear any value (except where not possible).";
                         embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `mute_notice_message`, `mute_notice_message_rejoin`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
-                            + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, `thread_log_channels`, "
+                            + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, `thread_log_channels`, `incident_channel_create_threads`, "
                             + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, "
                             + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_react_role`, `remove_react_role`, `add_special_role`, `remove_special_role`");
                         SendReply(command.Message, embed.Build());

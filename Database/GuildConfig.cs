@@ -72,6 +72,9 @@ namespace ModBot.Database
         /// <summary>Whether to automatically mute known spambots.</summary>
         public bool AutomuteSpambots { get; set; }
 
+        /// <summary>Automatically create private threads in the incident channel.</summary>
+        public bool IncidentChannelCreateThreads { get; set; }
+
         public const string MUTE_NOTICE_DEFAULT = "You have been automatically muted by the system due to warnings received. You may discuss the situation in this channel only, until a moderator unmutes you.";
 
         public const string MUTE_NOTICE_DEFAULT_REJOIN = "You have been automatically muted by the system due to being muted and then rejoining the Discord. You may discuss the situation in this channel only, until a moderator unmutes you.";
