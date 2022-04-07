@@ -521,7 +521,7 @@ namespace ModBot.CommandHandlers
             SocketThreadChannel thread = null;
             if (warnable.IncidentThread != 0)
             {
-                thread = guild.GetThreadChannel(warnable.IncidentThread);
+                thread = DiscordBotBaseHelper.CurrentBot.Client.GetChannelAsync(warnable.IncidentThread).Normalize().Result as SocketThreadChannel;
                 if (thread is not null)
                 {
                     thread.ModifyAsync(t =>
@@ -529,6 +529,10 @@ namespace ModBot.CommandHandlers
                         t.Locked = false;
                         t.Archived = false;
                     }).Wait();
+                }
+                else
+                {
+                    Console.WriteLine($"Debug notice: incident thread {warnable.IncidentThread} was stored but was not able to be looked up");
                 }
             }
             if (thread is null)
