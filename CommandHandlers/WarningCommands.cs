@@ -548,12 +548,9 @@ namespace ModBot.CommandHandlers
             }
             List<Task> addTasks = new();
             addTasks.Add(thread.AddUserAsync(user));
-            foreach (SocketRole role in config.ModeratorRoles.Select(r => guild.GetRole(r)).Where(r => r is not null))
+            foreach (SocketGuildUser mod in config.IncidentThreadAutoAdd.Select(u => guild.GetUser(u)).Where(u => u is not null))
             {
-                foreach (SocketGuildUser mod in role.Members)
-                {
-                    addTasks.Add(thread.AddUserAsync(mod));
-                }
+                addTasks.Add(thread.AddUserAsync(mod));
             }
             try
             {

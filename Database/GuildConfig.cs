@@ -75,6 +75,9 @@ namespace ModBot.Database
         /// <summary>Automatically create private threads in the incident channel.</summary>
         public bool IncidentChannelCreateThreads { get; set; }
 
+        /// <summary>User IDs to auto-add to incident threads.</summary>
+        public List<ulong> IncidentThreadAutoAdd { get; set; }
+
         public const string MUTE_NOTICE_DEFAULT = "You have been automatically muted by the system due to warnings received. You may discuss the situation in this channel only, until a moderator unmutes you.";
 
         public const string MUTE_NOTICE_DEFAULT_REJOIN = "You have been automatically muted by the system due to being muted and then rejoining the Discord. You may discuss the situation in this channel only, until a moderator unmutes you.";
@@ -185,6 +188,10 @@ namespace ModBot.Database
             if (NonSpambotRoles is null)
             {
                 NonSpambotRoles = new List<ulong>();
+            }
+            if (IncidentThreadAutoAdd is null)
+            {
+                IncidentThreadAutoAdd = new List<ulong>();
             }
         }
     }
