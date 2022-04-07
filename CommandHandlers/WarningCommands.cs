@@ -524,11 +524,18 @@ namespace ModBot.CommandHandlers
                 thread = DiscordBotBaseHelper.CurrentBot.Client.GetChannelAsync(warnable.IncidentThread).Normalize().Result as SocketThreadChannel;
                 if (thread is not null)
                 {
-                    thread.ModifyAsync(t =>
+                    if (thread.ParentChannel.Id != textChannel.Id)
                     {
-                        t.Locked = false;
-                        t.Archived = false;
-                    }).Wait();
+                        thread = null;
+                    }
+                    else
+                    {
+                        thread.ModifyAsync(t =>
+                        {
+                            t.Locked = false;
+                            t.Archived = false;
+                        }).Wait();
+                    }
                 }
                 else
                 {
