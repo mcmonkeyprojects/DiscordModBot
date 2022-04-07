@@ -549,7 +549,7 @@ namespace ModBot.CommandHandlers
                 {
                     name = name[..16];
                 }
-                thread = textChannel.CreateThreadAsync($"[Incident] {name}", ThreadType.PrivateThread, ThreadArchiveDuration.ThreeDays).Result;
+                thread = textChannel.CreateThreadAsync($"[Incident] {name}", ThreadType.PrivateThread, ThreadArchiveDuration.OneWeek).Result;
                 if (thread is null)
                 {
                     return null;
