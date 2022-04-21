@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
+using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticToolkit;
 using LiteDB;
 using Newtonsoft.Json;
@@ -58,6 +59,16 @@ namespace ModBot.Database
 
             /// <summary>The new content of the message.</summary>
             public string Content { get; set; }
+        }
+
+        /// <summary>Gets the most-current content of this message (after any editing).</summary>
+        public string CurrentContent()
+        {
+            if (MessageEdits is null || MessageEdits.IsEmpty())
+            {
+                return Content;
+            }
+            return MessageEdits.LastOrDefault(e => !string.IsNullOrWhiteSpace(e.Content))?.Content ?? Content;
         }
 
         public StoredMessage()

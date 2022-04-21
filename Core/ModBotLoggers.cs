@@ -195,7 +195,7 @@ namespace ModBot.Core
                         return Task.CompletedTask;
                     }
                     bool hasCache = TryGetCached(socketChannel, cache.Id, out StoredMessage oldMessage);
-                    if (hasCache && oldMessage.Content == message.Content)
+                    if (hasCache && oldMessage.CurrentContent() == message.Content)
                     {
                         // Its a reaction/embed-load/similar, ignore it.
                         return Task.CompletedTask;
@@ -208,7 +208,7 @@ namespace ModBot.Core
                     GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
                     if (config.LogChannels.Any())
                     {
-                        string originalText = hasCache ? oldMessage.Content + (oldMessage.Attachments is null ? "" : string.Join(", ", oldMessage.Attachments)) : $"(not cached)";
+                        string originalText = hasCache ? oldMessage.CurrentContent() + (oldMessage.Attachments is null ? "" : string.Join(", ", oldMessage.Attachments)) : $"(not cached)";
                         string newText = message.Content + string.Join(", ", message.Attachments.Select(a => a.Url));
                         int longerLength = Math.Max(originalText.Length, newText.Length);
                         int firstDifference = StringConversionHelper.FindFirstDifference(originalText, newText);
@@ -260,7 +260,7 @@ namespace ModBot.Core
                     if (config.LogChannels.Any())
                     {
                         SocketUser user = hasCache ? Bot.Client.GetUser(message.AuthorID) : null;
-                        string originalText = hasCache ? message.Content + (message.Attachments is null ? "" : string.Join(", ", message.Attachments)) : null;
+                        string originalText = hasCache ? message.CurrentContent() + (message.Attachments is null ? "" : string.Join(", ", message.Attachments)) : null;
                         if (originalText.Length > 1850)
                         {
                             originalText = originalText[..1800] + "...";
