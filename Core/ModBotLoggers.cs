@@ -501,7 +501,7 @@ namespace ModBot.Core
                 {
                     messageText = "(Empty message)";
                 }
-                string output = $"User `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) said: `{UserCommands.EscapeForPlainText(messageText)}`";
+                string output = $"User `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) said: {UserCommands.EscapeForPlainText(messageText)}";
                 LogThreadActivity(threadChannel, output);
                 return Task.CompletedTask;
             };
