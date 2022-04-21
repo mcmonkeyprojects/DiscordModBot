@@ -588,6 +588,7 @@ namespace ModBot.Core
                             {
                                 Logger.LogThreadActivity(ThreadChannel, $"**User(s) joined thread:** {string.Join(", ", NewUsers)}");
                                 Logger.ThreadJoins.Remove(ThreadChannel.Id, out _);
+                                return;
                             }
                         }
                     }
