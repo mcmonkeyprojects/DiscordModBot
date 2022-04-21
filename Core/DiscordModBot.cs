@@ -343,6 +343,7 @@ namespace ModBot.Core
             bot.RegisterCommand(WarningCommandHandler.CMD_Unban, "unban");
             bot.RegisterCommand(WarningCommandHandler.CMD_TempBan, "tempban", "tmpban", "ban", "bantmp", "bantemp", "temporaryban", "bantemporary");
             bot.RegisterCommand(WarningCommandHandler.CMD_Timeout, "timeout", "time_out", "tempmute", "temptimeout");
+            bot.RegisterCommand(SpecialRoleCommandHandler.CMD_ClearSpecialRoles, "clearspecialroles", "removeallspecialroles", "specialroleclear", "specialroleremovall");
             // Admin
             bot.RegisterCommand(adminCommands.CMD_AdminConfigure, "admin-configure");
             bot.RegisterCommand(adminCommands.CMD_Sweep, "sweep");

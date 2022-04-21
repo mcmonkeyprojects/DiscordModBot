@@ -131,7 +131,7 @@ namespace ModBot.CommandHandlers
         }
 
         /// <summary>User command to clear ALL special roles from a user.</summary>
-        public void ClearSpecialRoles(CommandData command)
+        public void CMD_ClearSpecialRoles(CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
             GuildConfig config = DiscordModBot.GetConfig(guild.Id);
