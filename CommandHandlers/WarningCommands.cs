@@ -308,7 +308,7 @@ namespace ModBot.CommandHandlers
             }
             IEnumerable<string> cmdsToSave = command.RawArguments.Skip(1);
             Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
-            warning.Reason = EscapeUserInput(string.Join(" ", cmdsToSave));
+            warning.Reason = EscapeForPlainText(string.Join(" ", cmdsToSave));
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Note Recorded").WithDescription($"Note from <@{command.Message.Author.Id}> to <@{userID}> recorded.").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
             try
@@ -363,8 +363,8 @@ namespace ModBot.CommandHandlers
                 return;
             }
             Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
-            warning.Reason = EscapeUserInput(string.Join(" ", command.RawArguments.Skip(argsSkip)));
-            IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warning Recorded").WithDescription($"Warning from <@{command.Message.Author.Id}> to <@{userID}> recorded.\nReason: {warning.Reason}\n{warnUser.GetPastWarningsText()}").Build()).Result;
+            warning.Reason = EscapeForPlainText(string.Join(" ", command.RawArguments.Skip(argsSkip)));
+            IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warning Recorded").WithDescription($"Warning from <@{command.Message.Author.Id}> to <@{userID}> recorded.\nReason: \"*{warning.Reason}*\"\n{warnUser.GetPastWarningsText()}").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
             try
             {
@@ -603,26 +603,25 @@ namespace ModBot.CommandHandlers
                 }
                 warnID++;
                 SocketUser giver = DiscordBotBaseHelper.CurrentBot.Client.GetUser(warned.GivenBy);
-                string giverLabel = (giver == null) ? ("DiscordID:" + warned.GivenBy) : (giver.Username + "#" + giver.Discriminator);
+                string giverLabel = giver is null ? $"<@{warned.GivenBy}>" : $"<@{warned.GivenBy}> (`{EscapeUserInput(giver.Username)}#{giver.Discriminator}`)";
                 string reason = (warned.Reason.Length > 350) ? (warned.Reason[..340] + "(... trimmed ...)") : warned.Reason;
-                reason = EscapeUserInput(reason);
                 string reftext = string.IsNullOrWhiteSpace(warned.RefLink) ? "" : $" [Manual Reference Link]({warned.RefLink})";
-                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at `{StringConversionHelper.DateTimeToString(warned.TimeGiven, false)}` by {giverLabel} with reason: `{reason}`{reftext}. [Click For Detail]({warned.Link})\n");
+                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at `{StringConversionHelper.DateTimeToString(warned.TimeGiven, false)}` by {giverLabel} with reason: \"*{reason}*\"{reftext}. [Click For Detail]({warned.Link})\n");
             }
             if (startId == 0 && user.SpecialRoles.Any())
             {
                 string rolesText = string.Join(", ", user.SpecialRoles.Select(s => $"`{s}`"));
-                SendGenericPositiveMessageReply(message, "Special Roles", $"User `{EscapeUserInput(user.LastKnownUsername)}` has the following special roles applied:\n{rolesText}", channel);
+                SendGenericPositiveMessageReply(message, "Special Roles", $"User <@{user.UserID()}> (`{EscapeUserInput(user.LastKnownUsername)}`) has the following special roles applied:\n{rolesText}", channel);
             }
             if (warnID == 0)
             {
                 if (startId > 0)
                 {
-                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User `{EscapeUserInput(user.LastKnownUsername)}` does not have that page of warnings.", channel);
+                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User <@{user.UserID()}> (`{EscapeUserInput(user.LastKnownUsername)}`) does not have that page of warnings.", channel);
                 }
                 else
                 {
-                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User `{EscapeUserInput(user.LastKnownUsername)}` does not have any warnings logged.", channel);
+                    SendGenericPositiveMessageReply(message, "Nothing Found", $"User <@{user.UserID()}> (`{EscapeUserInput(user.LastKnownUsername)}`) does not have any warnings logged.", channel);
                 }
             }
             else

@@ -208,8 +208,8 @@ namespace ModBot.Core
                     GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
                     if (config.LogChannels.Any())
                     {
-                        string originalText = hasCache ? UserCommands.EscapeUserInput(oldMessage.Content + (oldMessage.Attachments is null ? "" : string.Join(", ", oldMessage.Attachments))) : $"(not cached)";
-                        string newText = UserCommands.EscapeUserInput(message.Content + string.Join(", ", message.Attachments.Select(a => a.Url)));
+                        string originalText = hasCache ? oldMessage.Content + (oldMessage.Attachments is null ? "" : string.Join(", ", oldMessage.Attachments)) : $"(not cached)";
+                        string newText = message.Content + string.Join(", ", message.Attachments.Select(a => a.Url));
                         int longerLength = Math.Max(originalText.Length, newText.Length);
                         int firstDifference = StringConversionHelper.FindFirstDifference(originalText, newText);
                         int lastDifference = longerLength - StringConversionHelper.FindFirstDifference(originalText.ReverseFast(), newText.ReverseFast());
@@ -218,8 +218,8 @@ namespace ModBot.Core
                             // Shouldn't be possible.
                             return Task.CompletedTask;
                         }
-                        originalText = TrimForDifferencing(originalText, 700, firstDifference, lastDifference, longerLength);
-                        newText = TrimForDifferencing(newText, 900, firstDifference, lastDifference, longerLength);
+                        originalText = TrimForDifferencing(originalText, firstDifference, lastDifference, longerLength);
+                        newText = TrimForDifferencing(newText, firstDifference, lastDifference, longerLength);
                         LogChannelActivity(socketChannel, $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in {ReferenceChannelSource(socketChannel)}:\n{originalText} Became:\n{newText}");
                     }
                 }
@@ -260,7 +260,19 @@ namespace ModBot.Core
                     if (config.LogChannels.Any())
                     {
                         SocketUser user = hasCache ? Bot.Client.GetUser(message.AuthorID) : null;
-                        string originalText = hasCache ? UserCommands.EscapeUserInput(message.Content + (message.Attachments is null ? "" : string.Join(", ", message.Attachments))) : $"(not cached post ID {cache.Id})";
+                        string originalText = hasCache ? message.Content + (message.Attachments is null ? "" : string.Join(", ", message.Attachments)) : null;
+                        if (originalText.Length > 1850)
+                        {
+                            originalText = originalText[..1800] + "...";
+                        }
+                        if (originalText is null)
+                        {
+                            originalText = $"(not cached post ID `{cache.Id}`)";
+                        }
+                        else
+                        {
+                            originalText = UserCommands.EscapeForPlainText(originalText);
+                        }
                         string author;
                         if (user != null)
                         {
@@ -294,7 +306,7 @@ namespace ModBot.Core
                                 }
                                 else
                                 {
-                                    replyNote = $" (was in **reply** to unknown message {message.RepliesToID})";
+                                    replyNote = $" (was in **reply** to unknown message `{message.RepliesToID}`)";
                                 }
                             }
                         }
@@ -302,11 +314,7 @@ namespace ModBot.Core
                         {
                             author = $"(unknown)";
                         }
-                        if (originalText.Length > 1850)
-                        {
-                            originalText = originalText[..1800] + "...";
-                        }
-                        LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in {ReferenceChannelSource(socketChannel)}{replyNote}: `{originalText}`");
+                        LogChannelActivity(socketChannel, $"+> Message from {author} **deleted** in {ReferenceChannelSource(socketChannel)}{replyNote}: {originalText}");
                     }
                 }
                 catch (Exception ex)
@@ -675,40 +683,36 @@ namespace ModBot.Core
         }
 
         /// <summary>Utility for edit notification processing.</summary>
-        public string TrimForDifferencing(string text, int cap, int firstDiff, int lastDiff, int longerLength)
+        public string TrimForDifferencing(string text, int firstDiff, int lastDiff, int longerLength)
         {
             if (lastDiff == firstDiff)
             {
-                return $"`\"{text}\"`";
+                if (text.Length > 1800)
+                {
+                    text = text[..1700] + "...";
+                }
+                return UserCommands.EscapeForPlainText(text);
             }
             if (lastDiff < firstDiff)
             {
                 (lastDiff, firstDiff) = (firstDiff, lastDiff);
             }
-            int initialFirstDiff = firstDiff;
-            int initialLastDiff = lastDiff;
-            if (text.Length > cap)
+            if (firstDiff > 10 || lastDiff < longerLength - 10 && lastDiff - firstDiff < 1800)
             {
-                if (firstDiff > 100)
+                string preText = firstDiff == 0 ? "" : text[..firstDiff];
+                if (preText.Length > 800)
                 {
-                    text = "..." + text[(firstDiff - 50)..];
-                    lastDiff -= (firstDiff - 50 - "...".Length);
-                    firstDiff = 50 + "...".Length;
+                    preText = $"... {preText[^600..]}";
                 }
-                if (text.Length > cap)
+                string lastText = lastDiff >= text.Length ? "" : text[lastDiff..];
+                if (lastText.Length > 800)
                 {
-                    text = text[..Math.Min(lastDiff + 50, (cap - 50))] + "...";
-                    lastDiff = Math.Min(lastDiff, (cap - 50));
+                    lastText = $"{preText[..600]} ...";
                 }
-            }
-            if (initialFirstDiff > 10 || initialLastDiff < longerLength - 10)
-            {
-                string preText = firstDiff == 0 ? "" : $"`{text[..firstDiff]}`";
-                string lastText = lastDiff >= text.Length ? "" : $"`{text[lastDiff..]}`";
                 string middleText = text[firstDiff..Math.Min(lastDiff, text.Length)];
                 if (!string.IsNullOrWhiteSpace(middleText))
                 {
-                    return $"{preText} **__`{middleText}`__** {lastText}";
+                    return $"{UserCommands.EscapeForPlainText(preText)} **__{UserCommands.EscapeForPlainText(middleText)}__** {UserCommands.EscapeForPlainText(lastText)}";
                 }
             }
             if (string.IsNullOrWhiteSpace(text))
@@ -717,7 +721,11 @@ namespace ModBot.Core
             }
             else
             {
-                return $"`\"{text}\"`";
+                if (text.Length > 1800)
+                {
+                    text = text[..1700] + "...";
+                }
+                return UserCommands.EscapeForPlainText(text);
             }
         }
 
