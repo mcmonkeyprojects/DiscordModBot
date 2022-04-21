@@ -65,7 +65,7 @@ namespace ModBot.CommandHandlers
             WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, userID);
             if (warnable.SeenNames.IsEmpty())
             {
-                SendErrorMessageReply(command.Message, "Invalid Input", "Cannot ban that user: user has never been seen before.");
+                SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot ban that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
             }
             string durationText = command.RawArguments[1];
@@ -133,7 +133,7 @@ namespace ModBot.CommandHandlers
             SocketGuildUser guildUser = guild.GetUser(userID);
             if (guildUser is null)
             {
-                SendErrorMessageReply(command.Message, "Unknown Target", "That user isn't in here.");
+                SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot timeout that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
             }
             WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, userID);
@@ -210,7 +210,7 @@ namespace ModBot.CommandHandlers
             }
             if (guild.GetBanAsync(userID).Result == null)
             {
-                SendErrorMessageReply(command.Message, "Not Banned", "That user isn't banned.");
+                SendErrorMessageReply(command.Message, "Not Banned", $"User <@{userID}> isn't banned, or the ID you gave is invalid.");
                 return;
             }
             guild.RemoveBanAsync(userID).Wait();
@@ -270,7 +270,7 @@ namespace ModBot.CommandHandlers
             {
                 if (warnable.SeenNames.IsEmpty())
                 {
-                    SendErrorMessageReply(command.Message, "Invalid Input", "Cannot unmute that user: user has never been seen before.");
+                    SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot unmute that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                     return;
                 }
                 SendGenericNegativeMessageReply(command.Message, "Cannot Unmute", $"User {EscapeUserInput(warnable.LastKnownUsername)} is already not muted.");
@@ -303,7 +303,7 @@ namespace ModBot.CommandHandlers
             WarnableUser user = WarningUtilities.GetWarnableUser(guild.Id, userID);
             if (user.SeenNames.IsEmpty())
             {
-                SendErrorMessageReply(command.Message, "Invalid Input", "Cannot add note on that user: user has never been seen before.");
+                SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot add note on that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
             }
             IEnumerable<string> cmdsToSave = command.RawArguments.Skip(1);
@@ -359,7 +359,7 @@ namespace ModBot.CommandHandlers
             WarnableUser warnUser = WarningUtilities.GetWarnableUser(guild.Id, userID);
             if (warnUser.SeenNames.IsEmpty())
             {
-                SendErrorMessageReply(command.Message, "Invalid Input", "Cannot warn on that user: user has never been seen before.");
+                SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot warn that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
             }
             Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
@@ -668,7 +668,7 @@ namespace ModBot.CommandHandlers
             WarnableUser user = WarningUtilities.GetWarnableUser(guild.Id, userID);
             if (user.SeenNames.IsEmpty())
             {
-                SendErrorMessageReply(command.Message, "Invalid Input", "Cannot listwarn on that user: user has never been seen before.");
+                SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot listwarn on that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
             }
             SendWarningList(user, min, command.Message.Channel, command.Message);
