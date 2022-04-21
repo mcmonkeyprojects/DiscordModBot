@@ -220,7 +220,7 @@ namespace ModBot.Core
                         }
                         originalText = TrimForDifferencing(originalText, firstDifference, lastDifference, longerLength);
                         newText = TrimForDifferencing(newText, firstDifference, lastDifference, longerLength);
-                        LogChannelActivity(socketChannel, $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in {ReferenceChannelSource(socketChannel)}:\n{originalText} Became:\n{newText}");
+                        LogChannelActivity(socketChannel, $"+> Message from `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) **edited** in {ReferenceChannelSource(socketChannel)}:\n**Old:** \"*{originalText}*\"\n**New:** \"*{newText}*\"");
                     }
                 }
                 catch (Exception ex)
@@ -712,7 +712,7 @@ namespace ModBot.Core
                 string middleText = text[firstDiff..Math.Min(lastDiff, text.Length)];
                 if (!string.IsNullOrWhiteSpace(middleText))
                 {
-                    return $"{UserCommands.EscapeForPlainText(preText)} **__{UserCommands.EscapeForPlainText(middleText)}__** {UserCommands.EscapeForPlainText(lastText)}";
+                    return $"{UserCommands.EscapeForPlainText(preText)}**__{UserCommands.EscapeForPlainText(middleText)}__**{UserCommands.EscapeForPlainText(lastText)}";
                 }
             }
             if (string.IsNullOrWhiteSpace(text))
