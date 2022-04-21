@@ -81,7 +81,8 @@ namespace ModBot.CommandHandlers
                 }
                 if (config.SpecialRoles.Any())
                 {
-                    embed.AddField("Available Special-Role Commands", string.Join("\n", config.SpecialRoles.Values.Select(r => $"`{r.Name}` can be added with `{r.AddCommands[0]}` and removed with `{r.RemoveCommands[0]}`")));
+                    string specialRoles = string.Join("\n", config.SpecialRoles.Values.Select(r => $"`{r.Name}` can be added with `{r.AddCommands[0]}` and removed with `{r.RemoveCommands[0]}`"));
+                    embed.AddField("Available Special-Role Commands", $"`clearspecialroles` to remove ALL special roles from a user - in the format `clearspecialroles @User`\n{specialRoles}");
                 }
             }
             if (DiscordModBot.IsBotCommander(command.Message.Author as SocketGuildUser))

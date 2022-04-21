@@ -11,6 +11,7 @@ using ModBot.WarningHandlers;
 using ModBot.Core;
 using FreneticUtilities.FreneticExtensions;
 using FreneticUtilities.FreneticToolkit;
+using System.Threading.Tasks;
 
 namespace ModBot.CommandHandlers
 {
@@ -126,6 +127,67 @@ namespace ModBot.CommandHandlers
                 Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.RemoveLevel, Reason = role.RemoveWarnText };
                 warning.Link = LinkToMessage(sentMessage);
                 warnable.AddWarning(warning);
+            }
+        }
+
+        /// <summary>User command to clear ALL special roles from a user.</summary>
+        public void ClearSpecialRoles(CommandData command)
+        {
+            SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
+            GuildConfig config = DiscordModBot.GetConfig(guild.Id);
+            if (!DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
+            {
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
+                return;
+            }
+            if (!DiscordModBot.WarningCommandHandler.GetTargetUser(command, true, true, out ulong userID))
+            {
+                return;
+            }
+            SocketGuildUser guildUser = guild.GetUser(userID);
+            WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, userID);
+            if (warnable.SeenNames.IsEmpty())
+            {
+                SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot alter that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
+                return;
+            }
+            string[] roles = warnable.SpecialRoles.ToArray();
+            if (roles.IsEmpty())
+            {
+                SendErrorMessageReply(command.Message, "Invalid Input", $"User <@{userID}> already does not have any special roles.");
+                return;
+            }
+            if (guildUser is not null)
+            {
+                List<Task> tasks = new();
+                foreach (string roleName in roles)
+                {
+                    if (config.SpecialRoles.TryGetValue(roleName, out GuildConfig.SpecialRole role))
+                    {
+                        SocketRole socketRole = guild.GetRole(role.RoleID);
+                        if (socketRole is null)
+                        {
+                            SendErrorMessageReply(command.Message, "Failed To Remove", $"Cannot remove special role `{EscapeUserInput(role.Name)}` with ID  `{role.RoleID}` / <@&{role.RoleID}>: no matching role found.");
+                        }
+                        else
+                        {
+                            tasks.Add(guildUser.RemoveRoleAsync(socketRole));
+                        }
+                        warnable.SpecialRoles.Remove(role.Name);
+                        warnable.Save();
+                        IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Special Role Removed").WithDescription($"<@{command.Message.Author.Id}> has removed the special role `{role.Name}` from <@{userID}>.\n{role.RemoveExplanation}").Build()).Result;
+                        if (!string.IsNullOrWhiteSpace(role.RemoveWarnText))
+                        {
+                            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.RemoveLevel, Reason = role.RemoveWarnText };
+                            warning.Link = LinkToMessage(sentMessage);
+                            warnable.AddWarning(warning);
+                        }
+                    }
+                }
+                foreach (Task task in tasks)
+                {
+                    task.Wait();
+                }
             }
         }
     }
