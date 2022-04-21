@@ -29,7 +29,7 @@ namespace ModBot.CommandHandlers
         public static string CmdsWarningsHelp =
                 "`note` leaves a note about a user - in format `note @User [message...]`\n"
                 + "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed\n"
-                + "`timeout` applies a timeout to a user - in format `timeout @user [duration] (reason)\n"
+                + "`timeout` applies a timeout to a user - in format `timeout @user [duration] (reason)`\n"
                 + "`listnotes` lists notes and warnings for any user - in format `listnotes @User [page]`\n";
 
         /// <summary>Simple output string for mute-related commands.</summary>
