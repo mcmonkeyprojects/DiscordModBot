@@ -434,7 +434,7 @@ namespace ModBot.Core
                 {
                     return Task.CompletedTask;
                 }
-                LogThreadActivity(user.Thread, $"**User joined thread:** `{NameUtilities.Username(user)}` (`{user.Id}`)");
+                LogThreadJoin(user.Thread, $"`{NameUtilities.Username(user)}` (`{user.Id}`)");
                 return Task.CompletedTask;
             };
             Bot.Client.ThreadMemberLeft += (user) =>
@@ -563,6 +563,59 @@ namespace ModBot.Core
             history.Upsert(stored);
         }
 
+        public class ThreadJoinsBulker
+        {
+            public SocketThreadChannel ThreadChannel;
+
+            public List<string> NewUsers = new();
+
+            public DateTimeOffset LastAddedTo = DateTimeOffset.UtcNow;
+
+            public ModBotLoggers Logger;
+
+            public ThreadJoinsBulker(ModBotLoggers logger, SocketThreadChannel thread)
+            {
+                Logger = logger;
+                ThreadChannel = thread;
+                Task.Factory.StartNew(() =>
+                {
+                    while (true)
+                    {
+                        Thread.Sleep(500);
+                        lock (Logger.ThreadJoinsLock)
+                        {
+                            if (DateTimeOffset.UtcNow.Subtract(LastAddedTo).TotalSeconds > 1.5)
+                            {
+                                Logger.LogThreadActivity(ThreadChannel, $"**User(s) joined thread:** {string.Join(", ", NewUsers)}");
+                                Logger.ThreadJoins.Remove(ThreadChannel.Id, out _);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        public ConcurrentDictionary<ulong, ThreadJoinsBulker> ThreadJoins = new();
+
+        public LockObject ThreadJoinsLock = new();
+
+        public void LogThreadJoin(SocketThreadChannel threadChannel, string user)
+        {
+            GuildConfig config = DiscordModBot.GetConfig(threadChannel.Guild.Id);
+            if (config.ThreadLogChannels.IsEmpty())
+            {
+                return;
+            }
+            lock (ThreadJoinsLock)
+            {
+                ThreadJoinsBulker bulker = ThreadJoins.GetOrAdd(threadChannel.Id, id => new ThreadJoinsBulker(this, threadChannel));
+                bulker.NewUsers.Add(user);
+                bulker.LastAddedTo = DateTimeOffset.UtcNow;
+            }
+        }
+
+        public ConcurrentDictionary<ulong, (string, DateTimeOffset)> LastThreadLogHeader = new();
+
         public void LogThreadActivity(SocketThreadChannel threadChannel, string activity)
         {
             GuildConfig config = DiscordModBot.GetConfig(threadChannel.Guild.Id);
@@ -590,7 +643,16 @@ namespace ModBot.Core
             }
             try
             {
-                Bot.GetBulker(target).Send($"[**Thread Log**] <#{threadChannel.Id}> (`{threadChannel.Id}: {UserCommands.EscapeUserInput(threadChannel.Name)}` in channel <#{threadChannel.ParentChannel.Id}>): {activity}");
+                string header = $"[**Thread Log**] <#{threadChannel.Id}> (`{threadChannel.Id}: {UserCommands.EscapeUserInput(threadChannel.Name)}` in channel <#{threadChannel.ParentChannel.Id}>): ";
+                if (LastThreadLogHeader.TryGetValue(target.Id, out (string, DateTimeOffset) lastHeader) && header == lastHeader.Item1 && DateTimeOffset.UtcNow.Subtract(lastHeader.Item2).TotalMinutes < 15)
+                {
+                    header = "[Cont'd] ";
+                }
+                else
+                {
+                    LastThreadLogHeader[target.Id] = (header, DateTimeOffset.UtcNow);
+                }
+                Bot.GetBulker(target).Send(header + activity);
             }
             catch (Exception ex)
             {
