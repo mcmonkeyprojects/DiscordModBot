@@ -586,9 +586,9 @@ namespace ModBot.CommandHandlers
             StringBuilder warnStringOutput = new();
             DateTimeOffset utcNow = DateTimeOffset.UtcNow;
             int warnID = 0;
-            foreach (Warning warned in user.Warnings.OrderByDescending(w => (int)w.Level).Skip(startId * 5))
+            foreach (Warning warned in user.Warnings.OrderByDescending(w => (int)w.Level).Skip(startId * 10))
             {
-                if (warnID == 5)
+                if (warnID == 10)
                 {
                     if (message == null)
                     {
