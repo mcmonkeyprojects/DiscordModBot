@@ -184,7 +184,7 @@ namespace ModBot.Database
                 {
                     Console.WriteLine($"Excepting sending tempban notice: {ex}");
                 }
-                user.BanAsync(0, banReason).Wait();
+                user.BanAsync(0, banReason.Length > 400 ? (banReason[0..400] + "..") : banReason).Wait();
             }
             else
             {
