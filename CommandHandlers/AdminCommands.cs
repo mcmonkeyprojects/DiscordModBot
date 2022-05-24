@@ -629,6 +629,30 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "allow_bot_commands":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("Whether bots can do ModBot commands.", config.AllowBotCommands ? "true" : "false");
+                            return;
+                        }
+                        if (command.RawArguments[1] == "true")
+                        {
+                            config.AllowBotCommands = true;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Bots can now do ModBot commands.");
+                        }
+                        else if (command.RawArguments[1] == "false")
+                        {
+                            config.AllowBotCommands = false;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Bots can no longer do ModBot commands.");
+                        }
+                        else
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "New value must be `true` or `false` only.");
+                            return;
+                        }
+                        break;
+                    }
                 case "bans_enabled":
                     {
                         if (command.RawArguments.Length == 1)
@@ -970,7 +994,7 @@ namespace ModBot.CommandHandlers
                             + "\nAny sub-command without further arguments will show more info about current value.\nMost sub-command accept `null` to mean remove/clear any value (except where not possible).";
                         embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `mute_notice_message`, `mute_notice_message_rejoin`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
                             + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, `thread_log_channels`, `incident_channel_create_threads`, `incident_thread_auto_add_ids`, "
-                            + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, "
+                            + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, `allow_bot_commands`, "
                             + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_react_role`, `remove_react_role`, `add_special_role`, `remove_special_role`, `allow_warning_unknown_users`");
                         SendReply(command.Message, embed.Build());
                         return;

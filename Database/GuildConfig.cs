@@ -78,6 +78,9 @@ namespace ModBot.Database
         /// <summary>Whether moderators are allowed to warn users that aren't recognized as ever having been in the Discord.</summary>
         public bool AllowWarningUnknownUsers { get; set; }
 
+        /// <summary>Whether bots are allowed to issue commands to ModBot.</summary>
+        public bool AllowBotCommands { get; set; }
+
         /// <summary>User IDs to auto-add to incident threads.</summary>
         public List<ulong> IncidentThreadAutoAdd { get; set; }
 

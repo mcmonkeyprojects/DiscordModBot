@@ -67,6 +67,15 @@ namespace ModBot.Core
                 AllowDMs = false,
                 UnknownCommandMessage = null,
                 GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMessages | GatewayIntents.GuildMembers | GatewayIntents.GuildMessageReactions,
+                ShouldIgnoreBot = (message) =>
+                {
+                    if (message.Channel is not IGuildChannel channel)
+                    {
+                        return true;
+                    }
+                    GuildConfig config = GetConfig(channel.Guild.Id);
+                    return !config.AllowBotCommands;
+                },
                 Initialize = (bot) =>
                 {
                     LoadConfig(bot.ConfigFile);
