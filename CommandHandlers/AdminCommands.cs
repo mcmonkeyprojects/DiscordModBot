@@ -605,6 +605,30 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "allow_warning_unknown_users":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("Whether moderators can warn or ban users that have never been in the Discord before.", config.AllowWarningUnknownUsers ? "true" : "false");
+                            return;
+                        }
+                        if (command.RawArguments[1] == "true")
+                        {
+                            config.AllowWarningUnknownUsers = true;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"You can now warn users that have never been in the Discord.");
+                        }
+                        else if (command.RawArguments[1] == "false")
+                        {
+                            config.AllowWarningUnknownUsers = false;
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"You can no longer warn users that have never been in the Discord.");
+                        }
+                        else
+                        {
+                            SendErrorMessageReply(command.Message, "Invalid Value", "New value must be `true` or `false` only.");
+                            return;
+                        }
+                        break;
+                    }
                 case "bans_enabled":
                     {
                         if (command.RawArguments.Length == 1)
@@ -947,7 +971,7 @@ namespace ModBot.CommandHandlers
                         embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `mute_notice_message`, `mute_notice_message_rejoin`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
                             + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, `thread_log_channels`, `incident_channel_create_threads`, `incident_thread_auto_add_ids`, "
                             + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, "
-                            + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_react_role`, `remove_react_role`, `add_special_role`, `remove_special_role`");
+                            + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_react_role`, `remove_react_role`, `add_special_role`, `remove_special_role`, `allow_warning_unknown_users`");
                         SendReply(command.Message, embed.Build());
                         return;
                     }

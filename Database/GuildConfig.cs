@@ -75,6 +75,9 @@ namespace ModBot.Database
         /// <summary>Automatically create private threads in the incident channel.</summary>
         public bool IncidentChannelCreateThreads { get; set; }
 
+        /// <summary>Whether moderators are allowed to warn users that aren't recognized as ever having been in the Discord.</summary>
+        public bool AllowWarningUnknownUsers { get; set; }
+
         /// <summary>User IDs to auto-add to incident threads.</summary>
         public List<ulong> IncidentThreadAutoAdd { get; set; }
 
