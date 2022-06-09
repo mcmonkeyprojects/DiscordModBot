@@ -687,9 +687,9 @@ namespace ModBot.Core
         {
             if (lastDiff == firstDiff)
             {
-                if (text.Length > 1800)
+                if (text.Length > 1700)
                 {
-                    text = text[..1700] + "...";
+                    text = text[..1600] + "...";
                 }
                 return UserCommands.EscapeForPlainText(text);
             }
@@ -697,7 +697,7 @@ namespace ModBot.Core
             {
                 (lastDiff, firstDiff) = (firstDiff, lastDiff);
             }
-            if (firstDiff > 10 || lastDiff < longerLength - 10 && lastDiff - firstDiff < 1800)
+            if (firstDiff > 10 || lastDiff < longerLength - 10 && lastDiff - firstDiff < 1500)
             {
                 string preText = firstDiff == 0 ? "" : text[..firstDiff];
                 if (preText.Length > 800)
@@ -721,9 +721,9 @@ namespace ModBot.Core
             }
             else
             {
-                if (text.Length > 1800)
+                if (text.Length > 1700)
                 {
-                    text = text[..1700] + "...";
+                    text = text[..1600] + "...";
                 }
                 return UserCommands.EscapeForPlainText(text);
             }
