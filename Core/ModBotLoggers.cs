@@ -697,7 +697,7 @@ namespace ModBot.Core
             {
                 (lastDiff, firstDiff) = (firstDiff, lastDiff);
             }
-            if (firstDiff > 10 || lastDiff < longerLength - 10 && lastDiff - firstDiff < 1500)
+            if ((firstDiff > 10 || lastDiff < longerLength - 10) && lastDiff - firstDiff < 1500)
             {
                 string preText = firstDiff == 0 ? "" : text[..firstDiff];
                 if (preText.Length > 800)
@@ -707,7 +707,7 @@ namespace ModBot.Core
                 string lastText = lastDiff >= text.Length ? "" : text[lastDiff..];
                 if (lastText.Length > 800)
                 {
-                    lastText = $"{preText[..600]} ...";
+                    lastText = $"{lastText[..600]} ...";
                 }
                 string middleText = text[firstDiff..Math.Min(lastDiff, text.Length)];
                 if (!string.IsNullOrWhiteSpace(middleText))
