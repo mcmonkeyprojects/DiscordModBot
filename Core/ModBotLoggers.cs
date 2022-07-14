@@ -251,7 +251,7 @@ namespace ModBot.Core
                             return Task.CompletedTask;
                         }
                         SocketUser author = Bot.Client.GetUser(message.AuthorID);
-                        if (author != null && (author.IsBot || author.IsWebhook))
+                        if (author is not null && (author.IsBot || author.IsWebhook))
                         {
                             return Task.CompletedTask;
                         }
@@ -274,7 +274,7 @@ namespace ModBot.Core
                             originalText = UserCommands.EscapeForPlainText(originalText);
                         }
                         string author;
-                        if (user != null)
+                        if (user is not null)
                         {
                             author = $"`{NameUtilities.Username(user)}` (`{user.Id}`)";
                         }
@@ -282,7 +282,7 @@ namespace ModBot.Core
                         if (hasCache)
                         {
                             WarnableUser warnUser = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, message.AuthorID);
-                            if (warnUser != null && !string.IsNullOrWhiteSpace(warnUser.LastKnownUsername))
+                            if (warnUser is not null && !string.IsNullOrWhiteSpace(warnUser.LastKnownUsername))
                             {
                                 author = $"`{warnUser.LastKnownUsername}` (`{warnUser.UserID()}`)";
                             }
@@ -295,7 +295,7 @@ namespace ModBot.Core
                                 if (TryGetCached(socketChannel, message.RepliesToID, out StoredMessage repliedMessage))
                                 {
                                     WarnableUser repliedAuthor = WarningUtilities.GetWarnableUser(socketChannel.Guild.Id, repliedMessage.AuthorID);
-                                    if (warnUser != null && !string.IsNullOrWhiteSpace(warnUser.LastKnownUsername))
+                                    if (repliedAuthor is not null && !string.IsNullOrWhiteSpace(repliedAuthor.LastKnownUsername))
                                     {
                                         replyNote = $" (was in **reply** to message `{message.RepliesToID}` by author `{repliedAuthor.LastKnownUsername}` (`{repliedMessage.AuthorID}`))";
                                     }
