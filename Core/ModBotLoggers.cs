@@ -342,18 +342,24 @@ namespace ModBot.Core
                 {
                     if (oldState.VoiceChannel?.Id != newState.VoiceChannel?.Id)
                     {
-                        EmbedBuilder embed = new EmbedBuilder().WithTitle("User Move In Voice Channels").WithColor(0, 64, 255);
-                        if (oldState.VoiceChannel is not null)
+                        string line = $"User <@{user.Id}> ";
+                        if (oldState.VoiceChannel is not null && newState.VoiceChannel is not null)
                         {
-                            embed.AddField("Old Channel", $"<#{oldState.VoiceChannel.Id}>");
+                            line += $"moved from voice channel <#{oldState.VoiceChannel.Id}> to <#{newState.VoiceChannel.Id}>.";
                         }
-                        if (newState.VoiceChannel is not null)
+                        else if (oldState.VoiceChannel is not null)
                         {
-                            embed.AddField("New Channel", $"<#{newState.VoiceChannel.Id}>");
+                            line += $"left voice channel <#{oldState.VoiceChannel.Id}>.";
                         }
-                        string changeType = newState.VoiceChannel is null ? "left a" : (oldState.VoiceChannel is null ? "entered a" : "moved to a different");
-                        embed.Description = $"User <@{user.Id}> {changeType} voice channel.";
-                        SendEmbedToAllFor((newState.VoiceChannel ?? oldState.VoiceChannel).Guild, config.VoiceChannelJoinNotifs, embed.Build());
+                        else if (newState.VoiceChannel is not null)
+                        {
+                            line += $"entered voice channel <#{newState.VoiceChannel.Id}>.";
+                        }
+                        else
+                        {
+                            return Task.CompletedTask;
+                        }
+                        SendEmbedToAllFor((newState.VoiceChannel ?? oldState.VoiceChannel).Guild, config.VoiceChannelJoinNotifs, new EmbedBuilder().WithColor(0, 64, 255).WithDescription(line).Build());
                     }
                 }
                 return Task.CompletedTask;
