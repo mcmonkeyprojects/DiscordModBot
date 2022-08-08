@@ -8,6 +8,10 @@ Created by mcmonkey4eva for use on my own Discord groups, though made available 
 
 I made this largely for usage on servers I control and may not have documented everything super thoroughly or made it as customizable as possible. If you're unsure how to use it or you want better customization options, please feel free to contact me to ask - either post an issue on GitHub, or send a DM to me (`mcmonkey#6666`) on Discord (GitHub issues are preferred for project-related contact).
 
+## Public Instance
+
+Want to add the public instance? [Click here](https://discord.com/api/oauth2/authorize?client_id=492222895058059274&permissions=0&scope=applications.commands%20bot)
+
 ## Features
 
 DiscordModBot has the following core features:
@@ -73,7 +77,7 @@ The `start.sh` file is used by the `restart` command and should be maintained as
 To configure the bot:
 - Create directory `config` within this bot's directory.
 - Within the `config` directory, create file `token.txt` containing only the Discord bot token without newlines or anything else.
-    - To create a bot token, refer to official Discord documentation. Alternately, you can follow the bot-user-creation parts of https://discord.foxbot.me/docs/guides/getting_started/intro.html (ignore the coding parts, just follow the first bits about creating a bot user on the Discord application system, and getting the token).
+    - To create a bot token, refer to official Discord documentation. Alternately, you can follow the bot-user-creation parts of https://discordpy.readthedocs.io/en/stable/discord.html (ignore the coding parts, just follow the first bits about creating a bot user on the Discord application system, and getting the token).
 - Within the `config` directory, create file `config.fds` (a FreneticDataSyntax file) with the following options (See also the file text sample below):
     - `bot_commanders` set to a list of global bot commander user IDs.
 - Specific features are configured on a per-guild basis (use `@Bot admin-configure`, you must be an admin or owner on the Discord to use that command)
