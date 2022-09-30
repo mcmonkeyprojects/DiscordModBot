@@ -138,7 +138,7 @@ namespace ModBot.CommandHandlers
             }
             WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, userID);
             string durationText = command.RawArguments[1];
-            TimeSpan? realDuration = WarningUtilities.ParseShortDuration(durationText);
+            TimeSpan? realDuration = WarningUtilities.ParseDuration(durationText, mForMinutes: true);
             if (!realDuration.HasValue)
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be formatted like '5m' (for 5 minutes). Allowed type: 'm' for minutes, 'h' for hours, 'd' for days. Or '0' to remove a timeout.");

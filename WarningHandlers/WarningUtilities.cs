@@ -9,6 +9,7 @@ using ModBot.Database;
 using ModBot.Core;
 using FreneticUtilities.FreneticExtensions;
 using System.Collections.Concurrent;
+using FreneticUtilities.FreneticToolkit;
 
 namespace ModBot.WarningHandlers
 {
@@ -94,56 +95,57 @@ namespace ModBot.WarningHandlers
         /// <summary>Words that mean "permanent" that a user might try.</summary>
         public static HashSet<string> PermanentWords = new() { "permanent", "permanently", "indefinite", "indefinitely", "forever" };
 
-        /// <summary>Parses duration text into a valid TimeSpan, or null.</summary>
-        public static TimeSpan? ParseShortDuration(string durationText)
+        /// <summary>Helper to separate digits from letters, for <see cref="ParseDuration(string, bool)"/>.</summary>
+        public static AsciiMatcher DigitMatcher = new(AsciiMatcher.Digits);
+
+        /// <summary>Helper to identify timespan suffix keywords, for <see cref="ParseDuration(string, bool)"/>.</summary>
+        public static Dictionary<string, string> TimespanSuffixRemapper = new();
+        static WarningUtilities()
         {
-            durationText = durationText.ToLowerFast();
-            if (durationText == "0")
+            static void Add(string realKey, params string[] keys)
             {
-                return TimeSpan.Zero;
+                foreach (string key in keys)
+                {
+                    TimespanSuffixRemapper.Add(key, realKey);
+                }
+                TimespanSuffixRemapper.Add(realKey, realKey);
             }
-            if (durationText.EndsWith('m') && double.TryParse(durationText.Before('m'), out double minutes))
-            {
-                return TimeSpan.FromMinutes(minutes);
-            }
-            else if (durationText.EndsWith('h') && double.TryParse(durationText.Before('h'), out double hours))
-            {
-                return TimeSpan.FromHours(hours);
-            }
-            else if (durationText.EndsWith('d') && double.TryParse(durationText.Before('d'), out double days))
-            {
-                return TimeSpan.FromDays(days);
-            }
-            return null;
+            Add("seconds", "s", "sec", "secs", "second");
+            Add("minutes", "min", "mins", "minute");
+            Add("hours", "h", "hr", "hrs", "hour");
+            Add("days", "d", "day");
+            Add("weeks", "w", "week");
+            Add("months", "mo", "mon", "mons", "month");
+            Add("years", "y", "yr", "yrs", "year");
         }
 
         /// <summary>Parses duration text into a valid TimeSpan, or null.</summary>
-        public static TimeSpan? ParseDuration(string durationText)
+        public static TimeSpan? ParseDuration(string durationText, bool mForMinutes = false)
         {
             durationText = durationText.ToLowerFast();
             if (PermanentWords.Contains(durationText))
             {
                 return TimeSpan.FromDays(100 * 365);
             }
-            if (durationText.EndsWith('h') && double.TryParse(durationText.Before('h'), out double hours))
+            int endOfNumber = DigitMatcher.FirstNonMatchingIndex(durationText);
+            string numberText = durationText[..endOfNumber];
+            string suffixText = durationText[endOfNumber..].ToLowerFast();
+            if (suffixText == "m")
             {
-                return TimeSpan.FromHours(hours);
+                suffixText = mForMinutes ? "minutes" : "months";
             }
-            else if (durationText.EndsWith('d') && double.TryParse(durationText.Before('d'), out double days))
+            if (TimespanSuffixRemapper.TryGetValue(suffixText, out string formatText) && double.TryParse(numberText, out double numVal))
             {
-                return TimeSpan.FromDays(days);
-            }
-            else if (durationText.EndsWith('w') && double.TryParse(durationText.Before('w'), out double weeks))
-            {
-                return TimeSpan.FromDays(weeks * 7);
-            }
-            else if (durationText.EndsWith('m') && double.TryParse(durationText.Before('m'), out double months))
-            {
-                return TimeSpan.FromDays(months * 31);
-            }
-            else if (durationText.EndsWith('y') && double.TryParse(durationText.Before('y'), out double years))
-            {
-                return TimeSpan.FromDays(years * 365);
+                switch (formatText)
+                {
+                    case "seconds": return TimeSpan.FromSeconds(numVal);
+                    case "minutes": return TimeSpan.FromMinutes(numVal);
+                    case "hours": return TimeSpan.FromHours(numVal);
+                    case "days": return TimeSpan.FromDays(numVal);
+                    case "weeks": return TimeSpan.FromDays(numVal * 7);
+                    case "months": return TimeSpan.FromDays(numVal * 31);
+                    case "years": return TimeSpan.FromDays(numVal * 365);
+                }
             }
             return null;
         }
