@@ -84,6 +84,9 @@ namespace ModBot.Database
         /// <summary>User IDs to auto-add to incident threads.</summary>
         public List<ulong> IncidentThreadAutoAdd { get; set; }
 
+        /// <summary>Whether to send warning list to new incident threads.</summary>
+        public bool SendWarnListToIncidentThread { get; set; }
+
         public const string MUTE_NOTICE_DEFAULT = "You have been automatically muted by the system due to warnings received. You may discuss the situation in this channel only, until a moderator unmutes you.";
 
         public const string MUTE_NOTICE_DEFAULT_REJOIN = "You have been automatically muted by the system due to being muted and then rejoining the Discord. You may discuss the situation in this channel only, until a moderator unmutes you.";

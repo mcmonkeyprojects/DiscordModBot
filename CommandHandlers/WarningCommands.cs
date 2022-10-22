@@ -503,6 +503,10 @@ namespace ModBot.CommandHandlers
                 else
                 {
                     thread.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0).WithDescription(config.MuteNoticeMessage ?? GuildConfig.MUTE_NOTICE_DEFAULT).Build(), text: $"<@{user.Id}>").Wait();
+                    if (config.SendWarnListToIncidentThread)
+                    {
+                        WarningCommands.SendWarningList(warnable, 0, thread, null);
+                    }
                 }
             }
         }

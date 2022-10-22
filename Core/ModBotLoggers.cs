@@ -116,6 +116,10 @@ namespace ModBot.Core
                                     {
                                         incidentChanText = thread;
                                     }
+                                    if (config.SendWarnListToIncidentThread)
+                                    {
+                                        WarningCommands.SendWarningList(warnable, 0, incidentChanText, null);
+                                    }
                                     incidentChanText.SendMessageAsync($"<@{user.Id}>", embed: new EmbedBuilder().WithTitle("Automatic Mute Applied").WithColor(255, 0, 0).WithDescription(config.MuteNoticeMessageRejoin ?? GuildConfig.MUTE_NOTICE_DEFAULT_REJOIN).Build()).Wait();
                                 }
                                 return Task.CompletedTask;
