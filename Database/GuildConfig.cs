@@ -113,6 +113,9 @@ namespace ModBot.Database
             public Dictionary<string, ulong> ReactToRole { get; set; }
         }
 
+        /// <summary>Channel IDs to auto-notify when a channel is moved.</summary>
+        public List<ulong> ChannelMoveNotifChannel { get; set; }
+
         /// <summary>Represents a special role that a user can be stuck with.</summary>
         public class SpecialRole
         {
@@ -201,6 +204,10 @@ namespace ModBot.Database
             if (IncidentThreadAutoAdd is null)
             {
                 IncidentThreadAutoAdd = new List<ulong>();
+            }
+            if (ChannelMoveNotifChannel is null)
+            {
+                ChannelMoveNotifChannel = new List<ulong>();
             }
         }
     }

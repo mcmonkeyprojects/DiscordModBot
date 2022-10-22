@@ -447,6 +447,35 @@ namespace ModBot.CommandHandlers
                         }
                         break;
                     }
+                case "channel_move_notif_channels":
+                    {
+                        if (command.RawArguments.Length == 1)
+                        {
+                            SendHelpInfo("The channel(s) that should show logs when a channel moves. Format is a comma-separated list of IDs.", config.ChannelMoveNotifChannel.IsEmpty() ? "None" : string.Join(",", config.ChannelMoveNotifChannel));
+                            return;
+                        }
+                        string channelText = command.RawArguments[1];
+                        if (channelText == "none" || channelText == "null")
+                        {
+                            config.ChannelMoveNotifChannel.Clear();
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Channel-move-notif channel list emptied.");
+                        }
+                        else
+                        {
+                            try
+                            {
+                                config.ChannelMoveNotifChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Invalid channel_move_notif_channels input, had exception: {ex}");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
+                                return;
+                            }
+                            SendGenericPositiveMessageReply(command.Message, "Applied", $"Channel-move-notif channel list updated.");
+                        }
+                        break;
+                    }
                 case "log_channels":
                     {
                         if (command.RawArguments.Length == 1)
@@ -1019,7 +1048,7 @@ namespace ModBot.CommandHandlers
                         embed.AddField("Available configure sub-commands", "`mute_role`, `moderator_roles`, `mute_notice_message`, `mute_notice_message_rejoin`, `attention_notice`, `incident_channel`, `join_notif_channel`, "
                             + "`voice_channel_join_notif_channel`, `role_change_notif_channel`, `name_change_notif_channel`, `mod_logs_channel`, `log_channels`, `thread_log_channels`, `incident_channel_create_threads`, `incident_thread_auto_add_ids`, "
                             + "`enforce_ascii_name_rule`, `enforce_name_start_rule`, `name_start_rule_lenient`, `warnings_enabled`, `bans_enabled`, `max_ban_duration`, `allow_bot_commands`, `send_warn_list_to_incident_threads`, "
-                            + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_react_role`, `remove_react_role`, `add_special_role`, `remove_special_role`, `allow_warning_unknown_users`");
+                            + "`notify_warns_in_dm`, `spambot_automute`, `nonspambot_roles`, `add_react_role`, `remove_react_role`, `add_special_role`, `remove_special_role`, `allow_warning_unknown_users`, `channel_move_notif_channels`");
                         SendReply(command.Message, embed.Build());
                         return;
                     }

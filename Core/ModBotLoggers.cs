@@ -523,6 +523,28 @@ namespace ModBot.Core
                 LogThreadActivity(threadChannel, output);
                 return Task.CompletedTask;
             };
+            Bot.Client.ChannelUpdated += (oldChannel, newChannel) =>
+            {
+                if (Bot.BotMonitor.ShouldStopAllLogic())
+                {
+                    return Task.CompletedTask;
+                }
+                if (newChannel is SocketGuildChannel newGuildChannel && oldChannel is SocketGuildChannel oldGuildChannel)
+                {
+                    GuildConfig config = DiscordModBot.GetConfig(newGuildChannel.Guild.Id);
+                    if (newGuildChannel is INestedChannel newNested && oldGuildChannel is INestedChannel oldNested && newNested.CategoryId != oldNested.CategoryId)
+                    {
+                        SendEmbedToAllFor(newGuildChannel.Guild, config.ChannelMoveNotifChannel, new EmbedBuilder() { Title = "Channel Categorization Changed" }
+                        .AddField("Channel", $"<#{newChannel.Id}>", true).AddField("From", $"<#{oldNested.CategoryId}>", true).AddField("To", $"<#{newNested.CategoryId}>", true).Build());
+                    }
+                    else if (newGuildChannel.Position != oldGuildChannel.Position)
+                    {
+                        SendEmbedToAllFor(newGuildChannel.Guild, config.ChannelMoveNotifChannel, new EmbedBuilder() { Title = "Channel Position Changed" }
+                        .AddField("Channel", $"<#{newChannel.Id}>", true).AddField("From", $"`{oldGuildChannel.Position}`", true).AddField("To", $"`{newGuildChannel.Position}`", true).Build());
+                    }
+                }
+                return Task.CompletedTask;
+            };
         }
 
         public bool TryGetCached(SocketChannel channel, ulong id, out StoredMessage message)
