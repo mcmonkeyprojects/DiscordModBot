@@ -66,7 +66,7 @@ namespace ModBot.Core
                 EnsureCaching = true,
                 AllowDMs = false,
                 UnknownCommandMessage = null,
-                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMessages | GatewayIntents.GuildMembers | GatewayIntents.GuildMessageReactions,
+                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMessages | GatewayIntents.GuildMembers | GatewayIntents.GuildMessageReactions | GatewayIntents.MessageContent,
                 ShouldIgnoreBot = (message) =>
                 {
                     if (message.Channel is not IGuildChannel channel)
