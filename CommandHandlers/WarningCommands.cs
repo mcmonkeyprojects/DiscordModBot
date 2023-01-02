@@ -704,7 +704,7 @@ namespace ModBot.CommandHandlers
             int maxDiff = arg.Length / 2;
             Guild guildData = DiscordModBot.DatabaseHandler.GetDatabase(guild.Id);
             arg = arg.ToLowerFast();
-            List<(ulong, int, string)> matches = new();
+            List<(ulong, int, string, int)> matches = new();
             foreach (WarnableUser user in guildData.Users.FindAll())
             {
                 if (user.LastKnownUsername is null)
@@ -725,7 +725,7 @@ namespace ModBot.CommandHandlers
                 }
                 if (min < maxDiff)
                 {
-                    matches.Add((user.UserID(), min, mostSim));
+                    matches.Add((user.UserID(), min, mostSim, user.Warnings.Count));
                     if (matches.Count > 5)
                     {
                         int newMax = matches.MaxBy(e => e.Item2).Item2;
@@ -752,7 +752,7 @@ namespace ModBot.CommandHandlers
             matches = matches.OrderBy(e => e.Item2).ToList();
             SendGenericPositiveMessageReply(command.Message, "Matches Found", $"Found **{matches.Count}** matches for `{EscapeUserInput(arg)}`:\n"
                 + (maxDiff < -2 ? "*Note: list cuts off before complete search due to too many results.*\n" : "")
-                + string.Join('\n', matches.Select(e => $"<@{e.Item1}> (diff={e.Item2}): `{EscapeUserInput(e.Item3)}`")));
+                + string.Join('\n', matches.Select(e => $"<@{e.Item1}> (diff={e.Item2}): `{EscapeUserInput(e.Item3)}`" + (e.Item4 > 0 ? $" has {e.Item4} warnings" : ""))));
         }
 
         /// <summary>Utility method to get the target of a command that allows targeting commands at others instead of self.</summary>
