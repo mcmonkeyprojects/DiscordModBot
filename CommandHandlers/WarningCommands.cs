@@ -733,7 +733,7 @@ namespace ModBot.CommandHandlers
                         {
                             maxDiff = newMax;
                         }
-                        else
+                        else if (matches.Count > 15)
                         {
                             maxDiff--;
                             if (maxDiff < -2)
@@ -751,7 +751,7 @@ namespace ModBot.CommandHandlers
             }
             matches = matches.OrderBy(e => e.Item2).ToList();
             SendGenericPositiveMessageReply(command.Message, "Matches Found", $"Found **{matches.Count}** matches for `{EscapeUserInput(arg)}`:\n"
-                + (maxDiff < -2 ? "*Note: list cuts off before complete search due to too many results.*\n" : "")
+                + (maxDiff < -2 || (maxDiff < 2 && matches.Count > 15) ? "*Note: list cuts off before complete search due to too many results.*\n" : "")
                 + string.Join('\n', matches.Select(e => $"<@{e.Item1}> (diff={e.Item2}): `{EscapeUserInput(e.Item3)}`" + (e.Item4 > 0 ? $" has {e.Item4} warnings" : ""))));
         }
 
