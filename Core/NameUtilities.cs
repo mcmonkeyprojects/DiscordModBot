@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using FreneticUtilities.FreneticToolkit;
 using DiscordBotBase.CommandHandlers;
 using ModBot.Database;
+using FreneticUtilities.FreneticExtensions;
 
 namespace ModBot.Core
 {
@@ -212,6 +213,26 @@ namespace ModBot.Core
                 }
             }
             return false;
+        }
+
+        /// <summary>Gets a sorting-usage estimate number of how similar two username strings are.</summary>
+        public static int GetSimilarityEstimate(string name1, string name2)
+        {
+            name1 = name1.BeforeLast('#').ToLowerFast();
+            name2 = name2.BeforeLast('#').ToLowerFast();
+            if (name1 == name2)
+            {
+                return -2;
+            }
+            if (name1.Length < name2.Length)
+            {
+                (name1, name2) = (name2, name1);
+            }
+            if (name1.Contains(name2))
+            {
+                return -1;
+            }
+            return StringConversionHelper.GetLevenshteinDistance(name1, name2);
         }
     }
 }

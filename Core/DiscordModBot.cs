@@ -224,8 +224,7 @@ namespace ModBot.Core
                                 author.AddRoleAsync(role).Wait();
                                 IUserMessage automutenotice = message.Channel.SendMessageAsync($"User <@{author.Id}> has been muted automatically by spambot-detection.\n{config.AttentionNotice}", embed: new EmbedBuilder().WithTitle("Spambot Auto-Mute Notice").WithColor(255, 128, 0)
                                     .WithDescription("This mute was applied as the last message sent resembles a spambot message. If this is in error, contact a moderator in the incident handling channel.").Build()).Result;
-                                Warning warning = new() { GivenTo = author.Id, GivenBy = guild.CurrentUser.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"Auto-muted by spambot detection." };
-                                warning.Link = UserCommands.LinkToMessage(automutenotice);
+                                Warning warning = new() { GivenTo = author.Id, GivenBy = guild.CurrentUser.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"Auto-muted by spambot detection.", Link = UserCommands.LinkToMessage(automutenotice) };
                                 warnable.AddWarning(warning);
                                 warnable.Save();
                                 SocketThreadChannel thread = WarningCommands.GenerateThreadFor(config, guild, author, warnable);
@@ -350,6 +349,7 @@ namespace ModBot.Core
             bot.RegisterCommand(WarningCommandHandler.CMD_Warn, "warn", "warning");
             bot.RegisterCommand(WarningCommandHandler.CMD_Unmute, "unmute");
             bot.RegisterCommand(WarningCommandHandler.CMD_Unban, "unban");
+            bot.RegisterCommand(WarningCommandHandler.CMD_FindSimilarNames, "findsimilarnames");
             bot.RegisterCommand(WarningCommandHandler.CMD_TempBan, "tempban", "tmpban", "ban", "bantmp", "bantemp", "temporaryban", "bantemporary");
             bot.RegisterCommand(WarningCommandHandler.CMD_Timeout, "timeout", "time_out", "tempmute", "temptimeout");
             bot.RegisterCommand(SpecialRoleCommandHandler.CMD_ClearSpecialRoles, "clearspecialroles", "removeallspecialroles", "specialroleclear", "specialroleremovall");

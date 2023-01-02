@@ -13,6 +13,7 @@ using ModBot.Database;
 using ModBot.WarningHandlers;
 using ModBot.Core;
 using System.Threading.Tasks;
+using static ModBot.Database.ModBotDatabaseHandler;
 
 namespace ModBot.CommandHandlers
 {
@@ -102,8 +103,7 @@ namespace ModBot.CommandHandlers
             }
             ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, embed.Build());
             IUserMessage banNotice = SendGenericPositiveMessageReply(command.Message, "Temporary Ban Applied", $"<@{command.Message.Author.Id}> has{tempText} banned <@{userID}> {durationFormat}.");
-            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.BAN, Reason = $"BANNED {durationFormat}.{reason}" };
-            warning.Link = LinkToMessage(banNotice);
+            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.BAN, Reason = $"BANNED {durationFormat}.{reason}", Link = LinkToMessage(banNotice) };
             warnable.AddWarning(warning);
         }
 
@@ -180,8 +180,7 @@ namespace ModBot.CommandHandlers
             }
             ModBotLoggers.SendEmbedToAllFor((command.Message.Channel as SocketGuildChannel).Guild, DiscordModBot.GetConfig(guild.Id).ModLogsChannel, embed.Build());
             IUserMessage timeoutNotice = SendGenericPositiveMessageReply(command.Message, "Timeout Applied", $"<@{command.Message.Author.Id}> has timed out <@{userID}> for {durationFormatted}.");
-            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.TIMEOUT, Reason = $"TIMED OUT for {durationFormatted}.{reason}" };
-            warning.Link = LinkToMessage(timeoutNotice);
+            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.TIMEOUT, Reason = $"TIMED OUT for {durationFormatted}.{reason}", Link = LinkToMessage(timeoutNotice) };
             warnable.AddWarning(warning);
         }
 
@@ -307,8 +306,7 @@ namespace ModBot.CommandHandlers
                 return;
             }
             IEnumerable<string> cmdsToSave = command.RawArguments.Skip(1);
-            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE };
-            warning.Reason = EscapeForPlainText(string.Join(" ", cmdsToSave));
+            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.NOTE, Reason = EscapeForPlainText(string.Join(" ", cmdsToSave)) };
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Note Recorded").WithDescription($"Note from <@{command.Message.Author.Id}> to <@{userID}> recorded.").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
             try
@@ -362,8 +360,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot warn that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
             }
-            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level };
-            warning.Reason = EscapeForPlainText(string.Join(" ", command.RawArguments.Skip(argsSkip)));
+            Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = level, Reason = EscapeForPlainText(string.Join(" ", command.RawArguments.Skip(argsSkip))) };
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Warning Recorded").WithDescription($"Warning from <@{command.Message.Author.Id}> to <@{userID}> recorded.\nReason: \"*{warning.Reason}*\"\n{warnUser.GetPastWarningsText()}").Build()).Result;
             warning.Link = LinkToMessage(sentMessage);
             try
@@ -561,8 +558,10 @@ namespace ModBot.CommandHandlers
                 warnable.IncidentThread = thread.Id;
                 warnable.Save();
             }
-            List<Task> addTasks = new();
-            addTasks.Add(thread.AddUserAsync(user));
+            List<Task> addTasks = new()
+            {
+                thread.AddUserAsync(user)
+            };
             foreach (SocketGuildUser mod in config.IncidentThreadAutoAdd.Select(u => guild.GetUser(u)).Where(u => u is not null))
             {
                 addTasks.Add(thread.AddUserAsync(mod));
@@ -675,6 +674,85 @@ namespace ModBot.CommandHandlers
                 return;
             }
             SendWarningList(user, min, command.Message.Channel, command.Message);
+        }
+
+        /// <summary>User command to find users with similar names.</summary>
+        public void CMD_FindSimilarNames(CommandData command)
+        {
+            if (!DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
+            {
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
+                return;
+            }
+            if (command.RawArguments.Length == 0)
+            {
+                SendErrorMessageReply(command.Message, "Input Invalid", "Must give a name to search for.");
+                return;
+            }
+            SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
+            string arg = command.RawArguments[0];
+            if (arg.StartsWith("<@") && arg.EndsWithFast('>') && ulong.TryParse(WarningUtilities.DigitMatcher.TrimToMatches(arg), out ulong id))
+            {
+                SocketGuildUser usr = guild.GetUser(id);
+                if (usr is null)
+                {
+                    SendErrorMessageReply(command.Message, "Input Invalid", "Tried to use invalid tag.");
+                    return;
+                }
+                arg = usr.Username;
+            }
+            int maxDiff = arg.Length / 2;
+            Guild guildData = DiscordModBot.DatabaseHandler.GetDatabase(guild.Id);
+            arg = arg.ToLowerFast();
+            List<(ulong, int, string)> matches = new();
+            foreach (WarnableUser user in guildData.Users.FindAll())
+            {
+                if (user.LastKnownUsername is null)
+                {
+                    continue;
+                }
+                int similarity = NameUtilities.GetSimilarityEstimate(arg, user.LastKnownUsername);
+                int min = similarity;
+                string mostSim = user.LastKnownUsername;
+                foreach (WarnableUser.OldName oldName in user.SeenNames)
+                {
+                    int newSim = NameUtilities.GetSimilarityEstimate(arg, oldName.Name);
+                    if (newSim < min)
+                    {
+                        mostSim = oldName.Name;
+                        min = newSim;
+                    }
+                }
+                if (min < maxDiff)
+                {
+                    matches.Add((user.UserID(), min, mostSim));
+                    if (matches.Count > 5)
+                    {
+                        int newMax = matches.MaxBy(e => e.Item2).Item2;
+                        if (newMax < maxDiff)
+                        {
+                            maxDiff = newMax;
+                        }
+                        else
+                        {
+                            maxDiff--;
+                            if (maxDiff < -2)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (matches.Count == 0)
+            {
+                SendErrorMessageReply(command.Message, "No Matches", "Could not find any similar names.");
+                return;
+            }
+            matches = matches.OrderBy(e => e.Item2).ToList();
+            SendGenericPositiveMessageReply(command.Message, "Matches Found", $"Found **{matches.Count}** matches for `{EscapeUserInput(arg)}`:\n"
+                + (maxDiff < -2 ? "*Note: list cuts off before complete search due to too many results.*\n" : "")
+                + string.Join('\n', matches.Select(e => $"<@{e.Item1}> (diff={e.Item2}): `{EscapeUserInput(e.Item3)}`")));
         }
 
         /// <summary>Utility method to get the target of a command that allows targeting commands at others instead of self.</summary>
