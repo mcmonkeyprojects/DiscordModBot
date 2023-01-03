@@ -726,20 +726,20 @@ namespace ModBot.CommandHandlers
                 if (min < maxDiff)
                 {
                     matches.Add((user.UserID(), min, mostSim, user.Warnings.Count));
-                    if (matches.Count > 5)
+                    if (matches.Count > 15)
+                    {
+                        maxDiff--;
+                        if (maxDiff < -2)
+                        {
+                            break;
+                        }
+                    }
+                    else if (matches.Count > 5)
                     {
                         int newMax = matches.MaxBy(e => e.Item2).Item2;
-                        if (newMax < maxDiff)
+                        if (newMax < maxDiff && newMax > 1)
                         {
                             maxDiff = newMax;
-                        }
-                        else if (matches.Count > 15)
-                        {
-                            maxDiff--;
-                            if (maxDiff < -2)
-                            {
-                                break;
-                            }
                         }
                     }
                 }
