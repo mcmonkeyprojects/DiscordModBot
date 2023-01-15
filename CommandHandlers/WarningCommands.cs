@@ -160,9 +160,9 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", "Duration must be a positive value greater than ten seconds (or 0 to remove).");
                 return;
             }
-            if (realDuration.Value.TotalDays > 365)
+            if (realDuration.Value.TotalDays > 28d)
             {
-                SendErrorMessageReply(command.Message, "Invalid Input", "Duration is unreasonably long. Timeouts are meant to be temporary.");
+                SendErrorMessageReply(command.Message, "Invalid Input", "Duration is longer than Discord's maximum timeout. If you need to timeout for more that a few weeks, consider a ban instead.");
                 return;
             }
             string reason = "";
