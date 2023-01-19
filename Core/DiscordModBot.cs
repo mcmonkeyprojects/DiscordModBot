@@ -395,6 +395,10 @@ namespace ModBot.Core
             {
                 return true;
             }
+            if (message.Contains("@everyone") && message.Contains("https://discord.gg/")) // A lot of recent bots only have this pair in common
+            {
+                return true;
+            }
             if (message.Trim().StartsWith("@everyone") && message.Replace('\r', '\n').Split('\n').Last(s => !string.IsNullOrWhiteSpace(s)).Trim().StartsWith("https://"))
             {
                 return true;
