@@ -88,7 +88,7 @@ namespace ModBot.CommandHandlers
                 }
                 else if (role.ChannelNoticeType == 3)
                 {
-                    targetChannel = (baseTargetChannel as SocketTextChannel).CreateThreadAsync($"[Auto] {name}", ThreadType.PublicThread).Result;
+                    targetChannel = (baseTargetChannel as SocketTextChannel).CreateThreadAsync($"[Auto] {name}", ThreadType.PrivateThread).Result;
                 }
                 if (targetChannel is null)
                 {
