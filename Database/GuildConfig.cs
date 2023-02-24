@@ -148,6 +148,12 @@ namespace ModBot.Database
 
             /// <summary>A list of moderator commands that remove this role from a user.</summary>
             public List<string> RemoveCommands { get; set; }
+
+            /// <summary>What channel to put the notice in.</summary>
+            public ulong PutNoticeInChannel = 0;
+
+            /// <summary>What type of notice to use in a separate channel (0 = don't, 1 = send message, 2 = public thread, 3 = private thread).</summary>
+            public int ChannelNoticeType = 0;
         }
 
         /// <summary>Ensure all configuration options are either set properly, or are default.</summary>

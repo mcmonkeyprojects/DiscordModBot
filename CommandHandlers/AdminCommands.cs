@@ -942,6 +942,7 @@ namespace ModBot.CommandHandlers
                         {
                             SendHelpInfo("This command can be used to add a special role, with the format `add_special_role (name) (RoleID) (AddCommands) (RemoveCommands)` ... "
                                 + "if the role should auto-warn, append also newline-separated `(AddLevel) (AddWarnText) (AddExplanation) (RemoveLevel) (RemoveWarnText) (RemoveExplanation)`\n"
+                                + "If the notice should redirect to a different channel, append newline-separated `(Channel ID) (Type)` (where for Type 0 = don't, 1 = send message, 2 = public thread, 3 = private thread)\n"
                                 + "For example, `add_special_role do-not-support 12345 donotsupport,nosupport,bad allowsupport,removenosupport,good\nNORMAL\nDo-Not-Support status applied\nYou are marked as do-not-support now\nNOTE\nDo-Not-Support status rescinded\nYou are allowed support again`", string.Join(", ", config.SpecialRoles.Keys));
                             return;
                         }
@@ -966,9 +967,9 @@ namespace ModBot.CommandHandlers
                         role.RoleID = roleId;
                         role.AddCommands = command.RawArguments[3].SplitFast(',').Select(s => s.ToLowerFast()).ToList();
                         role.RemoveCommands = command.RawArguments[4].Before("\n").SplitFast(',').Select(s => s.ToLowerFast()).ToList();
+                        string[] reSplitArguments = string.Join(" ", command.RawArguments).SplitFast('\n').Skip(1).Select(s => s.Trim().Replace("\\n", "\n")).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
                         if (command.RawArguments.Length > 5)
                         {
-                            string[] reSplitArguments = string.Join(" ", command.RawArguments).SplitFast('\n').Skip(1).Select(s => s.Trim().Replace("\\n", "\n")).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
                             if (reSplitArguments.Length >= 3)
                             {
                                 if (!Enum.TryParse(reSplitArguments[0], out WarningLevel addLevel))
@@ -991,6 +992,26 @@ namespace ModBot.CommandHandlers
                                     role.RemoveExplanation = reSplitArguments[5];
                                 }
                             }
+                        }
+                        if (command.RawArguments.Length > 7)
+                        {
+                            if (!ulong.TryParse(reSplitArguments[6], out ulong channelId))
+                            {
+                                SendErrorMessageReply(command.Message, "Invalid Value", "That Channel ID input is not a valid number.");
+                                return;
+                            }
+                            if (guild.GetChannel(channelId) == null)
+                            {
+                                SendErrorMessageReply(command.Message, "Invalid Value", "That Channel ID doesn't exist.");
+                                return;
+                            }
+                            if (!int.TryParse(reSplitArguments[7], out int channelType) || channelType < 0 || channelType > 3)
+                            {
+                                SendErrorMessageReply(command.Message, "Invalid Value", "That Channel Type Code input is not a valid number (0, 1, 2, 3).");
+                                return;
+                            }
+                            role.PutNoticeInChannel = channelId;
+                            role.ChannelNoticeType = channelType;
                         }
                         config.SpecialRoles.Add(role.Name, role);
                         string addCommandsMessage = string.Join(",", role.AddCommands);

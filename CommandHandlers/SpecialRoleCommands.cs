@@ -69,7 +69,34 @@ namespace ModBot.CommandHandlers
                 addedRef = "";
             }
             string addedText = string.IsNullOrWhiteSpace(addedRef) ? "." : $" with reference input: {addedRef}\n";
-            IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(text: $"<@{userID}>", embed: new EmbedBuilder().WithTitle("Special Role Applied").WithDescription($"<@{command.Message.Author.Id}> has given <@{userID}> special role `{role.Name}`{addedText}\n{role.AddExplanation}\n{warnable.GetPastWarningsText()}{hadSameRoleBefore}").Build()).Result;
+            IMessageChannel targetChannel = command.Message.Channel;
+            if (role.ChannelNoticeType > 0 && role.PutNoticeInChannel != 0 && role.PutNoticeInChannel != targetChannel.Id && (targetChannel is not SocketThreadChannel threaded || threaded.ParentChannel.Id != targetChannel.Id))
+            {
+                string name = NameUtilities.AcceptableSymbolMatcher.TrimToMatches(warnable.LastKnownUsername ?? "Unknown");
+                if (name.Length > 20)
+                {
+                    name = name[..20];
+                }
+                SocketGuildChannel baseTargetChannel = guild.GetChannel(role.PutNoticeInChannel);
+                if (role.ChannelNoticeType == 1)
+                {
+                    targetChannel = baseTargetChannel as IMessageChannel;
+                }
+                else if (role.ChannelNoticeType == 2)
+                {
+                    targetChannel = (baseTargetChannel as SocketTextChannel).CreateThreadAsync($"[Auto] {name}", ThreadType.PublicThread).Result;
+                }
+                else if (role.ChannelNoticeType == 3)
+                {
+                    targetChannel = (baseTargetChannel as SocketTextChannel).CreateThreadAsync($"[Auto] {name}", ThreadType.PublicThread).Result;
+                }
+                if (targetChannel is null)
+                {
+                    targetChannel = command.Message.Channel;
+                    Console.WriteLine($"Failed to channel thread type {role.ChannelNoticeType} in {role.PutNoticeInChannel}");
+                }
+            }
+            IUserMessage sentMessage = targetChannel.SendMessageAsync(text: $"<@{userID}>", embed: new EmbedBuilder().WithTitle("Special Role Applied").WithDescription($"<@{command.Message.Author.Id}> has given <@{userID}> special role `{role.Name}`{addedText}\n{role.AddExplanation}\n{warnable.GetPastWarningsText()}{hadSameRoleBefore}").Build()).Result;
             if (!string.IsNullOrWhiteSpace(role.AddWarnText))
             {
                 Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText + addedText, RefLink = refLink };
