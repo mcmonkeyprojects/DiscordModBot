@@ -103,6 +103,10 @@ namespace ModBot.CommandHandlers
                 warning.Link = LinkToMessage(sentMessage);
                 warnable.AddWarning(warning);
             }
+            if (targetChannel.Id != command.Message.Channel.Id)
+            {
+                SendGenericPositiveMessageReply(command.Message, "Applied", "Role applied.");
+            }
         }
 
         /// <summary>Matcher for characters after the base of a Discord message link.</summary>
