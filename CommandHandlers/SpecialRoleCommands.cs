@@ -70,7 +70,7 @@ namespace ModBot.CommandHandlers
             }
             string addedText = string.IsNullOrWhiteSpace(addedRef) ? "." : $" with reference input: {addedRef}\n";
             IMessageChannel targetChannel = command.Message.Channel;
-            if (role.ChannelNoticeType > 0 && role.PutNoticeInChannel != 0 && role.PutNoticeInChannel != targetChannel.Id && (targetChannel is not SocketThreadChannel threaded || threaded.ParentChannel.Id != targetChannel.Id))
+            if (role.ChannelNoticeType > 0 && role.PutNoticeInChannel != 0 && role.PutNoticeInChannel != targetChannel.Id && (targetChannel is not SocketThreadChannel threaded || threaded.ParentChannel.Id != role.PutNoticeInChannel))
             {
                 string name = NameUtilities.AcceptableSymbolMatcher.TrimToMatches(warnable.LastKnownUsername ?? "Unknown");
                 if (name.Length > 20)
