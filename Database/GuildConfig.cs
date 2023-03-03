@@ -150,10 +150,10 @@ namespace ModBot.Database
             public List<string> RemoveCommands { get; set; }
 
             /// <summary>What channel to put the notice in.</summary>
-            public ulong PutNoticeInChannel = 0;
+            public ulong PutNoticeInChannel { get; set; }
 
             /// <summary>What type of notice to use in a separate channel (0 = don't, 1 = send message, 2 = public thread, 3 = private thread).</summary>
-            public int ChannelNoticeType = 0;
+            public int ChannelNoticeType { get; set; }
         }
 
         /// <summary>Ensure all configuration options are either set properly, or are default.</summary>
