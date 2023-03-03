@@ -99,13 +99,19 @@ namespace ModBot.CommandHandlers
             IUserMessage sentMessage = targetChannel.SendMessageAsync(text: $"<@{userID}>", embed: new EmbedBuilder().WithTitle("Special Role Applied").WithDescription($"<@{command.Message.Author.Id}> has given <@{userID}> special role `{role.Name}`{addedText}\n{role.AddExplanation}\n{warnable.GetPastWarningsText()}{hadSameRoleBefore}").Build()).Result;
             if (!string.IsNullOrWhiteSpace(role.AddWarnText))
             {
-                Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText + addedText, RefLink = refLink };
-                warning.Link = LinkToMessage(sentMessage);
+                Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText + addedText, RefLink = refLink, Link = LinkToMessage(sentMessage) };
                 warnable.AddWarning(warning);
             }
             if (targetChannel.Id != command.Message.Channel.Id)
             {
-                SendGenericPositiveMessageReply(command.Message, "Applied", "Role applied.");
+                if (targetChannel is IThreadChannel)
+                {
+                    SendGenericPositiveMessageReply(command.Message, "Applied", $"Role applied.\n\nThread created: <#{targetChannel.Id}>");
+                }
+                else
+                {
+                    SendGenericPositiveMessageReply(command.Message, "Applied", "Role applied.");
+                }
             }
         }
 
@@ -138,8 +144,7 @@ namespace ModBot.CommandHandlers
             IUserMessage sentMessage = command.Message.Channel.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Special Role Removed").WithDescription($"<@{command.Message.Author.Id}> has removed the special role `{role.Name}` from <@{warnable.UserID()}>.\n{role.RemoveExplanation}").Build()).Result;
             if (!string.IsNullOrWhiteSpace(role.RemoveWarnText))
             {
-                Warning warning = new() { GivenTo = warnable.UserID(), GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.RemoveLevel, Reason = role.RemoveWarnText };
-                warning.Link = LinkToMessage(sentMessage);
+                Warning warning = new() { GivenTo = warnable.UserID(), GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.RemoveLevel, Reason = role.RemoveWarnText, Link = LinkToMessage(sentMessage) };
                 warnable.AddWarning(warning);
             }
         }
