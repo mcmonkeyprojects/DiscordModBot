@@ -168,7 +168,7 @@ namespace ModBot.CommandHandlers
                     {
                         if (command.RawArguments.Length == 1)
                         {
-                            SendHelpInfo("The ID of the role that indicates a user is muted. Is used by the `INSTANT_MUTE` warning level and the `unmute` command.", config.MuteRole.HasValue ? config.MuteRole.Value.ToString() : "null");
+                            SendHelpInfo("The ID of the role that indicates a user is muted. Is used by the `INSTANT_MUTE` warning level and the `unmute` command. Input `none` to disable.", config.MuteRole.HasValue ? config.MuteRole.Value.ToString() : "null");
                             return;
                         }
                         string roleText = command.RawArguments[1];
@@ -190,7 +190,7 @@ namespace ModBot.CommandHandlers
                         }
                         else
                         {
-                            SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a Role ID, or 'none'.");
+                            SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a Role ID, or `none`.");
                             return;
                         }
                         break;
@@ -199,7 +199,7 @@ namespace ModBot.CommandHandlers
                     {
                         if (command.RawArguments.Length == 1)
                         {
-                            SendHelpInfo("The IDs of the roles that indicate a user is a moderator. Only moderators can use warning commands. Format is a comma-separated list of IDs.", config.ModeratorRoles.IsEmpty() ? "None" : string.Join(",", config.ModeratorRoles));
+                            SendHelpInfo("The IDs of the roles that indicate a user is a moderator. Only moderators can use warning commands. Format is a comma-separated list of IDs. Input `none` to disable.", config.ModeratorRoles.IsEmpty() ? "None" : string.Join(",", config.ModeratorRoles));
                             return;
                         }
                         string roleText = command.RawArguments[1];
@@ -217,7 +217,7 @@ namespace ModBot.CommandHandlers
                             catch (Exception ex)
                             {
                                 Console.WriteLine($"Invalid moderator_roles input, had exception: {ex}");
-                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of Role IDs, or 'none'.");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of Role IDs, or `none`.");
                                 return;
                             }
                             SendGenericPositiveMessageReply(command.Message, "Applied", $"Moderator role list updated.");
@@ -277,7 +277,7 @@ namespace ModBot.CommandHandlers
                     {
                         if (command.RawArguments.Length == 1)
                         {
-                            SendHelpInfo("The channel(s) that should show mute notices for users. Format is a comma-separated list of IDs.", config.IncidentChannel.IsEmpty() ? "None" : string.Join(",", config.IncidentChannel));
+                            SendHelpInfo("The channel(s) that should show mute notices for users. Format is a comma-separated list of IDs. Input `none` to disable.", config.IncidentChannel.IsEmpty() ? "None" : string.Join(",", config.IncidentChannel));
                             return;
                         }
                         string channelText = command.RawArguments[1];
@@ -295,7 +295,7 @@ namespace ModBot.CommandHandlers
                             catch (Exception ex)
                             {
                                 Console.WriteLine($"Invalid incident_channel input, had exception: {ex}");
-                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or `none`.");
                                 return;
                             }
                             SendGenericPositiveMessageReply(command.Message, "Applied", $"Incident channel list updated.");
@@ -306,7 +306,7 @@ namespace ModBot.CommandHandlers
                     {
                         if (command.RawArguments.Length == 1)
                         {
-                            SendHelpInfo("The channel(s) that should show user join/leave notices. Format is a comma-separated list of IDs.", config.JoinNotifChannel.IsEmpty() ? "None" : string.Join(",", config.JoinNotifChannel));
+                            SendHelpInfo("The channel(s) that should show user join/leave notices. Format is a comma-separated list of IDs. Input `none` to disable.", config.JoinNotifChannel.IsEmpty() ? "None" : string.Join(",", config.JoinNotifChannel));
                             return;
                         }
                         string channelText = command.RawArguments[1];
@@ -324,7 +324,7 @@ namespace ModBot.CommandHandlers
                             catch (Exception ex)
                             {
                                 Console.WriteLine($"Invalid join_notif_channel input, had exception: {ex}");
-                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or `none`.");
                                 return;
                             }
                             SendGenericPositiveMessageReply(command.Message, "Applied", $"Join-Notif channel list updated.");
@@ -335,7 +335,7 @@ namespace ModBot.CommandHandlers
                     {
                         if (command.RawArguments.Length == 1)
                         {
-                            SendHelpInfo("The channel(s) that should show user voice channel join/leave/move notices. Format is a comma-separated list of IDs.", config.VoiceChannelJoinNotifs.IsEmpty() ? "None" : string.Join(",", config.VoiceChannelJoinNotifs));
+                            SendHelpInfo("The channel(s) that should show user voice channel join/leave/move notices. Format is a comma-separated list of IDs. Input `none` to disable.", config.VoiceChannelJoinNotifs.IsEmpty() ? "None" : string.Join(",", config.VoiceChannelJoinNotifs));
                             return;
                         }
                         string channelText = command.RawArguments[1];
@@ -353,7 +353,7 @@ namespace ModBot.CommandHandlers
                             catch (Exception ex)
                             {
                                 Console.WriteLine($"Invalid voice_channel_join_notif_channel input, had exception: {ex}");
-                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or `none`.");
                                 return;
                             }
                             SendGenericPositiveMessageReply(command.Message, "Applied", $"Voice-Join-Notif channel list updated.");
@@ -364,7 +364,7 @@ namespace ModBot.CommandHandlers
                     {
                         if (command.RawArguments.Length == 1)
                         {
-                            SendHelpInfo("The channel(s) that should show user role change notices. Format is a comma-separated list of IDs.", config.RoleChangeNotifChannel.IsEmpty() ? "None" : string.Join(",", config.RoleChangeNotifChannel));
+                            SendHelpInfo("The channel(s) that should show user role change notices. Format is a comma-separated list of IDs. Input `none` to disable.", config.RoleChangeNotifChannel.IsEmpty() ? "None" : string.Join(",", config.RoleChangeNotifChannel));
                             return;
                         }
                         string channelText = command.RawArguments[1];
@@ -382,7 +382,7 @@ namespace ModBot.CommandHandlers
                             catch (Exception ex)
                             {
                                 Console.WriteLine($"Invalid role_change_notif_channel input, had exception: {ex}");
-                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or `none`.");
                                 return;
                             }
                             SendGenericPositiveMessageReply(command.Message, "Applied", $"Role-Change-Notif channel list updated.");
@@ -393,7 +393,7 @@ namespace ModBot.CommandHandlers
                     {
                         if (command.RawArguments.Length == 1)
                         {
-                            SendHelpInfo("The channel(s) that should show username/nickname change notices. Format is a comma-separated list of IDs.", config.NameChangeNotifChannel.IsEmpty() ? "None" : string.Join(",", config.NameChangeNotifChannel));
+                            SendHelpInfo("The channel(s) that should show username/nickname change notices. Format is a comma-separated list of IDs. Input `none` to disable.", config.NameChangeNotifChannel.IsEmpty() ? "None" : string.Join(",", config.NameChangeNotifChannel));
                             return;
                         }
                         string channelText = command.RawArguments[1];
@@ -411,7 +411,7 @@ namespace ModBot.CommandHandlers
                             catch (Exception ex)
                             {
                                 Console.WriteLine($"Invalid name_change_notif_channel input, had exception: {ex}");
-                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or `none`.");
                                 return;
                             }
                             SendGenericPositiveMessageReply(command.Message, "Applied", $"Name-Change-Notif channel list updated.");
@@ -422,7 +422,7 @@ namespace ModBot.CommandHandlers
                     {
                         if (command.RawArguments.Length == 1)
                         {
-                            SendHelpInfo("The channel(s) that should show moderator action logs. Format is a comma-separated list of IDs.", config.ModLogsChannel.IsEmpty() ? "None" : string.Join(",", config.ModLogsChannel));
+                            SendHelpInfo("The channel(s) that should show moderator action logs. Format is a comma-separated list of IDs. Input `none` to disable.", config.ModLogsChannel.IsEmpty() ? "None" : string.Join(",", config.ModLogsChannel));
                             return;
                         }
                         string channelText = command.RawArguments[1];
@@ -440,7 +440,7 @@ namespace ModBot.CommandHandlers
                             catch (Exception ex)
                             {
                                 Console.WriteLine($"Invalid mod_logs_channel input, had exception: {ex}");
-                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or `none`.");
                                 return;
                             }
                             SendGenericPositiveMessageReply(command.Message, "Applied", $"Mod-Logs channel list updated.");
@@ -451,7 +451,7 @@ namespace ModBot.CommandHandlers
                     {
                         if (command.RawArguments.Length == 1)
                         {
-                            SendHelpInfo("The channel(s) that should show logs when a channel moves. Format is a comma-separated list of IDs.", config.ChannelMoveNotifChannel.IsEmpty() ? "None" : string.Join(",", config.ChannelMoveNotifChannel));
+                            SendHelpInfo("The channel(s) that should show logs when a channel moves. Format is a comma-separated list of IDs. Input `none` to disable.", config.ChannelMoveNotifChannel.IsEmpty() ? "None" : string.Join(",", config.ChannelMoveNotifChannel));
                             return;
                         }
                         string channelText = command.RawArguments[1];
@@ -469,7 +469,7 @@ namespace ModBot.CommandHandlers
                             catch (Exception ex)
                             {
                                 Console.WriteLine($"Invalid channel_move_notif_channels input, had exception: {ex}");
-                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or 'none'.");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of channel IDs, or `none`.");
                                 return;
                             }
                             SendGenericPositiveMessageReply(command.Message, "Applied", $"Channel-move-notif channel list updated.");
@@ -481,7 +481,7 @@ namespace ModBot.CommandHandlers
                         if (command.RawArguments.Length == 1)
                         {
                             SendHelpInfo("The mapping of channels, where keys are normal text channels (or categories), and values are a logs channel where message edit/deletes in the first channel get logged to."
-                                + " Format is a comma-separated list of colon-separated ID:ID pairs (like `123:456,789:012`). Set key `0` as a catch-all.",
+                                + " Format is a comma-separated list of colon-separated ID:ID pairs (like `123:456,789:012`). Set key `0` as a catch-all. Input `none` to disable.",
                                 config.LogChannels.IsEmpty() ? "None" : string.Join(",", config.LogChannels.Select(pair => $"{pair.Key}:{pair.Value}")));
                             return;
                         }
@@ -500,7 +500,7 @@ namespace ModBot.CommandHandlers
                             catch (Exception ex)
                             {
                                 Console.WriteLine($"Invalid log_channels input, had exception: {ex}");
-                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of colon-separated ID:ID pairs, or 'none'.");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of colon-separated ID:ID pairs, or `none`.");
                                 return;
                             }
                             SendGenericPositiveMessageReply(command.Message, "Applied", $"Logs channel map updated.");
@@ -512,7 +512,7 @@ namespace ModBot.CommandHandlers
                         if (command.RawArguments.Length == 1)
                         {
                             SendHelpInfo("The mapping of channels, where keys are normal text channels (or categories), and values are a logs channel where all thread messages in the first channel get logged to."
-                                + " Format is a comma-separated list of colon-separated ID:ID pairs (like `123:456,789:012`). Set key `0` as a catch-all.",
+                                + " Format is a comma-separated list of colon-separated ID:ID pairs (like `123:456,789:012`). Set key `0` as a catch-all. Input `none` to disable.",
                                 config.ThreadLogChannels.IsEmpty() ? "None" : string.Join(",", config.ThreadLogChannels.Select(pair => $"{pair.Key}:{pair.Value}")));
                             return;
                         }
@@ -531,7 +531,7 @@ namespace ModBot.CommandHandlers
                             catch (Exception ex)
                             {
                                 Console.WriteLine($"Invalid thread_log_channels input, had exception: {ex}");
-                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of colon-separated ID:ID pairs, or 'none'.");
+                                SendErrorMessageReply(command.Message, "Invalid Value", "Argument must be a comma-separated list of colon-separated ID:ID pairs, or `none`.");
                                 return;
                             }
                             SendGenericPositiveMessageReply(command.Message, "Applied", $"Thread log channel map updated.");
