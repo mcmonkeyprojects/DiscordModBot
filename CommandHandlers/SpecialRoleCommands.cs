@@ -73,7 +73,7 @@ namespace ModBot.CommandHandlers
             IMessageChannel targetChannel = command.Message.Channel;
             if (role.ChannelNoticeType > 0 && role.PutNoticeInChannel != 0 && role.PutNoticeInChannel != targetChannel.Id && (targetChannel is not SocketThreadChannel threaded || threaded.ParentChannel.Id != role.PutNoticeInChannel))
             {
-                string name = NameUtilities.AcceptableSymbolMatcher.TrimToMatches(warnable.LastKnownUsername ?? "Unknown");
+                string name = NameUtilities.AcceptableSymbolMatcher.TrimToMatches(warnable.LastKnownUsername.BeforeLast('#') ?? "Unknown");
                 if (name.Length > 20)
                 {
                     name = name[..20];
@@ -98,10 +98,10 @@ namespace ModBot.CommandHandlers
                 }
                 else
                 {
-                    contextRef = $"[Original Command Message Reference]({command.Message.GetJumpUrl()})\n";
+                    contextRef = $"[Original Command Message Reference]({command.Message.GetJumpUrl()})\n\n";
                 }
             }
-            IUserMessage sentMessage = targetChannel.SendMessageAsync(text: $"<@{userID}>", embed: new EmbedBuilder().WithTitle("Special Role Applied").WithDescription($"{contextRef}<@{command.Message.Author.Id}> has given <@{userID}> special role `{role.Name}`{addedText}\n{role.AddExplanation}\n{warnable.GetPastWarningsText()}{hadSameRoleBefore}").Build()).Result;
+            IUserMessage sentMessage = targetChannel.SendMessageAsync(text: $"<@{userID}>", embed: new EmbedBuilder().WithTitle("Special Role Applied").WithDescription($"{contextRef}<@{command.Message.Author.Id}> has given <@{userID}> special role `{role.Name}`{addedText}\n\n{role.AddExplanation}\n{warnable.GetPastWarningsText()}{hadSameRoleBefore}").Build()).Result;
             if (!string.IsNullOrWhiteSpace(role.AddWarnText))
             {
                 Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText + addedText, RefLink = refLink, Link = LinkToMessage(sentMessage) };
