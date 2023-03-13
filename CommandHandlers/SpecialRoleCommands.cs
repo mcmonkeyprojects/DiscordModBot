@@ -69,6 +69,7 @@ namespace ModBot.CommandHandlers
                 addedRef = "";
             }
             string addedText = string.IsNullOrWhiteSpace(addedRef) ? "." : $" with reference input: {addedRef}\n";
+            string contextRef = "";
             IMessageChannel targetChannel = command.Message.Channel;
             if (role.ChannelNoticeType > 0 && role.PutNoticeInChannel != 0 && role.PutNoticeInChannel != targetChannel.Id && (targetChannel is not SocketThreadChannel threaded || threaded.ParentChannel.Id != role.PutNoticeInChannel))
             {
@@ -95,8 +96,12 @@ namespace ModBot.CommandHandlers
                     targetChannel = command.Message.Channel;
                     Console.WriteLine($"Failed to channel thread type {role.ChannelNoticeType} in {role.PutNoticeInChannel}");
                 }
+                else
+                {
+                    contextRef = $"[Original Command Message Reference]({command.Message.GetJumpUrl()})\n";
+                }
             }
-            IUserMessage sentMessage = targetChannel.SendMessageAsync(text: $"<@{userID}>", embed: new EmbedBuilder().WithTitle("Special Role Applied").WithDescription($"<@{command.Message.Author.Id}> has given <@{userID}> special role `{role.Name}`{addedText}\n{role.AddExplanation}\n{warnable.GetPastWarningsText()}{hadSameRoleBefore}").Build()).Result;
+            IUserMessage sentMessage = targetChannel.SendMessageAsync(text: $"<@{userID}>", embed: new EmbedBuilder().WithTitle("Special Role Applied").WithDescription($"{contextRef}<@{command.Message.Author.Id}> has given <@{userID}> special role `{role.Name}`{addedText}\n{role.AddExplanation}\n{warnable.GetPastWarningsText()}{hadSameRoleBefore}").Build()).Result;
             if (!string.IsNullOrWhiteSpace(role.AddWarnText))
             {
                 Warning warning = new() { GivenTo = userID, GivenBy = command.Message.Author.Id, TimeGiven = DateTimeOffset.UtcNow, Level = role.AddLevel, Reason = role.AddWarnText + addedText, RefLink = refLink, Link = LinkToMessage(sentMessage) };
