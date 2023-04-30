@@ -139,7 +139,7 @@ namespace ModBot.Database
         }
 
         /// <summary>Temporarily bans a user from a guild for a set duration.</summary>
-        public void TempBan(ulong guildId, ulong userId, TimeSpan duration, ulong sourceId, string reason)
+        public void TempBan(ulong guildId, ulong userId, DateTimeOffset until, ulong sourceId, string reason)
         {
             SocketGuild guild = DiscordBotBaseHelper.CurrentBot.Client.GetGuild(guildId);
             if (guild == null)
@@ -147,9 +147,10 @@ namespace ModBot.Database
                 Console.WriteLine($"Ban failed: invalid guild ID {guildId}!");
                 return;
             }
+            until = until.ToUniversalTime();
             SocketGuildUser user = guild.GetUser(userId);
             string name = user == null ? "(unknown)" :  $"{user.Username}#{user.Discriminator}";
-            bool isForever = duration.TotalDays > (365 * 50);
+            bool isForever = until.Year > DateTimeOffset.Now.Year + 50;
             string path = isForever ? "permanent_bans" : "temp_ban";
             lock (this)
             {
@@ -162,11 +163,11 @@ namespace ModBot.Database
                 TempBansFile.Set($"{path}.{count}.reason", reason);
                 if (!isForever)
                 {
-                    TempBansFile.Set($"{path}.{count}.end", StringConversionHelper.DateTimeToString(DateTimeOffset.UtcNow.Add(duration), false));
+                    TempBansFile.Set($"{path}.{count}.end", StringConversionHelper.DateTimeToString(until, false));
                 }
                 Save();
             }
-            string banReason = (isForever ? "Indefinite ban" : $"Temporary ban for {duration.SimpleFormat(false)}") + $" by moderator <@{sourceId}>";
+            string banReason = (isForever ? "Indefinite ban" : $"Temporary ban for {(until - DateTimeOffset.UtcNow).SimpleFormat(false)} (ends <t:{until.ToUnixTimeSeconds()}>)") + $" by moderator <@{sourceId}>";
             if (!string.IsNullOrWhiteSpace(reason))
             {
                 reason = $" Reason: `{reason}`";
@@ -177,7 +178,7 @@ namespace ModBot.Database
                 try
                 {
                     IDMChannel channel = user.CreateDMChannelAsync().Result;
-                    string durationMessage = isForever ? "This ban lasts until manually removed by staff." : $"This ban expires **{duration.SimpleFormat(true)}**.";
+                    string durationMessage = isForever ? "This ban lasts until manually removed by staff." : $"This ban expires <t:{until.ToUnixTimeSeconds()}:R>.";
                     channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}{reason}").WithThumbnailUrl(guild.IconUrl).Build()).Wait(new TimeSpan(0, 1, 0));
                 }
                 catch (Exception ex)

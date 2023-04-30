@@ -91,11 +91,12 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", $"Duration must be less than limit of `{config.MaxBanDuration}`.");
                 return;
             }
-            DiscordModBot.TempBanHandler.TempBan(guild.Id, userID, realDuration.Value, command.Message.Author.Id, reason);
+            DateTimeOffset until = DateTimeOffset.UtcNow.Add(realDuration.Value);
+            DiscordModBot.TempBanHandler.TempBan(guild.Id, userID, until, command.Message.Author.Id, reason);
             bool isForever = realDuration.Value.TotalDays > (365 * 50);
-            string durationFormat = isForever ? "indefinitely" : $"for {realDuration.Value.SimpleFormat(false)}";
+            string durationFormat = isForever ? "(indefinite)" : $"<t:{until.ToUnixTimeSeconds()}:R>";
             string tempText = isForever ? "" : " temporarily";
-            EmbedBuilder embed = new EmbedBuilder().WithTitle("User Banned").WithColor(255, 0, 0).WithDescription($"User ban applied and recorded.").AddField("User", $"<@{userID}>", true).AddField("Duration", durationFormat, true);
+            EmbedBuilder embed = new EmbedBuilder().WithTitle("User Banned").WithColor(255, 0, 0).WithDescription($"User ban applied and recorded.").AddField("User", $"<@{userID}>", true).AddField("Until", durationFormat, true);
             if (!string.IsNullOrWhiteSpace(reason))
             {
                 embed.AddField("Reason", $"`{reason}`");
@@ -605,7 +606,7 @@ namespace ModBot.CommandHandlers
                 string giverLabel = giver is null ? $"<@{warned.GivenBy}>" : $"<@{warned.GivenBy}> (`{EscapeUserInput(giver.Username)}#{giver.Discriminator}`)";
                 string reason = (warned.Reason.Length > 350) ? (warned.Reason[..340] + "(... trimmed ...)") : warned.Reason;
                 string reftext = string.IsNullOrWhiteSpace(warned.RefLink) ? "" : $" [Manual Reference Link]({warned.RefLink})";
-                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at `{StringConversionHelper.DateTimeToString(warned.TimeGiven, false)}` by {giverLabel} with reason: \"*{reason}*\"{reftext}. [Click For Detail]({warned.Link})\n");
+                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at <t:{warned.TimeGiven.ToUniversalTime()}> by {giverLabel} with reason: \"*{reason}*\"{reftext}. [Click For Detail]({warned.Link})\n");
             }
             if (startId == 0 && user.SpecialRoles.Any())
             {
