@@ -606,7 +606,7 @@ namespace ModBot.CommandHandlers
                 string giverLabel = giver is null ? $"<@{warned.GivenBy}>" : $"<@{warned.GivenBy}> (`{EscapeUserInput(giver.Username)}#{giver.Discriminator}`)";
                 string reason = (warned.Reason.Length > 350) ? (warned.Reason[..340] + "(... trimmed ...)") : warned.Reason;
                 string reftext = string.IsNullOrWhiteSpace(warned.RefLink) ? "" : $" [Manual Reference Link]({warned.RefLink})";
-                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at <t:{warned.TimeGiven.ToUniversalTime()}> by {giverLabel} with reason: \"*{reason}*\"{reftext}. [Click For Detail]({warned.Link})\n");
+                warnStringOutput.Append($"**... {warned.Level}{(warned.Level == WarningLevel.NOTE ? "" : " warning")}** given at <t:{warned.TimeGiven.ToUnixTimeSeconds()}> by {giverLabel} with reason: \"*{reason}*\"{reftext}. [Click For Detail]({warned.Link})\n");
             }
             if (startId == 0 && user.SpecialRoles.Any())
             {
