@@ -80,10 +80,7 @@ namespace ModBot.Core
                 {
                     LoadConfig(bot.ConfigFile);
                     InitCommands(bot);
-                    if (DatabaseHandler != null)
-                    {
-                        DatabaseHandler.Shutdown();
-                    }
+                    DatabaseHandler?.Shutdown();
                     DatabaseHandler = new ModBotDatabaseHandler();
                     TempBanHandler = new TempBanManager();
                     bot.Client.Ready += async () =>
@@ -140,10 +137,7 @@ namespace ModBot.Core
                                 if (reactData.ReactToRole.TryGetValue(reaction.Emote.Name.ToLowerFast(), out ulong role))
                                 {
                                     SocketGuildUser user = guildChannel.GetUser(reaction.UserId);
-                                    if (user != null)
-                                    {
-                                        user.AddRoleAsync(role).Wait();
-                                    }
+                                    user?.AddRoleAsync(role).Wait();
                                 }
                             }
                         }
@@ -167,10 +161,7 @@ namespace ModBot.Core
                                 if (reactData.ReactToRole.TryGetValue(reaction.Emote.Name.ToLowerFast(), out ulong role))
                                 {
                                     SocketGuildUser user = guildChannel.GetUser(reaction.UserId);
-                                    if (user != null)
-                                    {
-                                        user.RemoveRoleAsync(role).Wait();
-                                    }
+                                    user?.RemoveRoleAsync(role).Wait();
                                 }
                             }
                         }

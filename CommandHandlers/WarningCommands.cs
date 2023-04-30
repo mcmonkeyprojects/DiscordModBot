@@ -387,12 +387,8 @@ namespace ModBot.CommandHandlers
             {
                 try
                 {
-                    SocketGuildUser user = guild.GetUser(userID);
-                    if (user != null)
-                    {
-                        user.CreateDMChannelAsync().Result.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Notification Of Moderator Warning").WithColor(255, 128, 0)
+                    guild.GetUser(userID)?.CreateDMChannelAsync().Result.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Notification Of Moderator Warning").WithColor(255, 128, 0)
                             .WithDescription($"You have received a warning in {guild.Name}.").AddField("Level", $"`{warning.Level.ToString().ToLowerFast()}`").AddField("Reason", warning.Reason).Build()).Wait();
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -502,7 +498,7 @@ namespace ModBot.CommandHandlers
                     thread.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Mute Notice").WithColor(255, 128, 0).WithDescription(config.MuteNoticeMessage ?? GuildConfig.MUTE_NOTICE_DEFAULT).Build(), text: $"<@{user.Id}>").Wait();
                     if (config.SendWarnListToIncidentThread)
                     {
-                        WarningCommands.SendWarningList(warnable, 0, thread, null);
+                        SendWarningList(warnable, 0, thread, null);
                     }
                 }
             }
