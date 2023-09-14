@@ -128,7 +128,7 @@ namespace ModBot.WarningHandlers
                 return TimeSpan.FromDays(100 * 365);
             }
             int endOfNumber = DigitMatcher.FirstNonMatchingIndex(durationText);
-            if (endOfNumber > durationText.Length)
+            if (endOfNumber >= durationText.Length)
             {
                 return null;
             }
