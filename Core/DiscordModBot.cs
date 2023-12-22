@@ -373,16 +373,22 @@ namespace ModBot.Core
         public static bool LooksSpambotty(string message)
         {
             message = message.ToLowerFast().Replace('\r', '\n').Replace("\n", "");
-            if (!message.Contains("http://") && !message.Contains("https://")) // obviously only messages with links qualify for possible spam bot detection
-            {
-                return false;
-            }
             if (message.Length > 500) // All seen spambot messages have been fairly short
             {
                 return false;
             }
+            if (message.Contains("Drop a message let's get started by asking (HOW)") // that one crypto spambot going around a lot)
+                )
+            {
+                return true;
+            }
+            if (!message.Contains("http://") && !message.Contains("https://")) // obviously only messages with links qualify for possible spam bot detection
+            {
+                return false;
+            }
             if (message.Contains("nitro") || message.Contains("trade offer") // the obvious ones
-                || message.Contains("who is first? :)") || message.Contains("take it guys :)")) // seen in the wild from a few bots
+                || message.Contains("who is first? :)") || message.Contains("take it guys :)") // seen in the wild from a few bots
+                )
             {
                 return true;
             }
