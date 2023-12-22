@@ -51,7 +51,7 @@ namespace ModBot.Core
                     {
                         int nameCount = warnable.SeenNames.Count;
                         string seenNameText = nameCount < 1 ? "" : $" User has {nameCount} previously seen name(s).";
-                        string createdDateText = $"`{StringConversionHelper.DateTimeToString(user.CreatedAt, false)}` ({user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)})";
+                        string createdDateText = $"<t:{user.CreatedAt.ToUnixTimeSeconds()}> ({user.CreatedAt.Subtract(DateTimeOffset.Now).SimpleFormat(true)})";
                         string message = $"User <@{user.Id}> (name: `{NameUtilities.Username(user)}`, ID: `{user.Id}`) joined. User account first created {createdDateText}.{seenNameText}";
                         SendEmbedToAllFor(user.Guild, config.JoinNotifChannel, new EmbedBuilder().WithColor(32, 255, 128).WithTitle("User Join").WithDescription(message).Build());
                         if (DateTimeOffset.Now.Subtract(user.CreatedAt).TotalDays < 31 * 6)
