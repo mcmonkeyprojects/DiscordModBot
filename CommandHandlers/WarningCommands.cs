@@ -555,10 +555,7 @@ namespace ModBot.CommandHandlers
                 warnable.IncidentThread = thread.Id;
                 warnable.Save();
             }
-            List<Task> addTasks = new()
-            {
-                thread.AddUserAsync(user)
-            };
+            List<Task> addTasks = [thread.AddUserAsync(user)];
             foreach (SocketGuildUser mod in config.IncidentThreadAutoAdd.Select(u => guild.GetUser(u)).Where(u => u is not null))
             {
                 addTasks.Add(thread.AddUserAsync(mod));
@@ -701,7 +698,7 @@ namespace ModBot.CommandHandlers
             int maxDiff = arg.Length / 2;
             Guild guildData = DiscordModBot.DatabaseHandler.GetDatabase(guild.Id);
             arg = arg.ToLowerFast();
-            List<(ulong, int, string, int)> matches = new();
+            List<(ulong, int, string, int)> matches = [];
             foreach (WarnableUser user in guildData.Users.FindAll())
             {
                 if (user.LastKnownUsername is null)
@@ -746,7 +743,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "No Matches", "Could not find any similar names.");
                 return;
             }
-            matches = matches.OrderBy(e => e.Item2).ToList();
+            matches = [.. matches.OrderBy(e => e.Item2)];
             SendGenericPositiveMessageReply(command.Message, "Matches Found", $"Found **{matches.Count}** matches for `{EscapeUserInput(arg)}`:\n"
                 + (maxDiff < -2 || (maxDiff < 2 && matches.Count > 15) ? "*Note: list cuts off before complete search due to too many results.*\n" : "")
                 + string.Join('\n', matches.Select(e => $"<@{e.Item1}> (diff={e.Item2}): `{EscapeUserInput(e.Item3)}`" + (e.Item4 > 0 ? $" has {e.Item4} warnings" : ""))));

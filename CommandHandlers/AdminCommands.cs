@@ -886,7 +886,7 @@ namespace ModBot.CommandHandlers
                             return;
                         }
                         string emote = command.RawArguments[3].ToLowerFast();
-                        GuildConfig.ReactRoleData data = config.ReactRoles.GetOrCreate(postId, () => new GuildConfig.ReactRoleData() { ReactToRole = new Dictionary<string, ulong>() });
+                        GuildConfig.ReactRoleData data = config.ReactRoles.GetOrCreate(postId, () => new GuildConfig.ReactRoleData() { ReactToRole = [] });
                         data.ReactToRole.Add(emote, roleId);
                         SendGenericPositiveMessageReply(command.Message, "Applied", $"Post `{postId}` now applies role `{roleId}` when emote `{emote}` is used.");
                         break;

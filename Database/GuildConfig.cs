@@ -159,62 +159,20 @@ namespace ModBot.Database
         /// <summary>Ensure all configuration options are either set properly, or are default.</summary>
         public void Ensure()
         {
-            if (ModeratorRoles is null)
-            {
-                ModeratorRoles = new List<ulong>();
-            }
-            if (IncidentChannel is null)
-            {
-                IncidentChannel = new List<ulong>();
-            }
-            if (JoinNotifChannel is null)
-            {
-                JoinNotifChannel = new List<ulong>();
-            }
-            if (VoiceChannelJoinNotifs is null)
-            {
-                VoiceChannelJoinNotifs = new List<ulong>();
-            }
-            if (RoleChangeNotifChannel is null)
-            {
-                RoleChangeNotifChannel = new List<ulong>();
-            }
-            if (NameChangeNotifChannel is null)
-            {
-                NameChangeNotifChannel = new List<ulong>();
-            }
-            if (ModLogsChannel is null)
-            {
-                ModLogsChannel = new List<ulong>();
-            }
-            if (LogChannels is null)
-            {
-                LogChannels = new Dictionary<ulong, ulong>();
-            }
-            if (ThreadLogChannels is null)
-            {
-                ThreadLogChannels = new Dictionary<ulong, ulong>();
-            }
-            if (ReactRoles is null)
-            {
-                ReactRoles = new Dictionary<ulong, ReactRoleData>();
-            }
-            if (SpecialRoles is null)
-            {
-                SpecialRoles = new Dictionary<string, SpecialRole>();
-            }
-            if (NonSpambotRoles is null)
-            {
-                NonSpambotRoles = new List<ulong>();
-            }
-            if (IncidentThreadAutoAdd is null)
-            {
-                IncidentThreadAutoAdd = new List<ulong>();
-            }
-            if (ChannelMoveNotifChannel is null)
-            {
-                ChannelMoveNotifChannel = new List<ulong>();
-            }
+            ModeratorRoles ??= [];
+            IncidentChannel ??= [];
+            JoinNotifChannel ??= [];
+            VoiceChannelJoinNotifs ??= [];
+            RoleChangeNotifChannel ??= [];
+            NameChangeNotifChannel ??= [];
+            ModLogsChannel ??= [];
+            LogChannels ??= [];
+            ThreadLogChannels ??= [];
+            ReactRoles ??= [];
+            SpecialRoles ??= [];
+            NonSpambotRoles ??= [];
+            IncidentThreadAutoAdd ??= [];
+            ChannelMoveNotifChannel ??= [];
         }
     }
 }

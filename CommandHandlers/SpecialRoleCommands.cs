@@ -199,7 +199,7 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot alter that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
             }
-            string[] roles = warnable.SpecialRoles.ToArray();
+            string[] roles = [.. warnable.SpecialRoles];
             if (roles.IsEmpty())
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", $"User <@{userID}> already does not have any special roles.");

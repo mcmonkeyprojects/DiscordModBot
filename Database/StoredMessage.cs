@@ -90,7 +90,7 @@ namespace ModBot.Database
             Embeds = message.Embeds.Any() ? message.Embeds.Select(e => JsonConvert.SerializeObject(e)).ToList() : null;
             if (message.EditedTimestamp.HasValue)
             {
-                MessageEdits = new List<MessageAlteration>() { new MessageAlteration() { Time = StringConversionHelper.DateTimeToString(message.EditedTimestamp.Value, true), Content = "(Edited Before ModBot Logs)" } };
+                MessageEdits = [new MessageAlteration() { Time = StringConversionHelper.DateTimeToString(message.EditedTimestamp.Value, true), Content = "(Edited Before ModBot Logs)" }];
             }
         }
     }

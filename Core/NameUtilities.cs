@@ -24,16 +24,16 @@ namespace ModBot.Core
         }
 
         /// <summary>A few common English first names, skimmed from a larger list of most common names, for <see cref="GenerateAsciiName(string)"/>.</summary>
-        public static string[] ENGLISH_NAMES = new string[] {
+        public static string[] ENGLISH_NAMES = [
             "Bob", "Joe", "Steve", "Fred", "Ron", "Adam", "Lou", "Al", "Andy", "Tony", "Brian", "Calvin", "Chris", "Carl", "Dave", "Dennis", "Doug", "Ed", "George",
-            "Harry", "Jack", "Jacob", "John", "Ken", "Max", "Phil", "Robert", "Simon", "Todd", "Tyler", "NewUser", "NewPerson" };
+            "Harry", "Jack", "Jacob", "John", "Ken", "Max", "Phil", "Robert", "Simon", "Todd", "Tyler", "NewUser", "NewPerson" ];
 
         /// <summary>Text that can be used for <see cref="GenerateAsciiName(string)"/> to express the name rule.</summary>
-        public static readonly string[] ASCII_NAME_PART1 = new string[] { "Hey", "Yo", "You" },
-            ASCII_NAME_PART2 = new string[] { "Please", "Plis", "Plz", "Pls" },
-            ASCII_NAME_PART3 = new string[] { "Use", "UseA", "Take", "TakeA", "UseAn", "TakeAn" },
-            ASCII_NAME_PART4 = new string[] { "Ascii", "ASCII", "English", "ENGLISH", "Us-En", "US-EN", "Typable" },
-            ASCII_NAME_PART5 = new string[] { "Name", "Username", "Nickname", "Nick" };
+        public static readonly string[] ASCII_NAME_PART1 = ["Hey", "Yo", "You"],
+            ASCII_NAME_PART2 = ["Please", "Plis", "Plz", "Pls"],
+            ASCII_NAME_PART3 = ["Use", "UseA", "Take", "TakeA", "UseAn", "TakeAn"],
+            ASCII_NAME_PART4 = ["Ascii", "ASCII", "English", "ENGLISH", "Us-En", "US-EN", "Typable"],
+            ASCII_NAME_PART5 = ["Name", "Username", "Nickname", "Nick"];
 
         /// <summary>Reusable random number generator.</summary>
         public static Random random = new();

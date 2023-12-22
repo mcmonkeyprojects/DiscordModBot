@@ -592,7 +592,7 @@ namespace ModBot.Core
             }
             if (stored.MessageEdits is null)
             {
-                stored.MessageEdits = new List<StoredMessage.MessageAlteration>();
+                stored.MessageEdits = [];
             }
             if (stored.MessageEdits.Count > 50) // Some bots will spam message edits, so just stop bothering to log after there's too many to avoid wasting database space.
             {
@@ -606,7 +606,7 @@ namespace ModBot.Core
         {
             public SocketThreadChannel ThreadChannel;
 
-            public List<string> NewUsers = new();
+            public List<string> NewUsers = [];
 
             public DateTimeOffset LastAddedTo = DateTimeOffset.UtcNow;
 

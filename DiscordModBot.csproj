@@ -4,17 +4,17 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>ModBot</RootNamespace>
     <AssemblyName>DiscordModBot</AssemblyName>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
     <Product>DiscordModBot</Product>
     <PackageId>DiscordModBot</PackageId>
     <Copyright>Copyright (C) Alex "mcmonkey" Goodwin 2018-2022</Copyright>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FreneticLLC.FreneticUtilities" Version="1.0.1" />
-    <PackageReference Include="Discord.Net" Version="3.8.1" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="3.8.1" />
-    <PackageReference Include="LiteDB" Version="5.0.12" />
+    <PackageReference Include="FreneticLLC.FreneticUtilities" Version="1.0.24" />
+    <PackageReference Include="Discord.Net" Version="3.13.0" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="3.13.0" />
+    <PackageReference Include="LiteDB" Version="5.0.17" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="mcmonkeyDiscordBotBase\*.*" />

@@ -61,18 +61,9 @@ namespace ModBot.WarningHandlers
         /// <summary>Ensures the warnable user instance has all fields containing either a real value, or the default.</summary>
         public void Ensure()
         {
-            if (Warnings == null)
-            {
-                Warnings = new List<Warning>();
-            }
-            if (SpecialRoles == null)
-            {
-                SpecialRoles = new List<string>();
-            }
-            if (SeenNames == null)
-            {
-                SeenNames = new List<OldName>();
-            }
+            Warnings ??= [];
+            SpecialRoles ??= [];
+            SeenNames ??= [];
         }
 
         /// <summary>

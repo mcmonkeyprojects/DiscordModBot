@@ -313,7 +313,7 @@ namespace ModBot.Core
 
         private static List<ulong> GetIDList(FDSSection section, string key)
         {
-            return section.GetDataList(key)?.Select(d => d.AsULong.Value)?.ToList() ?? new List<ulong>();
+            return section.GetDataList(key)?.Select(d => d.AsULong.Value)?.ToList() ?? [];
         }
 
         /// <summary>Load the config file to static field.</summary>
