@@ -93,13 +93,13 @@ namespace ModBot.WarningHandlers
         }
 
         /// <summary>Words that mean "permanent" that a user might try.</summary>
-        public static HashSet<string> PermanentWords = new() { "permanent", "permanently", "indefinite", "indefinitely", "forever" };
+        public static HashSet<string> PermanentWords = ["permanent", "permanently", "indefinite", "indefinitely", "forever"];
 
         /// <summary>Helper to separate digits from letters, for <see cref="ParseDuration(string, bool)"/>.</summary>
         public static AsciiMatcher DigitMatcher = new(AsciiMatcher.Digits + ".");
 
         /// <summary>Helper to identify timespan suffix keywords, for <see cref="ParseDuration(string, bool)"/>.</summary>
-        public static Dictionary<string, string> TimespanSuffixRemapper = new();
+        public static Dictionary<string, string> TimespanSuffixRemapper = [];
         static WarningUtilities()
         {
             static void Add(string realKey, params string[] keys)
