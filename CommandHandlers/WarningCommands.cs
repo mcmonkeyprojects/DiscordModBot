@@ -762,7 +762,7 @@ namespace ModBot.CommandHandlers
                 return false;
             }
             string id = command.RawArguments[0];
-            if (id.StartsWith("<@") && id.EndsWith(">"))
+            if (id.StartsWith("<@") && id.EndsWith('>'))
             {
                 id = id[2..^1].Replace("!", "");
             }

@@ -39,7 +39,7 @@ namespace ModBot.WarningHandlers
             /// <summary>The cache itself.</summary>
             public static ConcurrentDictionary<(ulong, ulong), WarnableCache> WarnablesCache = new();
 
-            private static readonly List<(ulong, ulong)> ToClear = new();
+            private static readonly List<(ulong, ulong)> ToClear = [];
             private static long LastCleared;
 
             public static void Clean()

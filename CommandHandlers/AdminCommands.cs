@@ -1027,9 +1027,8 @@ namespace ModBot.CommandHandlers
                             return;
                         }
                         string name = command.RawArguments[1].ToLowerFast();
-                        if (config.SpecialRoles.ContainsKey(name))
+                        if (config.SpecialRoles.Remove(name))
                         {
-                            config.SpecialRoles.Remove(name);
                             SendGenericPositiveMessageReply(command.Message, "Removed", $"Special role `{name}` removed.");
                         }
                         else
