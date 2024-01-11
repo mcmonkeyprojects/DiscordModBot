@@ -300,6 +300,10 @@ namespace ModBot.Core
             string authorName = user == null || user.Username == null ? "" : user.Username;
             if (WarningUtilities.GetWarnableUser(guild.Id, user.Id).SeenUsername(authorName, out string oldName) && config.NameChangeNotifChannel.Any())
             {
+                if (oldName == $"{authorName}#0000")
+                {
+                    return;
+                }
                 EmbedBuilder embed = new EmbedBuilder().WithTitle("User Changed Username").WithColor(0, 255, 255);
                 if (oldName != null)
                 {
