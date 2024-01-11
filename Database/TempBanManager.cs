@@ -149,7 +149,7 @@ namespace ModBot.Database
             }
             until = until.ToUniversalTime();
             SocketGuildUser user = guild.GetUser(userId);
-            string name = user == null ? "(unknown)" :  $"{user.Username}#{user.Discriminator}";
+            string name = user == null ? "(unknown)" :  $"{user.Username}";
             bool isForever = until.Year > DateTimeOffset.Now.Year + 50;
             string path = isForever ? "permanent_bans" : "temp_ban";
             lock (this)

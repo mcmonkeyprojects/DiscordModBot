@@ -13,14 +13,14 @@ namespace ModBot.Core
     /// <summary>Utilities related to name handling.</summary>
     public class NameUtilities
     {
-        /// <summary>Gets the full proper username#disc for a user.</summary>
+        /// <summary>Gets the full proper username for a user.</summary>
         public static string Username(IUser user)
         {
             if (user is null || user.Username is null)
             {
                 return null;
             }
-            return UserCommands.EscapeUserInput(user.Username.Replace("\r", "/r").Replace("\n", "/n")) + "#" + user.Discriminator;
+            return UserCommands.EscapeUserInput(user.Username.Replace("\r", "/r").Replace("\n", "/n"));
         }
 
         /// <summary>A few common English first names, skimmed from a larger list of most common names, for <see cref="GenerateAsciiName(string)"/>.</summary>
