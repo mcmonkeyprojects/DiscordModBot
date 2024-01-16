@@ -382,6 +382,7 @@ namespace ModBot.Core
                 return false;
             }
             if (message.Contains("Drop a message let's get started by asking (HOW)") // that one crypto spambot going around a lot)
+                || message.Contains("[steamcommunity.com") // Fake steam link spambots
                 )
             {
                 return true;
@@ -397,6 +398,10 @@ namespace ModBot.Core
                 return true;
             }
             if (message.Contains("@everyone") && message.Contains("https://discord.gg/")) // A lot of recent bots only have this pair in common
+            {
+                return true;
+            }
+            if (message.Contains("@everyone") && message.Contains("](http")) // pinging everyone with a disguised link
             {
                 return true;
             }
