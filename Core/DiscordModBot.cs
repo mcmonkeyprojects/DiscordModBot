@@ -382,6 +382,7 @@ namespace ModBot.Core
                 return false;
             }
             if (message.Contains("Drop a message let's get started by asking (HOW)") // that one crypto spambot going around a lot)
+                || message.Contains("I'll help anyone interested on how to earn 10k in just 72 hours") // another crypto spambot
                 || message.Contains("[steamcommunity.com") // Fake steam link spambots
                 )
             {
