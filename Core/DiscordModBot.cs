@@ -416,28 +416,28 @@ namespace ModBot.Core
         public static bool LooksSpambotty(string message)
         {
             message = message.ToLowerFast().Replace('\r', '\n').Replace("\n", "");
-            if (message.Length > 500) // All seen spambot messages have been fairly short
-            {
-                return false;
-            }
             if (message.Contains("Drop a message let's get started by asking (HOW)") // that one crypto spambot going around a lot)
                 || message.Contains("I'll help anyone interested on how to earn 10k in just 72 hours") // another crypto spambot
-                || message.Contains("[steamcommunity.com") // Fake steam link spambots
                 )
             {
                 return true;
+            }
+            if (message.Length > 500) // Most seen spambot messages have been fairly short
+            {
+                return false;
             }
             if (!message.Contains("http://") && !message.Contains("https://")) // obviously only messages with links qualify for possible spam bot detection
             {
                 return false;
             }
             if (message.Contains("nitro") || message.Contains("trade offer") // the obvious ones
+                || message.Contains("[steamcommunity.com") // Fake steam link spambots
                 || message.Contains("who is first? :)") || message.Contains("take it guys :)") // seen in the wild from a few bots
                 )
             {
                 return true;
             }
-            bool containsInvite = message.Contains("discord.gg/") || message.Contains("https://discord.com/invite/");
+            bool containsInvite = message.Contains("discord.gg/") || message.Contains("discord.com/invite/");
             if (message.Contains("@everyone") && containsInvite) // A lot of recent bots only have this pair in common
             {
                 return true;
