@@ -40,6 +40,13 @@ namespace ModBot.Core
         /// <summary>The special-roles command handler.</summary>
         public static SpecialRoleCommands SpecialRoleCommandHandler = new();
 
+        public static class Internal
+        {
+            public static volatile string LastSpamMessage;
+
+            public static long LastSpamTime = 0;
+        }
+
         /// <summary>Gets the config for a specified guild.</summary>
         public static GuildConfig GetConfig(ulong guildId)
         {
@@ -199,21 +206,53 @@ namespace ModBot.Core
                         TrackUsernameFor(author, guild);
                         // TODO: General post-spam detection (rapid posts, many pings, etc)
                         NameUtilities.AsciiNameRuleCheck(message, author);
-                        if (config.AutomuteSpambots && config.MuteRole.HasValue && LooksSpambotty(message.Content) && !author.IsBot && !author.IsWebhook && !author.Roles.Any(r => config.NonSpambotRoles.Contains(r.Id)))
+                        if (config.AutomuteSpambots && LooksSpambotty(message.Content) && !author.IsBot && !author.IsWebhook && !author.Roles.Any(r => config.NonSpambotRoles.Contains(r.Id)))
                         {
+                            try
+                            {
+                                author.SetTimeOutAsync(TimeSpan.FromMinutes(2)).Wait();
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Failed to timeout user {author.Id} in {guild.Id}: {ex}");
+                            }
+                            IMessageChannel channel = message.Channel;
+                            if (Environment.TickCount64 < Internal.LastSpamTime + 60 * 1000 && Internal.LastSpamMessage == message.Content)
+                            {
+                                try
+                                {
+                                    message.DeleteAsync().Wait();
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Failed to delete spam duplicate message from {author.Id} in {guild.Id}: {ex}");
+                                }
+                            }
+                            Internal.LastSpamMessage = message.Content;
+                            Internal.LastSpamTime = Environment.TickCount64;
                             WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, author.Id);
                             if (!warnable.IsMuted)
                             {
                                 warnable.IsMuted = true;
                                 warnable.Save();
-                                IRole role = guild.GetRole(config.MuteRole.Value);
-                                if (role == null)
+                                if (config.MuteRole.HasValue)
                                 {
-                                    Console.WriteLine($"Failed To Auto-Mute in {guild.Id}: no muted role found.");
-                                    return;
+                                    IRole role = guild.GetRole(config.MuteRole.Value);
+                                    if (role is null)
+                                    {
+                                        Console.WriteLine($"Failed To Auto-Mute in {guild.Id}: no muted role found.");
+                                        return;
+                                    }
+                                    try
+                                    {
+                                        author.AddRoleAsync(role).Wait();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine($"Failed To add auto-mute role in {guild.Id}: {ex}");
+                                    }
                                 }
-                                author.AddRoleAsync(role).Wait();
-                                IUserMessage automutenotice = message.Channel.SendMessageAsync($"User <@{author.Id}> has been muted automatically by spambot-detection.\n{config.AttentionNotice}", embed: new EmbedBuilder().WithTitle("Spambot Auto-Mute Notice").WithColor(255, 128, 0)
+                                IUserMessage automutenotice = channel.SendMessageAsync($"User <@{author.Id}> has been muted automatically by spambot-detection.\n{config.AttentionNotice}", embed: new EmbedBuilder().WithTitle("Spambot Auto-Mute Notice").WithColor(255, 128, 0)
                                     .WithDescription("This mute was applied as the last message sent resembles a spambot message. If this is in error, contact a moderator in the incident handling channel.").Build()).Result;
                                 Warning warning = new() { GivenTo = author.Id, GivenBy = guild.CurrentUser.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"Auto-muted by spambot detection.", Link = UserCommands.LinkToMessage(automutenotice) };
                                 warnable.AddWarning(warning);
