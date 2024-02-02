@@ -398,7 +398,8 @@ namespace ModBot.Core
             {
                 return true;
             }
-            if (message.Contains("@everyone") && message.Contains("https://discord.gg/")) // A lot of recent bots only have this pair in common
+            bool containsInvite = message.Contains("discord.gg/") || message.Contains("https://discord.com/invite/");
+            if (message.Contains("@everyone") && containsInvite) // A lot of recent bots only have this pair in common
             {
                 return true;
             }
