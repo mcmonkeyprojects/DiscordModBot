@@ -416,8 +416,10 @@ namespace ModBot.Core
         public static bool LooksSpambotty(string message)
         {
             message = message.ToLowerFast().Replace('\r', '\n').Replace("\n", "");
-            if (message.Contains("Drop a message let's get started by asking (HOW)") // that one crypto spambot going around a lot)
-                || message.Contains("I'll help anyone interested on how to earn 10k in just 72 hours") // another crypto spambot
+            if (message.Contains("drop a message let's get started by asking (how)") // that one crypto spambot going around a lot)
+                || message.Contains("only interested people should apply, by asking (how)") // similar variant. Should we just catch all "by asking (how)"?
+                || message.Contains("teach anyone interested on how to earn $100k within a week but you will reimburse") // similar variant
+                || message.Contains("i'll help anyone interested on how to earn 10k in just 72 hours") // another crypto spambot
                 )
             {
                 return true;
