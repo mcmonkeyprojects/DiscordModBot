@@ -63,6 +63,9 @@ namespace ModBot.Database
         /// <summary>Whether (temp)bans are enabled.</summary>
         public bool BansEnabled { get; set; }
 
+        /// <summary>If true, a ban automatically implies a mute as well (for when they return).</summary>
+        public bool BanImpliesMute { get; set; }
+
         /// <summary>The maximum ban duration allowed (if any).</summary>
         public string MaxBanDuration { get; set; }
 
