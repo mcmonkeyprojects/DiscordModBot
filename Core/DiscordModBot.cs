@@ -206,7 +206,8 @@ namespace ModBot.Core
                         TrackUsernameFor(author, guild);
                         // TODO: General post-spam detection (rapid posts, many pings, etc)
                         NameUtilities.AsciiNameRuleCheck(message, author);
-                        if (config.AutomuteSpambots && LooksSpambotty(message.Content) && !author.IsBot && !author.IsWebhook && !author.Roles.Any(r => config.NonSpambotRoles.Contains(r.Id)))
+                        bool shouldSpamCheck = config.AutomuteSpambots && !author.IsBot && !author.IsWebhook && !author.Roles.Any(r => config.NonSpambotRoles.Contains(r.Id));
+                        void timeout()
                         {
                             try
                             {
@@ -216,18 +217,9 @@ namespace ModBot.Core
                             {
                                 Console.WriteLine($"Failed to timeout user {author.Id} in {guild.Id}: {ex}");
                             }
-                            IMessageChannel channel = message.Channel;
-                            if (Environment.TickCount64 < Internal.LastSpamTime + 60 * 1000 && Internal.LastSpamMessage == message.Content)
-                            {
-                                try
-                                {
-                                    message.DeleteAsync().Wait();
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine($"Failed to delete spam duplicate message from {author.Id} in {guild.Id}: {ex}");
-                                }
-                            }
+                        }
+                        void domute(string reason)
+                        {
                             Internal.LastSpamMessage = message.Content;
                             Internal.LastSpamTime = Environment.TickCount64;
                             WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, author.Id);
@@ -252,8 +244,8 @@ namespace ModBot.Core
                                         Console.WriteLine($"Failed To add auto-mute role in {guild.Id}: {ex}");
                                     }
                                 }
-                                IUserMessage automutenotice = channel.SendMessageAsync($"User <@{author.Id}> has been muted automatically by spambot-detection.\n{config.AttentionNotice}", embed: new EmbedBuilder().WithTitle("Spambot Auto-Mute Notice").WithColor(255, 128, 0)
-                                    .WithDescription("This mute was applied as the last message sent resembles a spambot message. If this is in error, contact a moderator in the incident handling channel.").Build()).Result;
+                                IUserMessage automutenotice = message.Channel.SendMessageAsync($"User <@{author.Id}> has been muted automatically by spambot-detection.\n{config.AttentionNotice}", embed: new EmbedBuilder().WithTitle("Spambot Auto-Mute Notice").WithColor(255, 128, 0)
+                                    .WithDescription($"This mute was applied because: {reason}. If this is in error, contact a moderator in the incident handling channel.").Build()).Result;
                                 Warning warning = new() { GivenTo = author.Id, GivenBy = guild.CurrentUser.Id, TimeGiven = DateTimeOffset.UtcNow, Level = WarningLevel.AUTO, Reason = $"Auto-muted by spambot detection.", Link = UserCommands.LinkToMessage(automutenotice) };
                                 warnable.AddWarning(warning);
                                 warnable.Save();
@@ -261,16 +253,69 @@ namespace ModBot.Core
                                 if (thread is not null)
                                 {
                                     thread.SendMessageAsync(embed: new EmbedBuilder().WithTitle("SpamBot Auto-Mute Notice").WithColor(255, 128, 0)
-                                        .WithDescription("You are muted as your last message resembles a spambot message. If this is in error, ask a moderator to unmute you.").Build(), text: $"<@{author.Id}>").Wait();
+                                        .WithDescription($"You are muted because: {reason}. If this is in error, ask a moderator to unmute you.").Build(), text: $"<@{author.Id}>").Wait();
                                 }
                                 else
                                 {
                                     ModBotLoggers.SendEmbedToAllFor(guild, config.IncidentChannel, new EmbedBuilder().WithTitle("SpamBot Auto-Mute Notice").WithColor(255, 128, 0)
-                                        .WithDescription("You are muted as your last message resembles a spambot message. If this is in error, ask a moderator to unmute you.").Build(), $"<@{author.Id}>");
+                                        .WithDescription($"You are muted because: {reason}. If this is in error, ask a moderator to unmute you.").Build(), $"<@{author.Id}>");
                                 }
                             }
                         }
-
+                        if (shouldSpamCheck && LooksSpambotty(message.Content))
+                        {
+                            timeout();
+                            if (Environment.TickCount64 < Internal.LastSpamTime + 60 * 1000 && Internal.LastSpamMessage == message.Content)
+                            {
+                                try
+                                {
+                                    message.DeleteAsync().Wait();
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Failed to delete spam duplicate message from {author.Id} in {guild.Id}: {ex}");
+                                }
+                            }
+                            domute("message resembles known spambot messages");
+                        }
+                        else if (shouldSpamCheck)
+                        {
+                            GuildSpamMonitor monitor = SpamMonitorByGuild.GetOrCreate(guild.Id, () => new GuildSpamMonitor(new(), []));
+                            lock (monitor.Locker)
+                            {
+                                if (monitor.LastMessages.Any())
+                                {
+                                    IUserMessage prev = monitor.LastMessages.Peek();
+                                    if (prev.Author.Id != message.Author.Id || Math.Abs(prev.Timestamp.Subtract(DateTimeOffset.UtcNow).TotalSeconds) > 20 || message.Content != prev.Content)
+                                    {
+                                        monitor.LastMessages.Clear();
+                                    }
+                                }
+                                if (monitor.LastMessages.Count > 2)
+                                {
+                                    timeout();
+                                    domute("posted the same message rapidly 4 or more times. Earlier copies of the message will be deleted.");
+                                    List<Task> deletes = [];
+                                    foreach (IUserMessage prev in monitor.LastMessages)
+                                    {
+                                        try
+                                        {
+                                            deletes.Add(prev.DeleteAsync());
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Console.WriteLine($"Failed to delete spam message from {author.Id} in {guild.Id}: {ex}");
+                                        }
+                                    }
+                                    monitor.LastMessages.Clear();
+                                    Task.WaitAll([.. deletes]);
+                                }
+                                else
+                                {
+                                    monitor.LastMessages.Enqueue(message);
+                                }
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -412,10 +457,19 @@ namespace ModBot.Core
             return BotCommanders.Contains(user.Id);
         }
 
+        public record class GuildSpamMonitor(LockObject Locker, Queue<IUserMessage> LastMessages);
+
+        public static ConcurrentDictionary<ulong, GuildSpamMonitor> SpamMonitorByGuild = new();
+
         /// <summary>Returns whether this message text looks like it might be a spam-bot message.</summary>
         public static bool LooksSpambotty(string message)
         {
-            message = message.ToLowerFast().Replace('\r', '\n').Replace("\n", "");
+            if (Internal.LastSpamMessage is not null && message == Internal.LastSpamMessage)
+            {
+                return true;
+            }
+            message = message.ToLowerFast().Replace('\r', '\n').Replace("\n", "")
+                .Replace("||", ""); // Some bots have been spamming "|||||||||" (times a lot) to bypass filters, so this replace will exclude that from spam detection
             if (message.Contains("drop a message let's get started by asking (how)") // that one crypto spambot going around a lot)
                 || message.Contains("only interested people should apply, by asking (how)") // similar variant. Should we just catch all "by asking (how)"?
                 || message.Contains("teach anyone interested on how to earn $100k within a week but you will reimburse") // similar variant
