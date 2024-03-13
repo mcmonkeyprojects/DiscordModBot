@@ -286,7 +286,7 @@ namespace ModBot.Core
                                 if (monitor.LastMessages.Any())
                                 {
                                     IUserMessage prev = monitor.LastMessages.Peek();
-                                    if (prev.Author.Id != message.Author.Id || Math.Abs(prev.Timestamp.Subtract(DateTimeOffset.UtcNow).TotalSeconds) > 20 || message.Content != prev.Content)
+                                    if (prev.Author.Id != message.Author.Id || Math.Abs(prev.Timestamp.Subtract(DateTimeOffset.UtcNow).TotalSeconds) > 20 || message.Content != prev.Content || message.Attachments.Any())
                                     {
                                         monitor.LastMessages.Clear();
                                     }
@@ -492,6 +492,7 @@ namespace ModBot.Core
             if (message.Contains("nitro") || message.Contains("trade offer") // the obvious ones
                 || message.Contains("[steamcommunity.com") // Fake steam link spambots
                 || message.Contains("who is first? :)") || message.Contains("take it guys :)") // seen in the wild from a few bots
+                || message.Contains("adobe full espanol gratis 2024") // this one specific bot keeps coming back with this one dumb link wtf
                 )
             {
                 return true;
