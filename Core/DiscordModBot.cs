@@ -469,13 +469,14 @@ namespace ModBot.Core
                 return true;
             }
             message = message.ToLowerFast().Replace('\r', '\n').Replace("\n", "")
-                .Replace("||", ""); // Some bots have been spamming "|||||||||" (times a lot) to bypass filters, so this replace will exclude that from spam detection
-            if (message.Contains("drop a message let's get started by asking (how)") // all of these just to catch variants of that one crypto spambot going around a lot
+                .Replace("||", "") // Some bots have been spamming "|||||||||" (times a lot) to bypass filters, so this replace will exclude that from spam detection
+                .Replace("’", "").Replace("'", ""); // Funky unicode and trickery
+            if (message.Contains("drop a message lets get started by asking (how)") // all of these just to catch variants of that one crypto spambot going around a lot
                 || message.Contains("only interested people should apply, by asking (how)")
                 || message.Contains("only interested people should contact me (how)")
                 || message.Contains("teach 10 interested people on how to earn")
                 || message.Contains("teach anyone interested on how to earn $100k within a week but you will reimburse")
-                || message.Contains("but you'll promise to pay me 10% of the profit")
+                || message.Contains("but youll promise to pay me 10% of the profit")
                 || message.Contains("i'll help anyone interested on how to earn 10k in just 72 hours")
                 )
             {
