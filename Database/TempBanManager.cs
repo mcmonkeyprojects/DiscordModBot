@@ -89,7 +89,7 @@ namespace ModBot.Database
             lock (this)
             {
                 FDSSection subSection = TempBansFile.GetSection("temp_ban");
-                if (subSection == null)
+                if (subSection is null)
                 {
                     return;
                 }
@@ -141,19 +141,21 @@ namespace ModBot.Database
         /// <summary>Temporarily bans a user from a guild for a set duration.</summary>
         public void TempBan(ulong guildId, ulong userId, DateTimeOffset until, ulong sourceId, string reason)
         {
+            ConsoleLog.Debug($"Will temp-ban user {userId} from guild {guildId} until {until} due to source {sourceId} for reason: {reason}.");
             SocketGuild guild = DiscordBotBaseHelper.CurrentBot.Client.GetGuild(guildId);
-            if (guild == null)
+            if (guild is null)
             {
-                Console.WriteLine($"Ban failed: invalid guild ID {guildId}!");
+                ConsoleLog.Warning($"Ban failed: invalid guild ID {guildId}!");
                 return;
             }
             until = until.ToUniversalTime();
             SocketGuildUser user = guild.GetUser(userId);
-            string name = user == null ? "(unknown)" :  $"{user.Username}";
+            string name = user is null ? "(unknown)" :  $"{user.Username}";
             bool isForever = until.Year > DateTimeOffset.Now.Year + 50;
             string path = isForever ? "permanent_bans" : "temp_ban";
             lock (this)
             {
+                ConsoleLog.Debug($"Temp-ban: lock acquired");
                 DisableTempBansFor(guildId, userId);
                 int count = TempBansFile.GetInt("count").Value + 1;
                 TempBansFile.Set("count", count);
@@ -166,6 +168,7 @@ namespace ModBot.Database
                     TempBansFile.Set($"{path}.{count}.end", StringConversionHelper.DateTimeToString(until, false));
                 }
                 Save();
+                ConsoleLog.Debug($"Temp-ban: config save complete");
             }
             string banReason = (isForever ? "Indefinite ban" : $"Temporary ban for {(until - DateTimeOffset.UtcNow).SimpleFormat(false)} (ends <t:{until.ToUnixTimeSeconds()}>)") + $" by moderator <@{sourceId}>";
             if (!string.IsNullOrWhiteSpace(reason))
@@ -173,17 +176,19 @@ namespace ModBot.Database
                 reason = $" Reason: `{reason}`";
                 banReason += reason;
             }
-            if (user != null)
+            if (user is not null)
             {
                 try
                 {
+                    ConsoleLog.Debug($"Temp-ban: will DM");
                     IDMChannel channel = user.CreateDMChannelAsync().Result;
                     string durationMessage = isForever ? "This ban lasts until manually removed by staff." : $"This ban expires <t:{until.ToUnixTimeSeconds()}:R>.";
-                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}{reason}").WithThumbnailUrl(guild.IconUrl).Build()).Wait(new TimeSpan(0, 1, 0));
+                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}{reason}").WithThumbnailUrl(guild.IconUrl).Build()).Wait(new TimeSpan(0, 0, 20));
+                    ConsoleLog.Debug($"Temp-ban: DM sent");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Excepting sending tempban notice: {ex}");
+                    ConsoleLog.Error($"Excepting sending tempban notice: {ex}");
                 }
                 user.BanAsync(0, banReason.Length > 400 ? (banReason[0..400] + "..") : banReason).Wait();
             }
@@ -191,6 +196,7 @@ namespace ModBot.Database
             {
                 guild.AddBanAsync(userId, 0, banReason).Wait();
             }
+            ConsoleLog.Debug($"Temp-ban: banning completed");
         }
     }
 }
