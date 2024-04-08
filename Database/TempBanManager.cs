@@ -58,12 +58,12 @@ namespace ModBot.Database
         }
 
         /// <summary>Disables any existing temp bans for an ID (to add a new one).</summary>
-        public void DisableTempBansFor(ulong guildId, ulong userId)
+        public void DisableTempBansFor(ulong guildId, ulong userId, bool save = true)
         {
             lock (this)
             {
                 FDSSection subSection = TempBansFile.GetSection("temp_ban");
-                if (subSection == null)
+                if (subSection is null)
                 {
                     return;
                 }
@@ -76,7 +76,10 @@ namespace ModBot.Database
                     {
                         subSection.Remove(key);
                         TempBansFile.Set($"old_bans.{key}", subSection);
-                        Save();
+                        if (save)
+                        {
+                            Save();
+                        }
                         return;
                     }
                 }
@@ -156,7 +159,7 @@ namespace ModBot.Database
             lock (this)
             {
                 ConsoleLog.Debug($"Temp-ban: lock acquired");
-                DisableTempBansFor(guildId, userId);
+                DisableTempBansFor(guildId, userId, false);
                 int count = TempBansFile.GetInt("count").Value + 1;
                 TempBansFile.Set("count", count);
                 TempBansFile.Set($"{path}.{count}.guild", guildId);
