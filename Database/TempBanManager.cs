@@ -186,10 +186,11 @@ namespace ModBot.Database
                 }
             });
             string banReason = (isForever ? "Indefinite ban" : $"Temporary ban for {(until - DateTimeOffset.UtcNow).SimpleFormat(false)} (ends <t:{until.ToUnixTimeSeconds()}>)") + $" by moderator <@{sourceId}>";
+            string displayReason = reason;
             if (!string.IsNullOrWhiteSpace(reason))
             {
-                reason = $" Reason: `{reason}`";
-                banReason += reason;
+                displayReason = $" Reason: `{reason}`";
+                banReason += displayReason;
             }
             if (user is not null)
             {
@@ -198,7 +199,7 @@ namespace ModBot.Database
                     ConsoleLog.Debug($"Temp-ban: will DM");
                     IDMChannel channel = user.CreateDMChannelAsync().Result;
                     string durationMessage = isForever ? "This ban lasts until manually removed by staff." : $"This ban expires <t:{until.ToUnixTimeSeconds()}:R>.";
-                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}{reason}").WithThumbnailUrl(guild.IconUrl).Build()).Wait(new TimeSpan(0, 0, 20));
+                    channel.SendMessageAsync(embed: new EmbedBuilder().WithDescription("Discord Mod Bot").WithDescription($"You have been banned from **{guild.Name}**. {durationMessage}{displayReason}").WithThumbnailUrl(guild.IconUrl).Build()).Wait(new TimeSpan(0, 0, 20));
                     ConsoleLog.Debug($"Temp-ban: DM sent");
                 }
                 catch (Exception ex)
