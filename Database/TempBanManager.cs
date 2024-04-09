@@ -10,6 +10,7 @@ using DiscordBotBase.CommandHandlers;
 using Discord;
 using Discord.WebSocket;
 using ModBot.Core;
+using System.Threading.Tasks;
 
 namespace ModBot.Database
 {
@@ -156,23 +157,34 @@ namespace ModBot.Database
             string name = user is null ? "(unknown)" :  $"{user.Username}";
             bool isForever = until.Year > DateTimeOffset.Now.Year + 50;
             string path = isForever ? "permanent_bans" : "temp_ban";
-            lock (this)
+            Task.Run(() =>
             {
-                ConsoleLog.Debug($"Temp-ban: lock acquired");
-                DisableTempBansFor(guildId, userId, false);
-                int count = TempBansFile.GetInt("count").Value + 1;
-                TempBansFile.Set("count", count);
-                TempBansFile.Set($"{path}.{count}.guild", guildId);
-                TempBansFile.Set($"{path}.{count}.user", userId);
-                TempBansFile.Set($"{path}.{count}.name", name);
-                TempBansFile.Set($"{path}.{count}.reason", reason);
-                if (!isForever)
+                try
                 {
-                    TempBansFile.Set($"{path}.{count}.end", StringConversionHelper.DateTimeToString(until, false));
+                    lock (this)
+                    {
+                        ConsoleLog.Debug($"Temp-ban: lock acquired");
+                        DisableTempBansFor(guildId, userId, false);
+                        int count = TempBansFile.GetInt("count").Value + 1;
+                        TempBansFile.Set("count", count);
+                        TempBansFile.Set($"{path}.{count}.guild", guildId);
+                        TempBansFile.Set($"{path}.{count}.user", userId);
+                        TempBansFile.Set($"{path}.{count}.name", name);
+                        TempBansFile.Set($"{path}.{count}.reason", reason);
+                        if (!isForever)
+                        {
+                            TempBansFile.Set($"{path}.{count}.end", StringConversionHelper.DateTimeToString(until, false));
+                        }
+                        ConsoleLog.Debug($"Temp-ban: will save file");
+                        Save();
+                        ConsoleLog.Debug($"Temp-ban: config save complete");
+                    }
                 }
-                Save();
-                ConsoleLog.Debug($"Temp-ban: config save complete");
-            }
+                catch (Exception ex)
+                {
+                    ConsoleLog.Error($"Temp-ban config update save failed: {ex}");
+                }
+            });
             string banReason = (isForever ? "Indefinite ban" : $"Temporary ban for {(until - DateTimeOffset.UtcNow).SimpleFormat(false)} (ends <t:{until.ToUnixTimeSeconds()}>)") + $" by moderator <@{sourceId}>";
             if (!string.IsNullOrWhiteSpace(reason))
             {
