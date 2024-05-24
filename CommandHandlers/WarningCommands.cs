@@ -631,7 +631,7 @@ namespace ModBot.CommandHandlers
                 IUserMessage sentMessage = channel.SendMessageAsync(embed: GetGenericPositiveMessageEmbed($"{warnCount} Warnings Found", $"User `{EscapeUserInput(user.LastKnownUsername)}` has the following warnings logged:\n{warnStringOutput}")).Result;
                 if (hasMore && sentMessage != null && message != null)
                 {
-                    sentMessage.AddReactionsAsync(new IEmote[] { new Emoji(Constants.ACCEPT_EMOJI), new Emoji(Constants.DENY_EMOJI) }).Wait();
+                    sentMessage.AddReactionsAsync([new Emoji(Constants.ACCEPT_EMOJI), new Emoji(Constants.DENY_EMOJI)]).Wait();
                     ReactionsHandler.AddReactable(message, sentMessage, $"listwarn {user.UserID()} {startId + 2}");
                 }
             }

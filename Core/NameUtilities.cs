@@ -162,20 +162,31 @@ namespace ModBot.Core
                 return false;
             }
             string nick = user.Nickname;
+            string globalname = user.GlobalName;
             string username = user.Username;
-            if (nick != null)
+            if (string.IsNullOrWhiteSpace(globalname))
+            {
+                globalname = username;
+            }
+            if (nick is not null)
             {
                 if (!IsValidAsciiName(config, nick))
                 {
-                    if (IsValidAsciiName(config, username))
+                    if (IsValidAsciiName(config, globalname))
                     {
                         user.ModifyAsync(u => u.Nickname = "").Wait();
                         UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Non-ASCII nickname for <@{user.Id}> removed. Please only use a readable+typable US-English ASCII nickname.");
                         return true;
                     }
+                    else if (IsValidAsciiName(config, username))
+                    {
+                        user.ModifyAsync(u => u.Nickname = username).Wait();
+                        UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Non-ASCII nickname for <@{user.Id}> changed to base username. Please only use a readable+typable US-English ASCII nickname.");
+                        return true;
+                    }
                     else
                     {
-                        user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username)).Wait();
+                        user.ModifyAsync(u => u.Nickname = GenerateAsciiName(username)).Wait();
                         UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Non-ASCII nickname for <@{user.Id}> change to a placeholder. Please change to a readable+typable US-English ASCII nickname or username.");
                         return true;
                     }
@@ -194,19 +205,28 @@ namespace ModBot.Core
             }
             else
             {
-                if (!IsValidAsciiName(config, username))
+                if (!IsValidAsciiName(config, globalname))
                 {
-                    user.ModifyAsync(u => u.Nickname = GenerateAsciiName(user.Username)).Wait();
-                    UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Non-ASCII username for <@{user.Id}> has been overriden with a placeholder nickname. Please change to a readable+typable US-English ASCII nickname or username.");
-                    return true;
-                }
-                else if (!IsValidFirstChar(config, username))
-                {
-                    if (username.Length > 30)
+                    if (IsValidAsciiName(config, username))
                     {
-                        username = username[..30];
+                        user.ModifyAsync(u => u.Nickname = username).Wait();
+                        UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Non-ASCII nickname for <@{user.Id}> changed to base username. Please only use a readable+typable US-English ASCII nickname.");
+                        return true;
                     }
-                    user.ModifyAsync(u => u.Nickname = ANTI_LIST_TOP_SYMBOL + username).Wait();
+                    else
+                    {
+                        user.ModifyAsync(u => u.Nickname = GenerateAsciiName(username)).Wait();
+                        UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Non-ASCII username for <@{user.Id}> has been overriden with a placeholder nickname. Please change to a readable+typable US-English ASCII nickname or username.");
+                        return true;
+                    }
+                }
+                else if (!IsValidFirstChar(config, globalname))
+                {
+                    if (globalname.Length > 30)
+                    {
+                        globalname = globalname[..30];
+                    }
+                    user.ModifyAsync(u => u.Nickname = ANTI_LIST_TOP_SYMBOL + globalname).Wait();
                     UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Name patch: <@{user.Id}> had a nickname that started with a symbol or number..."
                         + "applied a special first symbol in place. Please start your name with a letter from A to Z. (This is to prevent users from artificially appearing at the top of the userlist).");
                     return true;

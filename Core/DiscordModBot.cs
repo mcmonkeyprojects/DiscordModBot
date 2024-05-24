@@ -353,7 +353,7 @@ namespace ModBot.Core
             while (true)
             {
                 string line = await Console.In.ReadLineAsync();
-                if (line == null)
+                if (line is null)
                 {
                     return;
                 }
@@ -381,7 +381,7 @@ namespace ModBot.Core
         public static void TrackUsernameFor(IUser user, SocketGuild guild)
         {
             GuildConfig config = GetConfig(guild.Id);
-            string authorName = user == null || user.Username == null ? "" : user.Username;
+            string authorName = user is null || user.Username is null ? "" : user.Username;
             if (WarningUtilities.GetWarnableUser(guild.Id, user.Id).SeenUsername(authorName, out string oldName) && config.NameChangeNotifChannel.Any())
             {
                 if (oldName == $"{authorName}#0000")
@@ -389,7 +389,7 @@ namespace ModBot.Core
                     return;
                 }
                 EmbedBuilder embed = new EmbedBuilder().WithTitle("User Changed Username").WithColor(0, 255, 255);
-                if (oldName != null)
+                if (oldName is not null)
                 {
                     embed.AddField("Old Username", $"`{UserCommands.EscapeUserInput(oldName)}`");
                 }
