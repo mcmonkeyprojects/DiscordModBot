@@ -134,13 +134,27 @@ namespace ModBot.CommandHandlers
                 SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
                 return;
             }
+            int oneInEvery = 1;
+            if (command.RawArguments.Length > 0)
+            {
+                if (!int.TryParse(command.RawArguments[0], out oneInEvery))
+                {
+                    SendErrorMessageReply(command.Message, "Error", "Invalid one-in-every number specified.");
+                    return;
+                }
+            }
             SocketGuildChannel channel = command.Message.Channel as SocketGuildChannel;
             channel.Guild.DownloadUsersAsync().Wait();
+            int count = Random.Shared.Next(1000);
             foreach (SocketGuildUser user in channel.Guild.Users)
             {
-                if (NameUtilities.AsciiNameRuleCheck(command.Message, user))
+                count++;
+                if (count % oneInEvery == 0)
                 {
-                    Thread.Sleep(400);
+                    if (NameUtilities.AsciiNameRuleCheck(command.Message, user))
+                    {
+                        Thread.Sleep(400);
+                    }
                 }
             }
         }
