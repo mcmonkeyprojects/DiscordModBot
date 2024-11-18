@@ -212,8 +212,8 @@ namespace ModBot.Core
                     GuildConfig config = DiscordModBot.GetConfig(socketChannel.Guild.Id);
                     if (config.LogChannels.Any())
                     {
-                        string originalText = hasCache ? oldMessage.CurrentContent() + (oldMessage.Attachments is null ? "" : string.Join(", ", oldMessage.Attachments)) : $"(not cached)";
-                        string newText = message.Content + string.Join(", ", message.Attachments.Select(a => a.Url));
+                        string originalText = hasCache ? oldMessage.CurrentContent() + oldMessage.AttachmentString() : $"(not cached)";
+                        string newText = message.Content + message.AttachmentString();
                         int longerLength = Math.Max(originalText.Length, newText.Length);
                         int firstDifference = StringConversionHelper.FindFirstDifference(originalText, newText);
                         int lastDifference = longerLength - StringConversionHelper.FindFirstDifference(originalText.ReverseFast(), newText.ReverseFast());
