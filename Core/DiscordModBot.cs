@@ -478,11 +478,13 @@ namespace ModBot.Core
             if (message.Contains("drop a message lets get started by asking (how)") // all of these just to catch variants of that one crypto spambot going around a lot
                 || message.Contains("only interested people should apply, by asking (how)")
                 || message.Contains("only interested people should contact me (how)")
+                || message.Contains("get started by asking \"how\" on whatsapp at")
                 || message.Contains("only interested people should message me")
                 || message.Contains("only interested people should massage me")
                 || message.Contains("teach 10 interested people on how to earn")
                 || message.Contains("teach 10 interested people on how to start earning")
                 || message.Contains("teach anyone interested on how to earn $100k within a week but you will reimburse")
+                || message.Contains("help 20 people earn $100k in just")
                 || message.Contains("but youll promise to pay me 10% of the profit")
                 || message.Contains("i'll help anyone interested on how to earn 10k in just 72 hours")
                 )
