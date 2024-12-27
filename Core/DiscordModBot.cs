@@ -481,6 +481,7 @@ namespace ModBot.Core
                 || message.Contains("get started by asking \"how\" on whatsapp at")
                 || message.Contains("only interested people should message me")
                 || message.Contains("only interested people should massage me")
+                || message.Contains("only interested people should send a friend request")
                 || message.Contains("teach 10 interested people on how to earn")
                 || message.Contains("teach 10 interested people on how to start earning")
                 || message.Contains("teach anyone interested on how to earn $100k within a week but you will reimburse")
@@ -495,7 +496,7 @@ namespace ModBot.Core
             {
                 return false;
             }
-            if (!message.Contains("http://") && !message.Contains("https://")) // obviously only messages with links qualify for possible spam bot detection
+            if (!message.Contains("http://") && !message.Contains("https://")) // obviously only messages with links qualify for the normal possible spam bot detection
             {
                 return false;
             }
