@@ -146,17 +146,21 @@ namespace ModBot.CommandHandlers
             SocketGuildChannel channel = command.Message.Channel as SocketGuildChannel;
             channel.Guild.DownloadUsersAsync().Wait();
             int count = Random.Shared.Next(1000);
+            int usersChecked = 0, usersModified = 0;
             foreach (SocketGuildUser user in channel.Guild.Users)
             {
                 count++;
                 if (count % oneInEvery == 0)
                 {
+                    usersChecked++;
                     if (NameUtilities.AsciiNameRuleCheck(command.Message, user))
                     {
                         Thread.Sleep(400);
+                        usersModified++;
                     }
                 }
             }
+            SendGenericPositiveMessageReply(command.Message, "Sweep Complete", $"Checked `{usersChecked}` users and modified `{usersModified}`.");
         }
 
         /// <summary>Admin command to configure guild settings.</summary>
