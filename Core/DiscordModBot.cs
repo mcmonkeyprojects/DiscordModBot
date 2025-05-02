@@ -407,7 +407,7 @@ namespace ModBot.Core
         /// <summary>Load the config file to static field.</summary>
         public static void LoadConfig(FDSSection configFile)
         {
-            BotCommanders = new HashSet<ulong>(GetIDList(configFile, "bot_commanders"));
+            BotCommanders = [.. GetIDList(configFile, "bot_commanders")];
         }
 
         /// <summary>initialize all user commands on a Discord bot.</summary>
