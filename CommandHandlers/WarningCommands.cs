@@ -511,13 +511,19 @@ namespace ModBot.CommandHandlers
 
         public static SocketThreadChannel GenerateThreadFor(GuildConfig config, SocketGuild guild, IGuildUser user, WarnableUser warnable)
         {
-            if (!config.IncidentChannelCreateThreads || !guild.Features.HasPrivateThreads || config.IncidentChannel.Count != 1)
+            if (!config.IncidentChannelCreateThreads)
             {
+                return null;
+            }
+            if (!guild.Features.HasPrivateThreads || config.IncidentChannel.Count != 1)
+            {
+                Console.WriteLine($"Incident channel creation failing: {guild.Name} Features.HasPrivateThreads={guild.Features.HasPrivateThreads}, IncidentChannel.Count={config.IncidentChannel.Count}");
                 return null;
             }
             SocketGuildChannel targetChannel = guild.GetChannel(config.IncidentChannel.First());
             if (targetChannel is not SocketTextChannel textChannel || targetChannel is SocketThreadChannel)
             {
+                Console.WriteLine($"Incident channel creation failing: {guild.Name} targetChannel is not a text channel or is a thread channel");
                 return null;
             }
             SocketThreadChannel thread = null;
@@ -554,13 +560,14 @@ namespace ModBot.CommandHandlers
                 thread = textChannel.CreateThreadAsync($"[Incident] {name}", ThreadType.PrivateThread, ThreadArchiveDuration.OneWeek).Result;
                 if (thread is null)
                 {
+                    Console.WriteLine($"Incident thread creation for {guild.Name} failed (null) without error?");
                     return null;
                 }
                 warnable.IncidentThread = thread.Id;
                 warnable.Save();
             }
             List<Task> addTasks = [thread.AddUserAsync(user)];
-            foreach (SocketGuildUser mod in config.IncidentThreadAutoAdd.Select(u => guild.GetUser(u)).Where(u => u is not null))
+            foreach (SocketGuildUser mod in config.IncidentThreadAutoAdd.Select(guild.GetUser).Where(u => u is not null))
             {
                 addTasks.Add(thread.AddUserAsync(mod));
             }
