@@ -87,8 +87,8 @@ namespace ModBot.Database
             ChannelID = message.Channel.Id;
             RepliesToID = message.Reference?.MessageId.GetValueOrDefault(0) ?? 0;
             AuthorID = message.Author.Id;
-            Attachments = message.Attachments.Any() ? message.Attachments.Select(a => Utilities.CleanAttachUrl(a.Url)).ToList() : null;
-            Embeds = message.Embeds.Any() ? message.Embeds.Select(e => JsonConvert.SerializeObject(e)).ToList() : null;
+            Attachments = message.Attachments.Any() ? [.. message.Attachments.Select(a => Utilities.CleanAttachUrl(a.Url))] : null;
+            Embeds = message.Embeds.Any() ? [.. message.Embeds.Select(e => JsonConvert.SerializeObject(e))] : null;
             if (message.EditedTimestamp.HasValue)
             {
                 MessageEdits = [new MessageAlteration() { Time = StringConversionHelper.DateTimeToString(message.EditedTimestamp.Value, true), Content = "(Edited Before ModBot Logs)" }];

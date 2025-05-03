@@ -230,7 +230,7 @@ namespace ModBot.CommandHandlers
                         {
                             try
                             {
-                                config.ModeratorRoles = roleText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                                config.ModeratorRoles = [.. roleText.SplitFast(',').Select(ulong.Parse)];
                             }
                             catch (Exception ex)
                             {
@@ -259,7 +259,7 @@ namespace ModBot.CommandHandlers
                         {
                             try
                             {
-                                config.IncidentThreadAutoAdd = roleText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                                config.IncidentThreadAutoAdd = [.. roleText.SplitFast(',').Select(ulong.Parse)];
                             }
                             catch (Exception ex)
                             {
@@ -308,7 +308,7 @@ namespace ModBot.CommandHandlers
                         {
                             try
                             {
-                                config.IncidentChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                                config.IncidentChannel = [.. channelText.SplitFast(',').Select(ulong.Parse)];
                             }
                             catch (Exception ex)
                             {
@@ -337,7 +337,7 @@ namespace ModBot.CommandHandlers
                         {
                             try
                             {
-                                config.JoinNotifChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                                config.JoinNotifChannel = [.. channelText.SplitFast(',').Select(ulong.Parse)];
                             }
                             catch (Exception ex)
                             {
@@ -366,7 +366,7 @@ namespace ModBot.CommandHandlers
                         {
                             try
                             {
-                                config.VoiceChannelJoinNotifs = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                                config.VoiceChannelJoinNotifs = [.. channelText.SplitFast(',').Select(ulong.Parse)];
                             }
                             catch (Exception ex)
                             {
@@ -395,7 +395,7 @@ namespace ModBot.CommandHandlers
                         {
                             try
                             {
-                                config.RoleChangeNotifChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                                config.RoleChangeNotifChannel = [.. channelText.SplitFast(',').Select(ulong.Parse)];
                             }
                             catch (Exception ex)
                             {
@@ -424,7 +424,7 @@ namespace ModBot.CommandHandlers
                         {
                             try
                             {
-                                config.NameChangeNotifChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                                config.NameChangeNotifChannel = [.. channelText.SplitFast(',').Select(ulong.Parse)];
                             }
                             catch (Exception ex)
                             {
@@ -453,7 +453,7 @@ namespace ModBot.CommandHandlers
                         {
                             try
                             {
-                                config.ModLogsChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                                config.ModLogsChannel = [.. channelText.SplitFast(',').Select(ulong.Parse)];
                             }
                             catch (Exception ex)
                             {
@@ -482,7 +482,7 @@ namespace ModBot.CommandHandlers
                         {
                             try
                             {
-                                config.ChannelMoveNotifChannel = channelText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                                config.ChannelMoveNotifChannel = [.. channelText.SplitFast(',').Select(ulong.Parse)];
                             }
                             catch (Exception ex)
                             {
@@ -883,7 +883,7 @@ namespace ModBot.CommandHandlers
                         {
                             try
                             {
-                                config.NonSpambotRoles = roleText.SplitFast(',').Select(s => ulong.Parse(s)).ToList();
+                                config.NonSpambotRoles = [.. roleText.SplitFast(',').Select(s => ulong.Parse(s))];
                             }
                             catch (Exception ex)
                             {
@@ -1007,9 +1007,9 @@ namespace ModBot.CommandHandlers
                             return;
                         }
                         role.RoleID = roleId;
-                        role.AddCommands = command.RawArguments[3].SplitFast(',').Select(s => s.ToLowerFast()).ToList();
-                        role.RemoveCommands = command.RawArguments[4].Before("\n").SplitFast(',').Select(s => s.ToLowerFast()).ToList();
-                        string[] reSplitArguments = string.Join(" ", command.RawArguments).SplitFast('\n').Skip(1).Select(s => s.Trim().Replace("\\n", "\n")).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+                        role.AddCommands = [.. command.RawArguments[3].SplitFast(',').Select(s => s.ToLowerFast())];
+                        role.RemoveCommands = [.. command.RawArguments[4].Before("\n").SplitFast(',').Select(s => s.ToLowerFast())];
+                        string[] reSplitArguments = [.. string.Join(" ", command.RawArguments).SplitFast('\n').Skip(1).Select(s => s.Trim().Replace("\\n", "\n")).Where(s => !string.IsNullOrWhiteSpace(s))];
                         if (command.RawArguments.Length > 5)
                         {
                             if (reSplitArguments.Length >= 3)
