@@ -515,9 +515,9 @@ namespace ModBot.CommandHandlers
             {
                 return null;
             }
-            if (/*!guild.Features.HasPrivateThreads || */config.IncidentChannel.Count != 1) // TODO: TEMP: Discord API bug is yielded false for HasPrivateThreads
+            if (config.IncidentChannel.Count != 1)
             {
-                Console.WriteLine($"Incident channel creation failing: {guild.Name} Features.HasPrivateThreads={guild.Features.HasPrivateThreads}, IncidentChannel.Count={config.IncidentChannel.Count}");
+                Console.WriteLine($"Incident channel creation failing: {guild.Name}, IncidentChannel.Count={config.IncidentChannel.Count}");
                 return null;
             }
             SocketGuildChannel targetChannel = guild.GetChannel(config.IncidentChannel.First());
