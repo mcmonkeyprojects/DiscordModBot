@@ -45,6 +45,8 @@ namespace ModBot.Core
             public static volatile string LastSpamMessage;
 
             public static long LastSpamTime = 0;
+
+            public static ulong LastSpamID = 0;
         }
 
         /// <summary>Gets the config for a specified guild.</summary>
@@ -222,6 +224,7 @@ namespace ModBot.Core
                         {
                             Internal.LastSpamMessage = message.Content;
                             Internal.LastSpamTime = Environment.TickCount64;
+                            Internal.LastSpamID = author.Id;
                             WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, author.Id);
                             if (!warnable.IsMuted)
                             {
@@ -262,10 +265,10 @@ namespace ModBot.Core
                                 }
                             }
                         }
-                        if (shouldSpamCheck && LooksSpambotty(message.Content))
+                        if (shouldSpamCheck && LooksSpambotty(message.Content, author.Id))
                         {
                             timeout();
-                            if (Environment.TickCount64 < Internal.LastSpamTime + 60 * 1000 && Internal.LastSpamMessage == message.Content)
+                            if (Environment.TickCount64 < Internal.LastSpamTime + 60 * 1000 && Internal.LastSpamMessage == message.Content && Internal.LastSpamID == author.Id)
                             {
                                 try
                                 {
@@ -462,9 +465,9 @@ namespace ModBot.Core
         public static ConcurrentDictionary<ulong, GuildSpamMonitor> SpamMonitorByGuild = new();
 
         /// <summary>Returns whether this message text looks like it might be a spam-bot message.</summary>
-        public static bool LooksSpambotty(string message)
+        public static bool LooksSpambotty(string message, ulong id)
         {
-            if (Internal.LastSpamMessage is not null && message == Internal.LastSpamMessage)
+            if (Internal.LastSpamMessage is not null && message == Internal.LastSpamMessage && id == Internal.LastSpamID && Environment.TickCount64 < Internal.LastSpamTime + 60 * 1000)
             {
                 return true;
             }
