@@ -471,6 +471,11 @@ namespace ModBot.Core
             {
                 return true;
             }
+            message = message.Trim();
+            if (message.StartsWith(new string('|', 500)))
+            {
+                return true;
+            }
             message = message.ToLowerFast().Replace('\r', '\n').Replace("\n", "")
                 .Replace("||", "") // Some bots have been spamming "|||||||||" (times a lot) to bypass filters, so this replace will exclude that from spam detection
                 .Replace("’", "").Replace("'", ""); // Funky unicode and trickery
@@ -522,7 +527,7 @@ namespace ModBot.Core
             {
                 return true;
             }
-            if (message.Trim().StartsWith("@everyone") && message.Replace('\r', '\n').Split('\n').Last(s => !string.IsNullOrWhiteSpace(s)).Trim().StartsWith("https://"))
+            if (message.StartsWith("@everyone") && message.Replace('\r', '\n').Split('\n').Last(s => !string.IsNullOrWhiteSpace(s)).Trim().StartsWith("https://"))
             {
                 return true;
             }
