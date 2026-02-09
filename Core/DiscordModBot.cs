@@ -441,6 +441,24 @@ namespace ModBot.Core
             bot.RegisterCommand(adminCommands.CMD_TestName, "testname");
             bot.RegisterCommand(adminCommands.CMD_FillHistory, "fillhistory");
             bot.RegisterCommand(coreCommands.CMD_Restart, "restart");
+            // Special
+            bot.RegisterCommand(SpecialBroadcastCommand, "specialbroadcast");
+        }
+
+        public static void SpecialBroadcastCommand(CommandData command)
+        {
+            if (!IsBotCommander(command.Message.Author))
+            {
+                UserCommands.SendErrorMessageReply(command.Message, "Authorization Failure", "Nope! That's not for you!");
+                return;
+            }
+            if (command.RawArguments.IsEmpty())
+            {
+                UserCommands.SendErrorMessageReply(command.Message, "Invalid Usage", "You must provide a message to broadcast.");
+                return;
+            }
+            UserCommands.SendGenericPositiveMessageReply(command.Message, "Restarting", "Yes, boss. Broadcasting...");
+            UserCommands.SendReply(command.Message, new EmbedBuilder().WithTitle("Broadcasted Message").WithColor(0, 255, 0).WithDescription(command.RawArguments.JoinString(" ")).Build());
         }
 
         /// <summary>Returns whether a Discord user is a moderator (via role check with role set in config).</summary>
