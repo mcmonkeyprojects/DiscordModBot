@@ -428,11 +428,11 @@ namespace ModBot.Core
             bot.RegisterCommand(WarningCommandHandler.CMD_ListWarnings, "list", "listnote", "listnotes", "listwarn", "listwarns", "listwarning", "listwarnings", "warnlist", "warninglist", "warningslist");
             // Helper
             bot.RegisterCommand(WarningCommandHandler.CMD_Note, "note");
-            bot.RegisterCommand(WarningCommandHandler.CMD_Warn, "warn", "warning");
+            bot.RegisterCommand(WarningCommandHandler.CMD_Warn, "warn", "warning", "forcewarn");
             bot.RegisterCommand(WarningCommandHandler.CMD_Unmute, "unmute");
             bot.RegisterCommand(WarningCommandHandler.CMD_Unban, "unban");
             bot.RegisterCommand(WarningCommandHandler.CMD_FindSimilarNames, "findsimilarnames");
-            bot.RegisterCommand(WarningCommandHandler.CMD_TempBan, "tempban", "tmpban", "ban", "bantmp", "bantemp", "temporaryban", "bantemporary");
+            bot.RegisterCommand(WarningCommandHandler.CMD_TempBan, "tempban", "tmpban", "ban", "bantmp", "bantemp", "temporaryban", "bantemporary", "forceban");
             bot.RegisterCommand(WarningCommandHandler.CMD_Timeout, "timeout", "time_out", "tempmute", "temptimeout");
             bot.RegisterCommand(SpecialRoleCommandHandler.CMD_ClearSpecialRoles, "clearspecialroles", "removeallspecialroles", "specialroleclear", "specialroleremovall");
             // Admin

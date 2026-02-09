@@ -64,7 +64,7 @@ namespace ModBot.CommandHandlers
                 return;
             }
             WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, userID);
-            if (warnable.SeenNames.IsEmpty() && !config.AllowWarningUnknownUsers)
+            if (warnable.SeenNames.IsEmpty() && !config.AllowWarningUnknownUsers && command.CommandName != "forceban")
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot ban that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
@@ -360,7 +360,7 @@ namespace ModBot.CommandHandlers
                 level = WarningLevel.NORMAL;
             }
             WarnableUser warnUser = WarningUtilities.GetWarnableUser(guild.Id, userID);
-            if (warnUser.SeenNames.IsEmpty() && !config.AllowWarningUnknownUsers)
+            if (warnUser.SeenNames.IsEmpty() && !config.AllowWarningUnknownUsers && command.CommandName != "forcewarn")
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot warn that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
