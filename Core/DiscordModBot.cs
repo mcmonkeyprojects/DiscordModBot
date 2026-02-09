@@ -458,7 +458,22 @@ namespace ModBot.Core
                 return;
             }
             UserCommands.SendGenericPositiveMessageReply(command.Message, "Restarting", "Yes, boss. Broadcasting...");
-            UserCommands.SendReply(command.Message, new EmbedBuilder().WithTitle("Broadcasted Message").WithColor(0, 255, 0).WithDescription(command.RawArguments.JoinString(" ")).Build());
+            // loop all guilds and broadcast:
+            string text = command.RawArguments.JoinString(" ");
+            bool isTest = text.Trim().ToLowerFast().StartsWith("test");
+            if (!isTest)
+            {
+                foreach (SocketGuild guild in command.Bot.Client.Guilds)
+                {
+                    GuildConfig config = GetConfig(guild.Id);
+                    foreach (ulong channelId in config.ModLogsChannel)
+                    {
+                        IMessageChannel channel = guild.GetTextChannel(channelId);
+                        channel?.SendMessageAsync(embed: new EmbedBuilder().WithTitle("Special System Broadcast Message").WithColor(0, 255, 0).WithDescription(text).Build()).Wait();
+                    }
+                }
+            }
+            UserCommands.SendReply(command.Message, new EmbedBuilder().WithTitle($"Broadcasted{(isTest ? " TEST" : "")} Message").WithColor(0, 255, 0).WithDescription(text).Build());
         }
 
         /// <summary>Returns whether a Discord user is a moderator (via role check with role set in config).</summary>
