@@ -22,6 +22,7 @@ namespace ModBot.CommandHandlers
         public void CMD_AddSpecialRole(GuildConfig.SpecialRole role, CommandData command)
         {
             SocketGuild guild = (command.Message.Channel as SocketGuildChannel).Guild;
+            GuildConfig config = DiscordModBot.GetConfig(guild.Id);
             if (!DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
             {
                 SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
@@ -33,7 +34,7 @@ namespace ModBot.CommandHandlers
             }
             SocketGuildUser guildUser = guild.GetUser(userID);
             WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, userID);
-            if (warnable.SeenNames.IsEmpty())
+            if (warnable.SeenNames.IsEmpty() && !config.AllowWarningUnknownUsers)
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot alter that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
@@ -170,7 +171,7 @@ namespace ModBot.CommandHandlers
             }
             SocketGuildUser guildUser = guild.GetUser(userID);
             WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, userID);
-            if (warnable.SeenNames.IsEmpty())
+            if (warnable.SeenNames.IsEmpty() && warnable.SpecialRoles.IsEmpty())
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot alter that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
@@ -194,7 +195,7 @@ namespace ModBot.CommandHandlers
             }
             SocketGuildUser guildUser = guild.GetUser(userID);
             WarnableUser warnable = WarningUtilities.GetWarnableUser(guild.Id, userID);
-            if (warnable.SeenNames.IsEmpty())
+            if (warnable.SeenNames.IsEmpty() && warnable.SpecialRoles.IsEmpty())
             {
                 SendErrorMessageReply(command.Message, "Invalid Input", $"Cannot alter that user: user <@{userID}> has never been seen before. Did you reference a user that hasn't joined this guild yet, or accidentally copy a message ID instead of user ID?");
                 return;
