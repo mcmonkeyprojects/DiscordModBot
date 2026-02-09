@@ -74,7 +74,7 @@ namespace ModBot.CommandHandlers
             IMessageChannel targetChannel = command.Message.Channel;
             if (role.ChannelNoticeType > 0 && role.PutNoticeInChannel != 0 && role.PutNoticeInChannel != targetChannel.Id && (targetChannel is not SocketThreadChannel threaded || threaded.ParentChannel.Id != role.PutNoticeInChannel))
             {
-                string name = NameUtilities.AcceptableSymbolMatcher.TrimToMatches(warnable.LastKnownUsername.BeforeLast('#') ?? "Unknown");
+                string name = NameUtilities.AcceptableSymbolMatcher.TrimToMatches(warnable.LastKnownUsername?.BeforeLast('#') ?? "Unknown");
                 if (name.Length > 20)
                 {
                     name = name[..20];
