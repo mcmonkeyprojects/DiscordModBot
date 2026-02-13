@@ -289,7 +289,7 @@ namespace ModBot.Core
                                 if (monitor.LastMessages.Any())
                                 {
                                     IUserMessage prev = monitor.LastMessages.Peek();
-                                    if (prev.Author.Id != message.Author.Id || Math.Abs(prev.Timestamp.Subtract(DateTimeOffset.UtcNow).TotalSeconds) > 20 || message.Content != prev.Content || message.Attachments.Any())
+                                    if (prev.Author.Id != message.Author.Id || Math.Abs(prev.Timestamp.Subtract(DateTimeOffset.UtcNow).TotalSeconds) > 20 || message.Content != prev.Content || message.Attachments.Count != prev.Attachments.Count)
                                     {
                                         monitor.LastMessages.Clear();
                                     }
