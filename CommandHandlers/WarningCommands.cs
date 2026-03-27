@@ -760,6 +760,68 @@ namespace ModBot.CommandHandlers
                 + string.Join('\n', matches.Select(e => $"<@{e.Item1}> (diff={e.Item2}): `{EscapeUserInput(e.Item3)}`" + (e.Item4 > 0 ? $" has {e.Item4} warnings" : ""))));
         }
 
+        /// <summary>User command to find message metadata.</summary>
+        public void CMD_FindMessageMetadata(CommandData command)
+        {
+            if (!DiscordModBot.IsModerator(command.Message.Author as SocketGuildUser))
+            {
+                SendErrorMessageReply(command.Message, "Not Authorized", "You're not allowed to do that.");
+                return;
+            }
+            if (command.RawArguments.Length == 0)
+            {
+                SendErrorMessageReply(command.Message, "Input Invalid", "Must link a message to scan.");
+                return;
+            }
+            string arg = command.RawArguments[0];
+            if (!arg.StartsWithFast("https://discord.com/channels/"))
+            {
+                SendErrorMessageReply(command.Message, "Input Invalid", "First argument must be a link to a message to scan.");
+                return;
+            }
+            string[] parts = arg["https://discord.com/channels/".Length..].Split('/');
+            if (parts.Length != 3)
+            {
+                SendErrorMessageReply(command.Message, "Input Invalid", "First argument looks like a relevant link, but not to a message.");
+                return;
+            }
+            if (!ulong.TryParse(parts[0], out ulong guildId) || !ulong.TryParse(parts[1], out ulong channelId) || !ulong.TryParse(parts[2], out ulong messageId))
+            {
+                SendErrorMessageReply(command.Message, "Input Invalid", "First argument looks like a relevant link, but contains invalid IDs.");
+                return;
+            }
+            SocketUserMessage msg = (SocketUserMessage)command.Message;
+            if (msg.Channel is not SocketGuildChannel chan)
+            {
+                SendErrorMessageReply(command.Message, "Input Invalid", "This command can only be used in a guild channel.");
+                return;
+            }
+            if (chan.Guild.Id != guildId)
+            {
+                SendErrorMessageReply(command.Message, "Input Invalid", "Guild ID in the message link does not match the guild this command was used in.");
+                return;
+            }
+            SocketTextChannel textChannel = chan.Guild.GetTextChannel(channelId);
+            if (textChannel is null)
+            {
+                SendErrorMessageReply(command.Message, "Input Invalid", "Channel ID in the message link is not valid or not accessible.");
+                return;
+            }
+            if (!DiscordModBot.Loggers.TryGetCached(textChannel, messageId, out StoredMessage targetMsg))
+            {
+                SendErrorMessageReply(command.Message, "Not Found", "That message was not found in the message logs.");
+                return;
+            }
+            WarnableUser user = WarningUtilities.GetWarnableUser(guildId, targetMsg.AuthorID);
+            SendReply(command.Message, new EmbedBuilder().WithTitle("Message Metadata").WithColor(0, 255, 255).WithFields(
+                new EmbedFieldBuilder() { IsInline = true, Name = "Date", Value = StringConversionHelper.DateTimeToString(SnowflakeUtils.FromSnowflake(messageId), true) },
+                new EmbedFieldBuilder() { IsInline = true, Name = "Edit Count", Value = $"{targetMsg.MessageEdits?.Count ?? 0}" },
+                new EmbedFieldBuilder() { IsInline = true, Name = "Author ID", Value = $"`{targetMsg.AuthorID}`" },
+                new EmbedFieldBuilder() { IsInline = true, Name = "Author Account Date", Value = StringConversionHelper.DateTimeToString(SnowflakeUtils.FromSnowflake(targetMsg.AuthorID), true) },
+                new EmbedFieldBuilder() { IsInline = true, Name = "Author Username", Value = $"`{user?.LastKnownUsername ?? "(unknown)"}`" }
+                ).Build());
+        }
+
         /// <summary>Utility method to get the target of a command that allows targeting commands at others instead of self.</summary>
         public bool GetTargetUser(CommandData command, bool errorIfNone, bool errorIfInvalid, out ulong userId)
         {

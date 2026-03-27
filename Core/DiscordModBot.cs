@@ -40,6 +40,9 @@ namespace ModBot.Core
         /// <summary>The special-roles command handler.</summary>
         public static SpecialRoleCommands SpecialRoleCommandHandler = new();
 
+        /// <summary>The logger handler.</summary>
+        public static ModBotLoggers Loggers;
+
         public static class Internal
         {
             public static volatile string LastSpamMessage;
@@ -180,7 +183,8 @@ namespace ModBot.Core
                         }
                         return Task.CompletedTask;
                     };
-                    new ModBotLoggers().InitLoggers(bot);
+                    Loggers = new();
+                    Loggers.InitLoggers(bot);
                 },
                 OnShutdown = () =>
                 {
@@ -432,6 +436,7 @@ namespace ModBot.Core
             bot.RegisterCommand(WarningCommandHandler.CMD_Unmute, "unmute");
             bot.RegisterCommand(WarningCommandHandler.CMD_Unban, "unban");
             bot.RegisterCommand(WarningCommandHandler.CMD_FindSimilarNames, "findsimilarnames");
+            bot.RegisterCommand(WarningCommandHandler.CMD_FindMessageMetadata, "findmessagemetadata", "findmessagedata", "messagemetadata", "messagedata", "msgdata");
             bot.RegisterCommand(WarningCommandHandler.CMD_TempBan, "tempban", "tmpban", "ban", "bantmp", "bantemp", "temporaryban", "bantemporary", "forceban");
             bot.RegisterCommand(WarningCommandHandler.CMD_Timeout, "timeout", "time_out", "tempmute", "temptimeout");
             bot.RegisterCommand(SpecialRoleCommandHandler.CMD_ClearSpecialRoles, "clearspecialroles", "removeallspecialroles", "specialroleclear", "specialroleremovall");

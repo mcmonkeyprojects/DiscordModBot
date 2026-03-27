@@ -31,7 +31,8 @@ namespace ModBot.CommandHandlers
                 + "`warn` issues a warning to a user - in format `warn @User [level] [reason...]` with valid levels: `minor`, `normal`, `serious`, or `instant_mute` allowed\n"
                 + "`timeout` applies a timeout to a user - in format `timeout @user [duration] (reason)`\n"
                 + "`listnotes` lists notes and warnings for any user - in format `listnotes @User [page]`\n"
-                + "`findsimilarnames` finds similar names to a given username - in format `findsimilarnames somenamehere#1234`\n";
+                + "`findsimilarnames` finds similar names to a given username - in format `findsimilarnames somenamehere#1234`\n"
+                + "`findmessagemetadata` finds message metadata (author id, etc) - in format `findmessagemetadata [copy link for message]`\n";
 
         /// <summary>Simple output string for mute-related commands.</summary>
         public static string CmdsMuteHelp =
