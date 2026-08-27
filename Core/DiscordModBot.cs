@@ -78,6 +78,7 @@ namespace ModBot.Core
                 EnsureCaching = true,
                 AllowDMs = false,
                 UnknownCommandMessage = null,
+                AlwaysDownloadUsers = false, // TODO
                 GatewayIntents = GatewayIntents.AllUnprivileged, // TODO: | GatewayIntents.GuildMessages | GatewayIntents.GuildMembers | GatewayIntents.GuildMessageReactions | GatewayIntents.MessageContent,
                 ShouldIgnoreBot = (message) =>
                 {
