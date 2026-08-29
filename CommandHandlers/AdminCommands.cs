@@ -82,17 +82,20 @@ namespace ModBot.CommandHandlers
                                 void yoinkAll(SocketTextChannel channel)
                                 {
                                     int thusFar = 0;
-                                    channel.GetMessagesAsync(10_000_000).ForEachAwaitAsync(async col =>
+                                    Task.Run(async () =>
                                     {
-                                        foreach (IMessage message in col)
+                                        await foreach (IReadOnlyCollection<IMessage> col in channel.GetMessagesAsync(10_000_000))
                                         {
-                                            history.Upsert(new StoredMessage(message));
-                                            if (thusFar++ % 10_000 == 0 && thusFar > 0)
+                                            foreach (IMessage message in col)
                                             {
-                                                Console.WriteLine($"Have prefilled read {thusFar} messages in {channel.Id} thus far");
+                                                history.Upsert(new StoredMessage(message));
+                                                if (thusFar++ % 10_000 == 0 && thusFar > 0)
+                                                {
+                                                    Console.WriteLine($"Have prefilled read {thusFar} messages in {channel.Id} thus far");
+                                                }
                                             }
+                                            await Task.Delay(100);
                                         }
-                                        await Task.Delay(100);
                                     }).Wait();
                                 }
                                 yoinkAll(textChannel);

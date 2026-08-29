@@ -98,15 +98,22 @@ namespace ModBot.Core
                     TempBanHandler = new TempBanManager();
                     bot.Client.Ready += async () =>
                     {
-                        DatabaseHandler.Init(bot);
-                        await bot.Client.SetGameAsync("Guardian Over The People");
+                        try
+                        {
+                            DatabaseHandler.Init(bot);
+                            await bot.Client.SetGameAsync("Guardian Over The People");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Basic init error {ex}");
+                        }
                         // Check for any missed users
                         try
                         {
                             int count = 0, modified = 0;
                             foreach (SocketGuild guild in bot.Client.Guilds)
                             {
-                                await guild.GetUsersAsync().ForEachAwaitAsync(users =>
+                                await foreach (IReadOnlyCollection<IGuildUser> users in guild.GetUsersAsync())
                                 {
                                     foreach (IGuildUser user in users)
                                     {
@@ -118,8 +125,7 @@ namespace ModBot.Core
                                             modified++;
                                         }
                                     }
-                                    return Task.CompletedTask;
-                                });
+                                }
                             }
                             Console.WriteLine($"Scanned {count} users and updated {modified}");
                         }
