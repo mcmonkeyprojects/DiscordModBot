@@ -214,6 +214,10 @@ namespace ModBot.Core
                     {
                         string originalText = hasCache ? oldMessage.CurrentContent() + oldMessage.AttachmentString() : $"(not cached)";
                         string newText = message.Content + message.AttachmentString();
+                        if (string.IsNullOrWhiteSpace(newText))
+                        {
+                            return Task.CompletedTask;
+                        }
                         int longerLength = Math.Max(originalText.Length, newText.Length);
                         int firstDifference = StringConversionHelper.FindFirstDifference(originalText, newText);
                         int lastDifference = longerLength - StringConversionHelper.FindFirstDifference(originalText.ReverseFast(), newText.ReverseFast());
@@ -518,6 +522,7 @@ namespace ModBot.Core
                 if (string.IsNullOrWhiteSpace(messageText))
                 {
                     messageText = "(Empty message)";
+                    return Task.CompletedTask;
                 }
                 string output = $"User `{NameUtilities.Username(message.Author)}` (`{message.Author.Id}`) said: {UserCommands.EscapeForPlainText(messageText)}";
                 LogThreadActivity(threadChannel, output);
