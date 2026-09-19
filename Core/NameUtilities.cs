@@ -168,6 +168,8 @@ namespace ModBot.Core
             {
                 globalname = username;
             }
+#warning TODO: reinstate this once Discord de-stupids the perms
+            return false;
             if (nick is not null)
             {
                 if (!IsValidAsciiName(config, nick))
@@ -210,7 +212,7 @@ namespace ModBot.Core
                     if (IsValidAsciiName(config, username))
                     {
                         user.ModifyAsync(u => u.Nickname = username).Wait();
-                        UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Non-ASCII nickname for <@{user.Id}> changed to base username. Please only use a readable+typable US-English ASCII nickname.");
+                        UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Non-ASCII displayname for <@{user.Id}> changed to base username. Please only use a readable+typable US-English ASCII nickname.");
                         return true;
                     }
                     else
@@ -227,7 +229,7 @@ namespace ModBot.Core
                         globalname = globalname[..30];
                     }
                     user.ModifyAsync(u => u.Nickname = ANTI_LIST_TOP_SYMBOL + globalname).Wait();
-                    UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Name patch: <@{user.Id}> had a nickname that started with a symbol or number..."
+                    UserCommands.SendGenericNegativeMessageReply(message, "ASCII Name Rule Enforcement", $"Name patch: <@{user.Id}> had a displayname that started with a symbol or number..."
                         + "applied a special first symbol in place. Please start your name with a letter from A to Z. (This is to prevent users from artificially appearing at the top of the userlist).");
                     return true;
                 }
