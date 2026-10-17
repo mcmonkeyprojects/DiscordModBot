@@ -79,7 +79,7 @@ namespace ModBot.Core
                 AllowDMs = false,
                 UnknownCommandMessage = null,
                 AlwaysDownloadUsers = false, // TODO
-                GatewayIntents = GatewayIntents.AllUnprivileged, // TODO: | GatewayIntents.GuildMessages | GatewayIntents.GuildMembers | GatewayIntents.GuildMessageReactions | GatewayIntents.MessageContent,
+                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMessages | GatewayIntents.GuildMessageReactions | GatewayIntents.MessageContent, // TODO: | GatewayIntents.GuildMembers,
                 ShouldIgnoreBot = (message) =>
                 {
                     if (message.Channel is not IGuildChannel channel)

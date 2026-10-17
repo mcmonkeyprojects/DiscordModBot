@@ -168,8 +168,6 @@ namespace ModBot.Core
             {
                 globalname = username;
             }
-#warning TODO: reinstate this once Discord de-stupids the perms
-            return false;
             if (nick is not null)
             {
                 if (!IsValidAsciiName(config, nick))
