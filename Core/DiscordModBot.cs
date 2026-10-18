@@ -295,7 +295,7 @@ namespace ModBot.Core
                         else if (shouldSpamCheck)
                         {
                             GuildSpamMonitor monitor = SpamMonitorByGuild.GetOrCreate(guild.Id, () => new GuildSpamMonitor(new(), []));
-                            if (string.IsNullOrWhiteSpace(message.Content))
+                            if (string.IsNullOrWhiteSpace(message.Content + message.AttachmentString()))
                             {
                                 return;
                             }
